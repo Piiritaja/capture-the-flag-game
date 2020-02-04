@@ -11,7 +11,7 @@ Mängu põhimõte:
 
 Tehnoloogia:
 - Java
-- (lwjgl)?
+- lwjgl
 
 AI:
 - Mängus on kahte tüüpi AI-d. Botid mänguväljal(mapil), kes otseselt mängus ei osale, ei saa lippu püüda, aga võivad sind hävitada teel vastase baasi, ning AI, kelle vastu Mängija mängib
