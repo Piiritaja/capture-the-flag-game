@@ -8,7 +8,7 @@ Mängu põhimõte:
 - 2D "isometric" pealtvaade - pole otsene pealtvaade, 3D ja 2D vahepealne
 - Erinevad mänguvormid - deathmatch (mängijad ei ärka uuesti ellu), taaselustamisega (mängijad ärkavad baasis ellu ja saavad jätkata)
 - Kes esimesena vastase lipu oma baasi viib teenib punkti ning algab järgmine round
-- Mängu võidab tiim, kes kogub esimesena kokku ??? punkti
+- Mängu võidab tiim, kes kogub esimesena kokku (3/5/7))punkti
 
 Tehnoloogia:
 - Java
