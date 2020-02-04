@@ -1,9 +1,9 @@
 Idee - Capture the Flag stiilis mäng.
 
 Mängu põhimõte:
+- Multiplayer
 - 2-3 tiimi alustavad kaardi erinurkadest - eesmärk tuua enda baasi lipp
 - Tiimis on 1-3 mängijat
-- Multiplayer
 - Tiimid koosnevad inimmängijatest/mängijast ja AI mängijatest/mängijast
 - 2D "isometric" pealtvaade - pole otsene pealtvaade, 3D ja 2D vahepealne
 - Erinevad mänguvormid - deathmatch (mängijad ei ärka uuesti ellu), taaselustamisega (mängijad ärkavad baasis ellu ja saavad jätkata)
