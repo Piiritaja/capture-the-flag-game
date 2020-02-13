@@ -1,4 +1,5 @@
 **Tehnoloogia**
+
 *  GLFW (https://www.glfw.org)
 *  OpenGl (https://www.opengl.org)
 *  lwjgl (https://www.lwjgl.org)
