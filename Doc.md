@@ -7,7 +7,7 @@
 *  [OpenAL](http://www.openal.org)
 
 
-## Docs
+### Docs
 
 lwjgl-iga tulevad juba kõik ellnevad kaassa. Dokumentatsiooniga oleks ikka vaja tutvuda.
 
