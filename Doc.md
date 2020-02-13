@@ -7,7 +7,7 @@
 *  [OpenAL](http://www.openal.org)
 
 
-##Docs
+## Docs
 
 lwjgl-iga tulevad juba kõik ellnevad kaassa. Dokumentatsiooniga oleks ikka vaja tutvuda.
 
@@ -20,6 +20,6 @@ lwjgl-iga tulevad juba kõik ellnevad kaassa. Dokumentatsiooniga oleks ikka vaja
 [OpenAl](http://www.openal.org/documentation/)
 
 
-###lwjgl version
+### lwjgl version
 
 [lwjgl 3.2.3](https://www.lwjgl.org/customize)
