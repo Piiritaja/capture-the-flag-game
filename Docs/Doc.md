@@ -9,7 +9,7 @@
 
 ### Docs
 
-lwjgl-iga tulevad juba kõik ellnevad kaassa. Dokumentatsiooniga oleks ikka vaja tutvuda.
+lwjgl teegiga on juba kõik ellnevad kaassa. Dokumentatsiooniga oleks ikka vaja tutvuda.
 
 [GLFW](https://www.glfw.org/documentation.html)
 
