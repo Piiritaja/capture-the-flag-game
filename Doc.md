@@ -1,23 +1,23 @@
 # Tehnoloogia
 
-*  GLFW (https://www.glfw.org)
-*  OpenGl (https://www.opengl.org)
-*  lwjgl (https://www.lwjgl.org)
-*  OpenCL (https://www.khronos.org/opencl/)
-*  OpenAL (http://www.openal.org)
+*  [GLFW](https://www.glfw.org)
+*  [OpenGl](https://www.opengl.org)
+*  [lwjgl](https://www.lwjgl.org)
+*  [OpenCL](https://www.khronos.org/opencl/)
+*  [OpenAL](http://www.openal.org)
 lwjgl-iga tulevad juba kõik ellnevad kaassa. Dokumentatsiooniga oleks ikka vaja tutvuda.
 GLFW dokumentatsioon - https://www.glfw.org/documentation.html
 
 
 **Docs**
 
-OpenGL - https://www.opengl.org/documentation/
+[OpenGL](https://www.opengl.org/documentation/)
 
-OpenCl - https://www.khronos.org/registry/OpenCL/sdk/1.2/docs/man/xhtml/
+[OpenCl](https://www.khronos.org/registry/OpenCL/sdk/1.2/docs/man/xhtml/)
 
-OpenAl - http://www.openal.org/documentation/
+[OpenAl](http://www.openal.org/documentation/)
 
 
 **lwjgl version**
 
-lwjgl 3.2.3 - https://www.lwjgl.org/customize
+[lwjgl 3.2.3](https://www.lwjgl.org/customiz)
