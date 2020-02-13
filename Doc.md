@@ -9,6 +9,7 @@ GLFW dokumentatsioon - https://www.glfw.org/documentation.html
 
 
 **Docs**
+
 OpenGL - https://www.opengl.org/documentation/
 
 OpenCl - https://www.khronos.org/registry/OpenCL/sdk/1.2/docs/man/xhtml/
