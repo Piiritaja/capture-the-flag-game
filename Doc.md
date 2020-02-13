@@ -5,11 +5,13 @@
 *  [lwjgl](https://www.lwjgl.org)
 *  [OpenCL](https://www.khronos.org/opencl/)
 *  [OpenAL](http://www.openal.org)
-lwjgl-iga tulevad juba kõik ellnevad kaassa. Dokumentatsiooniga oleks ikka vaja tutvuda.
-GLFW dokumentatsioon - https://www.glfw.org/documentation.html
 
 
 **Docs**
+
+lwjgl-iga tulevad juba kõik ellnevad kaassa. Dokumentatsiooniga oleks ikka vaja tutvuda.
+
+[GLFW](https://www.glfw.org/documentation.html)
 
 [OpenGL](https://www.opengl.org/documentation/)
 
