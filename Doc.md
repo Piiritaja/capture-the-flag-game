@@ -20,4 +20,4 @@ GLFW dokumentatsioon - https://www.glfw.org/documentation.html
 
 **lwjgl version**
 
-[lwjgl 3.2.3](https://www.lwjgl.org/customiz)
+[lwjgl 3.2.3](https://www.lwjgl.org/customize)
