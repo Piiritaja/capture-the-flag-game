@@ -7,10 +7,14 @@
 lwjgl-iga tulevad juba kõik ellnevad kaassa. Dokumentatsiooniga oleks ikka vaja tutvuda.
 GLFW dokumentatsioon - https://www.glfw.org/documentation.html
 
+
 **Docs**
 OpenGL - https://www.opengl.org/documentation/
+
 OpenCl - https://www.khronos.org/registry/OpenCL/sdk/1.2/docs/man/xhtml/
+
 OpenAl - http://www.openal.org/documentation/
+
 
 **lwjgl version**
 lwjgl 3.2.3 - https://www.lwjgl.org/customize
