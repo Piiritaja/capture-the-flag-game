@@ -55,6 +55,6 @@ TCP server
 
 ## Mänguväli
 
-Mänguvälja konspekt, kus 3 tiimi, botid mänguväljal, igas tiimis 4 liiget ja takistused mänguväljal.
+Mänguvälja konspekt, kus 3 tiimi, botid mänguväljal(kastid), igas tiimis 4 liiget ja takistused mänguväljal.
 
-[Imgur](https://i.imgur.com/HY8iyZR.png)
+![alt text](https://i.imgur.com/HY8iyZR.png)
