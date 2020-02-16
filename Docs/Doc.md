@@ -23,6 +23,7 @@ lwjgl teegiga on juba kõik ellnevad kaassa. Dokumentatsiooniga oleks ikka vaja 
 
 ### lwjgl version
 
+
 [lwjgl 3.2.3](https://www.lwjgl.org/customize)
 
 
