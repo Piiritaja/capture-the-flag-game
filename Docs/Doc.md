@@ -26,6 +26,8 @@ lwjgl teegiga on juba kõik ellnevad kaassa. Dokumentatsiooniga oleks ikka vaja 
 
 [lwjgl 3.2.3](https://www.lwjgl.org/customize)
 
+[lwjgl ja Intellj](http://wiki.lwjgl.org/wiki/Setting_Up_LWJGL_with_IntelliJ_IDEA.html)
+
 
 ### Server
 
