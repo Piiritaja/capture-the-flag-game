@@ -21,12 +21,14 @@ lwjgl teegiga on juba kõik ellnevad kaassa. Dokumentatsiooniga oleks ikka vaja 
 [OpenAl](http://www.openal.org/documentation/)
 
 
-### lwjgl version
+### lwjgl
 
 
 [lwjgl 3.2.3](https://www.lwjgl.org/customize)
 
 [lwjgl ja Intellj](http://wiki.lwjgl.org/wiki/Setting_Up_LWJGL_with_IntelliJ_IDEA.html)
+
+[Õpetus](https://goharsha.com/lwjgl-tutorial-series/)
 
 
 ### Server
