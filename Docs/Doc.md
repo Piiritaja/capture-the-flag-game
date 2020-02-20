@@ -1,34 +1,17 @@
 # Dokumentatsioon
 
 ## Tehnoloogia
-*  [GLFW](https://www.glfw.org)
-*  [OpenGl](https://www.opengl.org)
-*  [lwjgl](https://www.lwjgl.org)
-*  [OpenCL](https://www.khronos.org/opencl/)
-*  [OpenAL](http://www.openal.org)
+*  [JavaFX](https://openjfx.io)
+*  Css
+*  FXML
 
 
 ### Docs
 
-lwjgl teegiga on juba kõik ellnevad kaassa. Dokumentatsiooniga oleks ikka vaja tutvuda.
 
-[GLFW](https://www.glfw.org/documentation.html)
-
-[OpenGL](https://www.opengl.org/documentation/)
-
-[OpenCl](https://www.khronos.org/registry/OpenCL/sdk/1.2/docs/man/xhtml/)
-
-[OpenAl](http://www.openal.org/documentation/)
+[Javafx](https://openjfx.io/javadoc/13/)
 
 
-### lwjgl
-
-
-[lwjgl 3.2.3](https://www.lwjgl.org/customize)
-
-[lwjgl ja Intellj](http://wiki.lwjgl.org/wiki/Setting_Up_LWJGL_with_IntelliJ_IDEA.html)
-
-[Õpetus](https://goharsha.com/lwjgl-tutorial-series/)
 
 
 ### Server
