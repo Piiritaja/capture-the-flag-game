@@ -14,7 +14,7 @@ import javafx.scene.shape.Line;
 
 public class Screen extends Application {
     Player player = new Player(20, 20, 20, 20, 0, 0, Color.DARKRED);
-    Player flag = new Player(350, 350, 10, 10, 0, 0, Color.BLACK);
+    Flag flag = new Flag(350, 350, 10, 10, Color.BLACK);
     int step = 2;
 
     public static void main(String[] args) {
