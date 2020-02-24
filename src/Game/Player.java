@@ -1,26 +1,27 @@
 package Game;
 
-import java.awt.Rectangle;
+import javafx.scene.paint.Paint;
+import javafx.scene.shape.Rectangle;
 
-import java.awt.*;
 
 public class Player extends Rectangle {
 
-    private int dx, dy;
+    public int dx, dy, x, y, width, height;
+
 
     public Player(int x, int y, int width, int height, int dx, int dy) {
-        setBounds(x, y, width, height);
+        super(x, y, width, height);
+        this.setFill(Paint.valueOf("RED"));
+        this.width = width;
+        this.height = height;
+        this.x = (int) this.getX();
+        this.y = (int) this.getY();
         this.dx = dx;
         this.dy = dy;
-
     }
-
     public void tick() {
-        this.x += dx;
-        this.y += dy;
-    }
-    public void draw(Graphics g) {
-        g.fillRect(this.x, this.y, this.width, this.height);
+        this.setX(this.x += dx);
+        this.setY(this.y += dy);
     }
     public void setDx(int dx) {
         this.dx = dx;
