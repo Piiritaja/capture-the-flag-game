@@ -1,5 +1,6 @@
 package Game;
 
+import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
@@ -9,9 +10,9 @@ public class Player extends Rectangle {
     public int dx, dy, x, y, width, height;
 
 
-    public Player(int x, int y, int width, int height, int dx, int dy) {
+    public Player(int x, int y, int width, int height, int dx, int dy, Color color) {
         super(x, y, width, height);
-        this.setFill(Paint.valueOf("RED"));
+        this.setFill(color);
         this.width = width;
         this.height = height;
         this.x = (int) this.getX();
