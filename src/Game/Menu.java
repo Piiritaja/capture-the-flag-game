@@ -28,7 +28,7 @@ public class Menu extends Application {
         button2.getStyleClass().add("button");
         button3.getStyleClass().add("Button");
         button2.setOnAction(actionEvent -> exitScreen(mainStage));
-        button3.setOnAction(actionEvent -> setFullScreen(mainStage));
+        button3.setOnAction(actionEvent -> toggleFullScreen(mainStage));
         FileInputStream input = new FileInputStream("src/assets/pngwave.png");
         Image image = new Image(input);
         ImageView imageView = new ImageView(image);
@@ -69,9 +69,14 @@ public class Menu extends Application {
 
     }
 
-    private void setFullScreen(Stage stage){
-        stage.setFullScreen(true);
+    private void toggleFullScreen(Stage stage){
+        if (stage.isFullScreen()){
+            stage.setFullScreen(false);
+        }
+        else{
+            stage.setFullScreen(true);
 
+        }
     }
 
     private void exitScreen(Stage stage){
