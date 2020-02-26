@@ -27,13 +27,13 @@ public class Screen extends Application {
         stage.setTitle("Capture the flag");
         Group root = new Group();
 
-       Line horizontalLine = new Line();
-       horizontalLine.setStartX(0); horizontalLine.setStartY(50);
-       horizontalLine.setEndX(50); horizontalLine.setEndY(50);
+        Line horizontalLine = new Line();
+        horizontalLine.setStartX(0); horizontalLine.setStartY(50);
+        horizontalLine.setEndX(50); horizontalLine.setEndY(50);
 
-       Line verticalLine = new Line();
-       verticalLine.setStartX(50); verticalLine.setStartY(0);
-       verticalLine.setEndX(50); verticalLine.setEndY(50);
+        Line verticalLine = new Line();
+        verticalLine.setStartX(50); verticalLine.setStartY(0);
+        verticalLine.setEndX(50); verticalLine.setEndY(50);
 
 
         root.getChildren().add(player);
