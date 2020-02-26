@@ -2,7 +2,6 @@ package Game;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.paint.Color;
 
 
 public class Player extends ImageView {
@@ -10,7 +9,7 @@ public class Player extends ImageView {
     public int dx, dy, x, y, width, height;
 
 
-    public Player(int x, int y, int width, int height, int dx, int dy, Color color) {
+    public Player(int x, int y, int dx, int dy) {
         Image image = new Image("assets/player/green/still.png");
         this.setImage(image);
         this.width = 32;
