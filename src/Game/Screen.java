@@ -13,9 +13,38 @@ import javafx.scene.shape.Line;
 
 
 public class Screen extends Application {
-    Player player = new Player(20, 20, 0, 0);
-    Flag flag = new Flag(350, 350, 10, 10, Color.BLACK);
+    Player player;
+    Flag flag;
+
+    //Constants for player object
+    private static final int PLAYER_X_STARTING_POSITION = 20;
+    private static final int PLAYER_Y_STARTING_POSITION = 20;
+
+    //Constants for flag object
+    private static final int FLAG_X_STARTING_POSITION = 350;
+    private static final int FLAG_Y_STARTING_POSITION = 350;
+    private static final int FLAG_WIDTH = 10;
+    private static final int FLAG_HEIGHT = 10;
+
+
     int step = 2;
+
+    public Screen(){
+        this.player = new Player(
+                PLAYER_X_STARTING_POSITION,
+                PLAYER_Y_STARTING_POSITION,
+                0,
+                0
+        );
+
+        this.flag = new Flag(
+                FLAG_X_STARTING_POSITION,
+                FLAG_Y_STARTING_POSITION,
+                FLAG_WIDTH,
+                FLAG_HEIGHT,
+                Color.BLACK
+        );
+    }
 
     public static void main(String[] args) {
         launch(args);
