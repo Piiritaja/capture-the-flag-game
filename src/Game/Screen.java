@@ -1,14 +1,15 @@
 package Game;
 
+import Game.maps.MapLoad;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import javafx.scene.shape.Line;
 
 
 
@@ -26,6 +27,7 @@ public class Screen extends Application {
     private static final int FLAG_WIDTH = 10;
     private static final int FLAG_HEIGHT = 10;
 
+    private static final double ASPECT_RATIO = 1.6;
 
     int step = 2;
 
@@ -54,19 +56,22 @@ public class Screen extends Application {
     public void start(Stage stage) {
         Group root = new Group();
 
-        Line horizontalLine = new Line();
-        horizontalLine.setStartX(0); horizontalLine.setStartY(50);
-        horizontalLine.setEndX(50); horizontalLine.setEndY(50);
+        MapLoad mapLoad = new MapLoad();
 
-        Line verticalLine = new Line();
-        verticalLine.setStartX(50); verticalLine.setStartY(0);
-        verticalLine.setEndX(50); verticalLine.setEndY(50);
+        // loadMap2(), for map 2;
+        // loadMap1(), for map 1;
+        StackPane map = mapLoad.loadMap2();
 
+        map.prefWidthProperty().bind(stage.getScene().widthProperty());
+        map.prefHeightProperty().bind(stage.getScene().heightProperty());
 
+        root.getChildren().add(map);
         root.getChildren().add(player);
         root.getChildren().add(flag);
-        root.getChildren().addAll(horizontalLine, verticalLine);
         stage.getScene().setRoot(root);
+
+        stage.minWidthProperty().bind(map.heightProperty().multiply(ASPECT_RATIO));
+        stage.minHeightProperty().bind(map.widthProperty().divide(ASPECT_RATIO));
 
         AnimationTimer timer = new AnimationTimer() {
             @Override

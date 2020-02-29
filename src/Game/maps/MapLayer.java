@@ -1,4 +1,4 @@
-package game.maps;
+package Game.maps;
 
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
