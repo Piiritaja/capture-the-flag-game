@@ -1,5 +1,6 @@
 package Game;
 
+import Game.maps.MapLoad;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -33,13 +34,17 @@ public class Menu extends Application {
         Button button1 = new Button("Play game");
         Button button2 = new Button("Quit");
         Button button3 = new Button("Full screen mode");
+
         button1.getStyleClass().add("button");
         button2.getStyleClass().add("button");
         button3.getStyleClass().add("Button");
-        Screen screen  = new Screen();
+
+        Screen screen = new Screen();
+
         button1.setOnAction(actionEvent -> screen.start(mainStage));
         button2.setOnAction(actionEvent -> exitScreen(mainStage));
         button3.setOnAction(actionEvent -> toggleFullScreen(mainStage));
+
         FileInputStream input = new FileInputStream("src/assets/pngwave.png");
         Image image = new Image(input);
         ImageView imageView = new ImageView(image);
@@ -47,13 +52,9 @@ public class Menu extends Application {
         imageView.setFitHeight(IMAGE_HEIGHT);
         VBox vbox = new VBox(imageView, button1, button3, button2);
         vbox.getStyleClass().add("container");
+
         return new Scene(vbox);
     }
-
-    public void showMenu(){
-
-    }
-
 
 
     private void configurePrimaryStage(Stage stage) {
@@ -78,7 +79,6 @@ public class Menu extends Application {
         configurePrimaryStage(mainStage);
 
         mainStage.show();
-
 
     }
 

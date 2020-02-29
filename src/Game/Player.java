@@ -11,7 +11,7 @@ public class Player extends ImageView {
     private static final int PLAYER_HEIGHT = 32;
 
     //Constants for player model graphics
-    private static final String PLAYER_MAIN_IMAGE = "assets/player/green/still.png";
+    private static final String PLAYER_MAIN_IMAGE = "assets/player/red/still.png";
 
     public int dx, dy, x, y, width, height;
 
