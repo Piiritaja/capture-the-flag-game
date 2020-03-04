@@ -1,8 +1,11 @@
 package Game;
 
+import Game.maps.Base;
 import Game.maps.MapLoad;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.input.KeyCode;
@@ -11,6 +14,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
+import java.util.List;
 
 
 public class Screen extends Application {
@@ -55,23 +59,22 @@ public class Screen extends Application {
     @Override
     public void start(Stage stage) {
         Group root = new Group();
+        System.out.println(stage.widthProperty());
 
         MapLoad mapLoad = new MapLoad();
 
         // loadMap2(), for map 2;
         // loadMap1(), for map 1;
-        StackPane map = mapLoad.loadMap2();
+        mapLoad.loadMap2(root, stage);
 
-        map.prefWidthProperty().bind(stage.getScene().widthProperty());
-        map.prefHeightProperty().bind(stage.getScene().heightProperty());
+        // bases for collision detection
+        List<Base> bases = mapLoad.getBases();
 
-        root.getChildren().add(map);
+        // for loop can be used to loop through bases and check collision
+
         root.getChildren().add(player);
         root.getChildren().add(flag);
         stage.getScene().setRoot(root);
-
-        stage.minWidthProperty().bind(map.heightProperty().multiply(ASPECT_RATIO));
-        stage.minHeightProperty().bind(map.widthProperty().divide(ASPECT_RATIO));
 
         AnimationTimer timer = new AnimationTimer() {
             @Override
