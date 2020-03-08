@@ -24,14 +24,14 @@ public class Bullet extends Rectangle {
     }
 
     // shooting bullets
-    public void shoot(Line line, Group root) {
+    public void shoot(Line line, Group root, double distance) {
         PathTransition transition = new PathTransition();
         transition.setNode(this);
-        transition.setDuration(Duration.seconds(1));
+        transition.setDuration(Duration.seconds(distance / 400));
         transition.setPath(line);
         Timeline playTime = new Timeline(
                 new KeyFrame(Duration.seconds(0), event -> transition.play()),
-                new KeyFrame(Duration.seconds(0.85), event -> root.getChildren().remove(this))
+                new KeyFrame(Duration.seconds((distance / 400) * 0.80), event -> root.getChildren().remove(this))
         );
         playTime.play();
     }

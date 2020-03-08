@@ -12,6 +12,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
+import java.lang.Math.*;
 
 import java.util.List;
 import java.util.Objects;
@@ -114,26 +115,26 @@ public class Screen extends Application {
 
     public EventHandler<MouseEvent> shooting = mouseEvent -> {
         getGunCoordinates();
-        Line lineRight = new Line(shootingRightX, shootingRightY, shootingRightX + 500, shootingRightY);
-        Line lineLeft = new Line(shootingLeftX, shootingLeftY, shootingLeftX - 500, shootingLeftY);
-        Line lineDown = new Line(shootingDownX, shootingDownY, shootingDownX, shootingDownY + 500);
-        Line lineUp = new Line(shootingUpX, shootingUpY, shootingUpX, shootingUpY - 500);
+        double mouseY = mouseEvent.getY();
+        double mouseX = mouseEvent.getX();
+        Line lineRight = new Line(shootingRightX, shootingRightY, Math.min(shootingRightX + 500, mouseX), mouseY);
+        Line lineLeft = new Line(shootingLeftX, shootingLeftY, Math.max(shootingLeftX - 500, mouseX), mouseY);
+        Line lineDown = new Line(shootingDownX, shootingDownY, mouseX, Math.min(shootingDownY + 500, mouseY));
+        Line lineUp = new Line(shootingUpX, shootingUpY, mouseX, Math.max(shootingUpY - 500, mouseY));
         if (Objects.equals(mouseEvent.getEventType(), MouseEvent.MOUSE_CLICKED)) {
-            double mouseY = mouseEvent.getY();
-            double mouseX = mouseEvent.getX();
             calculations(mouseX, mouseY);
             if (player.getY() >= mouseY && mouseX >= player.getX() - halfLengthY && mouseX <= player.getX() + halfLengthY) {
                 bullet = new Bullet((int) shootingUpX, (int) shootingUpY, 5, 5, Color.YELLOW);
-                bullet.shoot(lineUp, root);
+                bullet.shoot(lineUp, root, Math.min(500, shootingUpY - mouseY));
             } else if (player.getY() < mouseY && mouseX >= player.getX() - halfLengthY && mouseX <= player.getX() + halfLengthY) {
                 bullet = new Bullet((int) shootingDownX, (int) shootingDownY, 5, 5, Color.YELLOW);
-                bullet.shoot(lineDown, root);
+                bullet.shoot(lineDown, root, Math.min(500, mouseY - shootingDownY));
             } else if (player.getX() < mouseX && mouseY >= player.getY() - halfLengthX && mouseY <= player.getY() + halfLengthX) {
                 bullet = new Bullet((int) shootingRightX, (int) shootingRightY, 5, 5, Color.YELLOW);
-                bullet.shoot(lineRight, root);
+                bullet.shoot(lineRight, root, Math.min(500, mouseX - shootingRightX));
             } else if (player.getX() >= mouseX && mouseY >= player.getY() - halfLengthX && mouseY <= player.getY() + halfLengthX) {
                 bullet = new Bullet((int) shootingLeftX, (int) shootingLeftY, 5, 5, Color.YELLOW);
-                bullet.shoot(lineLeft, root);
+                bullet.shoot(lineLeft, root, Math.min(500, shootingLeftX - mouseX));
             }
             root.getChildren().add(bullet);
         }
