@@ -16,6 +16,8 @@ import javafx.stage.Stage;
 import java.util.List;
 import java.util.Objects;
 
+import static java.lang.StrictMath.abs;
+
 
 public class Screen extends Application {
     Player player;
@@ -33,6 +35,10 @@ public class Screen extends Application {
     private static final int FLAG_Y_STARTING_POSITION = 350;
     private static final int FLAG_WIDTH = 10;
     private static final int FLAG_HEIGHT = 10;
+
+    //Shooting calculations
+    double halfLengthX;
+    double halfLengthY;
 
     private static final double ASPECT_RATIO = 1.6;
 
@@ -97,26 +103,41 @@ public class Screen extends Application {
     public EventHandler<MouseEvent> shooting = mouseEvent -> {
         Line lineRight = new Line(player.getX(), player.getY(), player.getX() + 500, player.getY());
         Line lineLeft = new Line(player.getX(), player.getY(), player.getX() - 500, player.getY());
-        //Line lineDown = new Line(player.getX(), player.getY(), player.getX(), player.getY() + 500);
-        //Line lineUp = new Line(player.getX(), player.getY(), player.getX(), player.getY() - 500);
+        Line lineDown = new Line(player.getX(), player.getY(), player.getX(), player.getY() + 500);
+        Line lineUp = new Line(player.getX(), player.getY(), player.getX(), player.getY() - 500);
         bullet = new Bullet((int) player.getX(), (int) player.getY(), 5, 5, Color.YELLOW);
-        //System.out.println(mouseEvent.getX()); System.out.println(mouseEvent.getY());
         if (Objects.equals(mouseEvent.getEventType(), MouseEvent.MOUSE_CLICKED)) {
-            //double mouseY = mouseEvent.getY();
-            //double mouseX = mouseEvent.getX();
-            //double correctY = player.getY() - mouseY;
-            //double correctX = player.getX() - mouseX;
-            root.getChildren().add(bullet);
-            //System.out.println(-mouseY);
-            if (mouseEvent.getX() > bullet.getX()) {
+            double mouseY = mouseEvent.getY();
+            double mouseX = mouseEvent.getX();
+            calculations(mouseX, mouseY);
+            if (player.getY() >= mouseY && mouseX >= player.getX() - halfLengthY && mouseX <= player.getX() + halfLengthY) {
+                bullet.shoot(lineUp, root);
+            } else if (player.getY() < mouseY && mouseX >= player.getX() - halfLengthY && mouseX <= player.getX() + halfLengthY) {
+                bullet.shoot(lineDown, root);
+            } else if (player.getX() < mouseX && mouseY >= player.getY() - halfLengthX && mouseY <= player.getY() + halfLengthX) {
                 bullet.shoot(lineRight, root);
-            } else if (mouseEvent.getX() <= bullet.getX()) {
+            } else if (player.getX() >= mouseX && mouseY >= player.getY() - halfLengthX && mouseY <= player.getY() + halfLengthX) {
                 bullet.shoot(lineLeft, root);
             }
+            root.getChildren().add(bullet);
         }
     };
 
+    // Calculations, to know where to shoot if clicked on map.
+    public void calculations(double mouseX, double mouseY) {
+        double heightX = abs(player.getX() - mouseX);
+        double lengthX = Math.sqrt(Math.pow(heightX, 2) + Math.pow(heightX, 2));
+        double triangleSX = (lengthX * lengthX) / 2;
+        double allowedLengthX = (triangleSX * 2) / heightX;
+        halfLengthX = allowedLengthX / 2;
+        double heightY = abs(player.getY() - mouseY);
+        double lengthY = Math.sqrt(Math.pow(heightY, 2) + Math.pow(heightY, 2));
+        double triangleSY = (lengthY * lengthY) / 2;
+        double allowedLengthY = (triangleSY * 2) / heightY;
+        halfLengthY = allowedLengthY / 2;
+    }
 
+    // Player movement keyPressed
     public EventHandler<KeyEvent> pressed = keyEvent -> {
         if (keyEvent.getCode().equals(KeyCode.W)) {
             player.setDy(-step);
@@ -129,6 +150,7 @@ public class Screen extends Application {
         }
     };
 
+    // Player movement keyReleased
     public EventHandler<KeyEvent> released = keyEvent -> {
         if (keyEvent.getCode().equals(KeyCode.W)) {
             player.setDy(0);
