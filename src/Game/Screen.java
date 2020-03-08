@@ -1,5 +1,6 @@
 package Game;
 
+import Game.bots.BotSpawner;
 import Game.maps.Base;
 import Game.maps.MapLoad;
 import javafx.animation.AnimationTimer;
@@ -93,7 +94,10 @@ public class Screen extends Application {
 
         // for loop can be used to loop through bases and check collision
 
+        BotSpawner botSpawner = new BotSpawner();
         root.getChildren().add(player);
+        botSpawner.spawnBots(3, stage, root, bases);
+        //root.getChildren().add(new Bot(200, 200, 0, 0));
         root.getChildren().add(flag);
         stage.getScene().setRoot(root);
 
