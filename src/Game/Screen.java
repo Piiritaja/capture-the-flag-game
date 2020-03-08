@@ -1,16 +1,14 @@
 package Game;
 
+import Game.bots.BotSpawner;
 import Game.maps.Base;
 import Game.maps.MapLoad;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -35,7 +33,7 @@ public class Screen extends Application {
 
     int step = 2;
 
-    public Screen(){
+    public Screen() {
         this.player = new Player(
                 PLAYER_X_STARTING_POSITION,
                 PLAYER_Y_STARTING_POSITION,
@@ -59,7 +57,6 @@ public class Screen extends Application {
     @Override
     public void start(Stage stage) {
         Group root = new Group();
-        System.out.println(stage.widthProperty());
 
         MapLoad mapLoad = new MapLoad();
 
@@ -72,7 +69,10 @@ public class Screen extends Application {
 
         // for loop can be used to loop through bases and check collision
 
+        BotSpawner botSpawner = new BotSpawner();
         root.getChildren().add(player);
+        botSpawner.spawnBots(3, stage, root, bases);
+        //root.getChildren().add(new Bot(200, 200, 0, 0));
         root.getChildren().add(flag);
         stage.getScene().setRoot(root);
 
