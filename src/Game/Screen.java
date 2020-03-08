@@ -4,22 +4,25 @@ import Game.maps.Base;
 import Game.maps.MapLoad;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.StackPane;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 
 import java.util.List;
+import java.util.Objects;
 
 
 public class Screen extends Application {
     Player player;
     Flag flag;
+    Group root;
+    MapLoad mapLoad;
+    Bullet bullet;
 
     //Constants for player object
     private static final int PLAYER_X_STARTING_POSITION = 20;
@@ -35,7 +38,7 @@ public class Screen extends Application {
 
     int step = 2;
 
-    public Screen(){
+    public Screen() {
         this.player = new Player(
                 PLAYER_X_STARTING_POSITION,
                 PLAYER_Y_STARTING_POSITION,
@@ -58,10 +61,10 @@ public class Screen extends Application {
 
     @Override
     public void start(Stage stage) {
-        Group root = new Group();
+        root = new Group();
         System.out.println(stage.widthProperty());
 
-        MapLoad mapLoad = new MapLoad();
+        mapLoad = new MapLoad();
 
         // loadMap2(), for map 2;
         // loadMap1(), for map 1;
@@ -83,12 +86,36 @@ public class Screen extends Application {
                 catchTheFlag();
                 player.setOnKeyPressed(pressed);
                 player.setOnKeyReleased(released);
+                root.setOnMouseClicked(shooting);
                 player.setFocusTraversable(true);
             }
         };
         timer.start();
         stage.show();
     }
+
+    public EventHandler<MouseEvent> shooting = mouseEvent -> {
+        Line lineRight = new Line(player.getX(), player.getY(), player.getX() + 500, player.getY());
+        Line lineLeft = new Line(player.getX(), player.getY(), player.getX() - 500, player.getY());
+        //Line lineDown = new Line(player.getX(), player.getY(), player.getX(), player.getY() + 500);
+        //Line lineUp = new Line(player.getX(), player.getY(), player.getX(), player.getY() - 500);
+        bullet = new Bullet((int) player.getX(), (int) player.getY(), 5, 5, Color.YELLOW);
+        //System.out.println(mouseEvent.getX()); System.out.println(mouseEvent.getY());
+        if (Objects.equals(mouseEvent.getEventType(), MouseEvent.MOUSE_CLICKED)) {
+            //double mouseY = mouseEvent.getY();
+            //double mouseX = mouseEvent.getX();
+            //double correctY = player.getY() - mouseY;
+            //double correctX = player.getX() - mouseX;
+            root.getChildren().add(bullet);
+            //System.out.println(-mouseY);
+            if (mouseEvent.getX() > bullet.getX()) {
+                bullet.shoot(lineRight, root);
+            } else if (mouseEvent.getX() <= bullet.getX()) {
+                bullet.shoot(lineLeft, root);
+            }
+        }
+    };
+
 
     public EventHandler<KeyEvent> pressed = keyEvent -> {
         if (keyEvent.getCode().equals(KeyCode.W)) {
@@ -100,7 +127,6 @@ public class Screen extends Application {
         } else if (keyEvent.getCode().equals(KeyCode.A)) {
             player.setDx(-step);
         }
-
     };
 
     public EventHandler<KeyEvent> released = keyEvent -> {
@@ -128,5 +154,4 @@ public class Screen extends Application {
             }
         }
     }
-
 }
