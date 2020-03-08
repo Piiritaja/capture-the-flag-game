@@ -10,7 +10,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -21,14 +20,20 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Menu extends Application {
-    Stage mainStage;
+    private Stage mainStage;
+    private Screen screen;
+    private int chosenMapIndex;
+
+    public Menu() {
+        this.screen = new Screen();
+    }
 
     // Constants for ctf image
-    private static final  int IMAGE_WIDTH = 600;
-    private static final  int IMAGE_HEIGHT = 300;
+    private static final int IMAGE_WIDTH = 600;
+    private static final int IMAGE_HEIGHT = 300;
 
     // Screen constants
-    private static final  int MIN_SCREEN_HEIGHT = 600;
+    private static final int MIN_SCREEN_HEIGHT = 600;
     private static final int MIN_SCREEN_WIDTH = 800;
 
 
@@ -96,28 +101,34 @@ public class Menu extends Application {
     }
 
     public void mapPicker() throws FileNotFoundException {
-        Text t = new Text(10,50,"Choose a map");
+        Text t = new Text(10, 50, "Choose a map");
         Group root = new Group();
+        Button playButton = new Button("start game");
+        Screen screen2 = new Screen();
+        playButton.setOnAction(actionEvent -> screen.start(mainStage));
 
         this.mainStage.getScene().setRoot(root);
         List<ImageView> images = loadMapImages();
 
         HBox hbox = new HBox();
-        VBox vbox = new VBox(t,hbox);
+        VBox vbox = new VBox(t, hbox, playButton);
 
         t.getStyleClass().add("choose");
 
         vbox.getStyleClass().add("container");
         hbox.getStyleClass().add("container");
 
-        for (ImageView image: images){
+        for (ImageView image : images) {
             hbox.getChildren().add(image);
-            image.setFitHeight(mainStage.getHeight()/4);
-            image.setFitWidth(mainStage.getWidth()/4);
+            image.setFitHeight(mainStage.getHeight() / 4);
+            image.setFitWidth(mainStage.getWidth() / 4);
             image.setPreserveRatio(true);
             image.setStyle("-fx-opacity: 50%");
             image.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-                for (ImageView image2: images){
+                this.chosenMapIndex = images.indexOf(image);
+                screen.setMap(chosenMapIndex);
+
+                for (ImageView image2 : images) {
                     image2.setStyle("-fx-opacity: 50%");
                 }
                 image.setStyle("-fx-opacity: 100%");
@@ -130,21 +141,21 @@ public class Menu extends Application {
 
 
         mainStage.widthProperty().addListener((obs, oldVal, newVal) -> {
-            for (ImageView image: images){
+            for (ImageView image : images) {
                 hbox.getChildren().remove(image);
                 hbox.getChildren().add(image);
-                image.setFitHeight(mainStage.getHeight()/4);
-                image.setFitWidth(mainStage.getWidth()/4);
+                image.setFitHeight(mainStage.getHeight() / 4);
+                image.setFitWidth(mainStage.getWidth() / 4);
                 image.setPreserveRatio(true);
             }
         });
 
         mainStage.heightProperty().addListener((obs, oldVal, newVal) -> {
-            for (ImageView image: images){
+            for (ImageView image : images) {
                 hbox.getChildren().remove(image);
                 hbox.getChildren().add(image);
-                image.setFitHeight(mainStage.getHeight()/4);
-                image.setFitWidth(mainStage.getWidth()/4);
+                image.setFitHeight(mainStage.getHeight() / 4);
+                image.setFitWidth(mainStage.getWidth() / 4);
                 image.setPreserveRatio(true);
             }
         });
@@ -154,7 +165,7 @@ public class Menu extends Application {
 
 
     public List<ImageView> loadMapImages() throws FileNotFoundException {
-        FileInputStream map1InputStream =  new FileInputStream("src/assets/map/2teams/map1/testmap1.png");
+        FileInputStream map1InputStream = new FileInputStream("src/assets/map/2teams/map1/testmap1.png");
         Image map1Image = new Image(map1InputStream);
         ImageView map1ImageView = new ImageView(map1Image);
 
@@ -162,7 +173,7 @@ public class Menu extends Application {
         Image map2Image = new Image(map2InputStream);
         ImageView map2ImageView = new ImageView(map2Image);
 
-        return Arrays.asList(map1ImageView,map2ImageView);
+        return Arrays.asList(map1ImageView, map2ImageView);
     }
 
     private void toggleFullScreen(Stage stage) {
@@ -171,5 +182,9 @@ public class Menu extends Application {
 
     private void exitScreen(Stage stage) {
         stage.close();
+    }
+
+    public int getChosenMapIndex() {
+        return chosenMapIndex;
     }
 }

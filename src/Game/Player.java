@@ -39,4 +39,12 @@ public class Player extends ImageView {
     public void setDy(int dy) {
         this.dy = dy;
     }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
 }
