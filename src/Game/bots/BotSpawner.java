@@ -19,7 +19,6 @@ public class BotSpawner {
 
     public void spawnBots(int amount, Stage stage, Group group, List<Base> bases) {
         for (int i = 0; i < amount; i++) {
-            System.out.println(botLocations);
             double maxX = stage.widthProperty().get();
             double maxY = stage.heightProperty().get();
             double min = 0;

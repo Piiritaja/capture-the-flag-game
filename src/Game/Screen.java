@@ -57,7 +57,6 @@ public class Screen extends Application {
     @Override
     public void start(Stage stage) {
         Group root = new Group();
-        System.out.println(stage.widthProperty());
 
         MapLoad mapLoad = new MapLoad();
 
