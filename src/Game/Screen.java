@@ -26,6 +26,16 @@ public class Screen extends Application {
     MapLoad mapLoad;
     Bullet bullet;
 
+    // shooting coordinates
+    double shootingRightX;
+    double shootingRightY;
+    double shootingUpX;
+    double shootingUpY;
+    double shootingDownX;
+    double shootingDownY;
+    double shootingLeftX;
+    double shootingLeftY;
+
     //Constants for player object
     private static final int PLAYER_X_STARTING_POSITION = 20;
     private static final int PLAYER_Y_STARTING_POSITION = 20;
@@ -60,6 +70,8 @@ public class Screen extends Application {
                 Color.BLACK
         );
     }
+
+
 
     public static void main(String[] args) {
         launch(args);
@@ -101,29 +113,44 @@ public class Screen extends Application {
     }
 
     public EventHandler<MouseEvent> shooting = mouseEvent -> {
-        Line lineRight = new Line(player.getX(), player.getY(), player.getX() + 500, player.getY());
-        Line lineLeft = new Line(player.getX(), player.getY(), player.getX() - 500, player.getY());
-        Line lineDown = new Line(player.getX(), player.getY(), player.getX(), player.getY() + 500);
-        Line lineUp = new Line(player.getX(), player.getY(), player.getX(), player.getY() - 500);
-        bullet = new Bullet((int) player.getX(), (int) player.getY(), 5, 5, Color.YELLOW);
+        getGunCoordinates();
+        Line lineRight = new Line(shootingRightX, shootingRightY, shootingRightX + 500, shootingRightY);
+        Line lineLeft = new Line(shootingLeftX, shootingLeftY, shootingLeftX - 500, shootingLeftY);
+        Line lineDown = new Line(shootingDownX, shootingDownY, shootingDownX, shootingDownY + 500);
+        Line lineUp = new Line(shootingUpX, shootingUpY, shootingUpX, shootingUpY - 500);
         if (Objects.equals(mouseEvent.getEventType(), MouseEvent.MOUSE_CLICKED)) {
             double mouseY = mouseEvent.getY();
             double mouseX = mouseEvent.getX();
             calculations(mouseX, mouseY);
             if (player.getY() >= mouseY && mouseX >= player.getX() - halfLengthY && mouseX <= player.getX() + halfLengthY) {
+                bullet = new Bullet((int) shootingUpX, (int) shootingUpY, 5, 5, Color.YELLOW);
                 bullet.shoot(lineUp, root);
             } else if (player.getY() < mouseY && mouseX >= player.getX() - halfLengthY && mouseX <= player.getX() + halfLengthY) {
+                bullet = new Bullet((int) shootingDownX, (int) shootingDownY, 5, 5, Color.YELLOW);
                 bullet.shoot(lineDown, root);
             } else if (player.getX() < mouseX && mouseY >= player.getY() - halfLengthX && mouseY <= player.getY() + halfLengthX) {
+                bullet = new Bullet((int) shootingRightX, (int) shootingRightY, 5, 5, Color.YELLOW);
                 bullet.shoot(lineRight, root);
             } else if (player.getX() >= mouseX && mouseY >= player.getY() - halfLengthX && mouseY <= player.getY() + halfLengthX) {
+                bullet = new Bullet((int) shootingLeftX, (int) shootingLeftY, 5, 5, Color.YELLOW);
                 bullet.shoot(lineLeft, root);
             }
             root.getChildren().add(bullet);
         }
     };
 
-    // Calculations, to know where to shoot if clicked on map.
+    public void getGunCoordinates() {
+        shootingRightX = player.getX() + player.getWidth();
+        shootingRightY = player.getY() + player.getHeight();
+        shootingUpX = player.getX() + player.getWidth();
+        shootingUpY = player.getY();
+        shootingDownX = player.getX();
+        shootingDownY = player.getY() + player.getHeight();
+        shootingLeftX = player.getX();
+        shootingLeftY = player.getY();
+    }
+
+    // Calculations, to know where to shoot(left, right, up or down) if clicked on map
     public void calculations(double mouseX, double mouseY) {
         double heightX = abs(player.getX() - mouseX);
         double lengthX = Math.sqrt(Math.pow(heightX, 2) + Math.pow(heightX, 2));
@@ -163,6 +190,7 @@ public class Screen extends Application {
         }
     };
 
+    // Player can take flag and release it in base
     public void catchTheFlag() {
         if (player.getBoundsInParent().intersects(flag.getBoundsInParent())) {
             if (!(player.getX() < 40 && player.getY() < 40)) {
