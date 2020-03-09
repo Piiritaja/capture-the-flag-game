@@ -59,7 +59,7 @@ public class Menu extends Application {
 
         button1.setOnAction(actionEvent -> {
             try {
-                mapPicker();
+                GameChooser();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
@@ -99,7 +99,8 @@ public class Menu extends Application {
 
     }
 
-    public void mapPicker() throws FileNotFoundException {
+    public void GameChooser() throws FileNotFoundException {
+        // Map picker
         Text t = new Text(10, 50, "Choose a map");
         Group root = new Group();
         Button playButton = new Button("start game");
@@ -109,20 +110,65 @@ public class Menu extends Application {
         List<ImageView> images = loadMapImages();
 
         HBox hbox = new HBox();
-        VBox vbox = new VBox(t, hbox, playButton);
 
         t.getStyleClass().add("choose");
 
-        vbox.getStyleClass().add("container");
         hbox.getStyleClass().add("container");
-
 
         setImagePickEffect(images, hbox);
 
-        root.getChildren().add(vbox);
-        mainStage.getScene().setRoot(root);
         setImagesToScale(images, hbox);
 
+        // Team picker
+
+        Text teamPickerTitle = new Text(10, 50, "Choose a team");
+        teamPickerTitle.getStyleClass().add("choose");
+
+        List<ImageView> teamColors = loadTeamColors();
+
+        HBox teamPickerHbox = new HBox();
+        teamPickerHbox.getStyleClass().add("container");
+
+        setTeamPickEffect(teamColors, teamPickerHbox);
+        setImagesToScale(teamColors, teamPickerHbox);
+
+        VBox vbox = new VBox(t, hbox, teamPickerTitle, teamPickerHbox, playButton);
+        vbox.getStyleClass().add("container");
+        root.getChildren().add(vbox);
+
+        mainStage.getScene().setRoot(root);
+
+    }
+
+    private void setTeamPickEffect(List<ImageView> images, HBox hbox) {
+        for (ImageView image : images) {
+            hbox.getChildren().add(image);
+            image.setFitHeight(mainStage.getHeight() / 4);
+            image.setFitWidth(mainStage.getWidth() / 4);
+            image.setPreserveRatio(true);
+            image.setStyle("-fx-opacity: 50%");
+            image.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+                int colorIndex = images.indexOf(image);
+                screen.setPlayerColor(colorIndex);
+                for (ImageView image2 : images) {
+                    image2.setStyle("-fx-opacity: 50%");
+                }
+                image.setStyle("-fx-opacity: 100%");
+                event.consume();
+            });
+        }
+    }
+
+    private List<ImageView> loadTeamColors() throws FileNotFoundException {
+        FileInputStream teamGreenInputStream = new FileInputStream("src/assets/misc/green_team_circle.png");
+        Image teamGreenImage = new Image(teamGreenInputStream);
+        ImageView teamGreenImageView = new ImageView(teamGreenImage);
+
+        FileInputStream teamRedInputStream = new FileInputStream("src/assets/misc/red_team_circle.png");
+        Image teamRedImage = new Image(teamRedInputStream);
+        ImageView teamRedImageView = new ImageView(teamRedImage);
+
+        return Arrays.asList(teamGreenImageView, teamRedImageView);
 
     }
 

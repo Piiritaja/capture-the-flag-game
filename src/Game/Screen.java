@@ -13,7 +13,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
-import java.lang.Math.*;
 
 import java.util.List;
 import java.util.Objects;
@@ -28,6 +27,7 @@ public class Screen extends Application {
     MapLoad mapLoad;
     Bullet bullet;
     battlefield chosenMap = battlefield.MAP1;
+    Player.playerColor color = Player.playerColor.RED;
 
     // shooting coordinates
     double shootingRightX;
@@ -40,8 +40,8 @@ public class Screen extends Application {
     double shootingLeftY;
 
     //Constants for player object
-    private static final int PLAYER_X_STARTING_POSITION = 20;
-    private static final int PLAYER_Y_STARTING_POSITION = 20;
+    private int playerXStartingPosition = 20;
+    private int playerYStartingPosition = 20;
 
     //Constants for flag object
     private static final int FLAG_X_STARTING_POSITION = 350;
@@ -62,12 +62,6 @@ public class Screen extends Application {
     }
 
     public Screen() {
-        this.player = new Player(
-                PLAYER_X_STARTING_POSITION,
-                PLAYER_Y_STARTING_POSITION,
-                0,
-                0
-        );
 
         this.flag = new Flag(
                 FLAG_X_STARTING_POSITION,
@@ -81,6 +75,40 @@ public class Screen extends Application {
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    public void setPlayerColor(int colorIndex) {
+        if (colorIndex == 0) {
+            this.color = Player.playerColor.GREEN;
+        } else if (colorIndex == 1) {
+            this.color = Player.playerColor.RED;
+        }
+    }
+
+    public void setPlayerXStartingPosition(Stage stage) {
+        if (color.equals(Player.playerColor.GREEN)) {
+            this.playerXStartingPosition = 40;
+        } else if (color.equals(Player.playerColor.RED)) {
+            this.playerXStartingPosition = (int) (stage.getWidth() - 40);
+        }
+    }
+
+        public void setPlayerYStartingPosition(Stage stage) {
+        if (color.equals(Player.playerColor.GREEN)) {
+            this.playerYStartingPosition = 40;
+        } else if (color.equals(Player.playerColor.RED)) {
+            this.playerYStartingPosition = (int) (stage.getHeight() - 40);
+        }
+    }
+
+    public void createPlayer() {
+        this.player = new Player(
+                playerXStartingPosition,
+                playerYStartingPosition,
+                0,
+                0,
+                color.equals(Player.playerColor.GREEN) ? Player.playerColor.GREEN : Player.playerColor.RED
+        );
     }
 
     public void setMap(int mapIndex) {
@@ -99,12 +127,16 @@ public class Screen extends Application {
 
         mapLoad = new MapLoad();
 
+
         if (chosenMap == battlefield.MAP1) {
-            mapLoad.loadMap1(root,stage);
+            mapLoad.loadMap1(root, stage);
         } else if (chosenMap == battlefield.MAP2) {
             mapLoad.loadMap2(root, stage);
 
         }
+        setPlayerXStartingPosition(stage);
+        setPlayerYStartingPosition(stage);
+        createPlayer();
 
         // bases for collision detection
         List<Base> bases = mapLoad.getBases();
