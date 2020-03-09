@@ -123,4 +123,8 @@ public class MapLoad extends Application {
     public List<Base> getBases() {
         return this.bases;
     }
+
+    public List<Base> getBases() {
+        return this.bases;
+    }
 }
