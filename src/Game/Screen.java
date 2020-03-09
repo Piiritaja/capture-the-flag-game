@@ -99,7 +99,7 @@ public class Screen extends Application {
         mapLoad = new MapLoad();
 
         if (chosenMap == battlefield.MAP1) {
-            // mapLoad.loadMap1();
+            mapLoad.loadMap1(root,stage);
         } else if (chosenMap == battlefield.MAP2) {
             mapLoad.loadMap2(root, stage);
 

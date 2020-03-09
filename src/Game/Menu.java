@@ -1,7 +1,6 @@
 package Game;
 
 import javafx.application.Application;
-import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -104,7 +103,6 @@ public class Menu extends Application {
         Text t = new Text(10, 50, "Choose a map");
         Group root = new Group();
         Button playButton = new Button("start game");
-        Screen screen2 = new Screen();
         playButton.setOnAction(actionEvent -> screen.start(mainStage));
 
         this.mainStage.getScene().setRoot(root);
@@ -118,6 +116,17 @@ public class Menu extends Application {
         vbox.getStyleClass().add("container");
         hbox.getStyleClass().add("container");
 
+
+        setImagePickEffect(images, hbox);
+
+        root.getChildren().add(vbox);
+        mainStage.getScene().setRoot(root);
+        setImagesToScale(images, hbox);
+
+
+    }
+
+    private void setImagePickEffect(List<ImageView> images, HBox hbox) {
         for (ImageView image : images) {
             hbox.getChildren().add(image);
             image.setFitHeight(mainStage.getHeight() / 4);
@@ -136,10 +145,9 @@ public class Menu extends Application {
             });
         }
 
-        root.getChildren().add(vbox);
-        mainStage.getScene().setRoot(root);
+    }
 
-
+    private void setImagesToScale(List<ImageView> images, HBox hbox) {
         mainStage.widthProperty().addListener((obs, oldVal, newVal) -> {
             for (ImageView image : images) {
                 hbox.getChildren().remove(image);
@@ -160,7 +168,6 @@ public class Menu extends Application {
             }
         });
 
-
     }
 
 
@@ -169,7 +176,7 @@ public class Menu extends Application {
         Image map1Image = new Image(map1InputStream);
         ImageView map1ImageView = new ImageView(map1Image);
 
-        FileInputStream map2InputStream = new FileInputStream("src/assets/map/2teams/map2/walls.png");
+        FileInputStream map2InputStream = new FileInputStream("src/assets/map/2teams/map2/map2.png");
         Image map2Image = new Image(map2InputStream);
         ImageView map2ImageView = new ImageView(map2Image);
 
