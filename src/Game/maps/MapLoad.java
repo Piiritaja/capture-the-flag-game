@@ -101,12 +101,27 @@ public class MapLoad extends Application {
     }
 
 
-    public StackPane loadMap1() {
-        StackPane root = new StackPane();
+    public void loadMap1(Group root, Stage stage) {
+        final double ASPECT_RATIO = 1.6;
+
+
+        StackPane rootPane = new StackPane();
         root.setId("pane");
         MapLayer map = new MapLayer("assets/map/2teams/map1/testmap1.png");
-        map.addToPane(root);
-        return root;
+        map.addToPane(rootPane);
+
+
+        rootPane.prefWidthProperty().bind(stage.getScene().widthProperty());
+        rootPane.prefHeightProperty().bind(stage.getScene().heightProperty());
+
+        stage.minWidthProperty().bind(rootPane.heightProperty().multiply(ASPECT_RATIO));
+        stage.minHeightProperty().bind(rootPane.widthProperty().divide(ASPECT_RATIO));
+
+        root.getChildren().add(rootPane);
+    }
+
+    public List<Base> getBases() {
+        return this.bases;
     }
 
     public List<Base> getBases() {

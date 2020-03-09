@@ -27,6 +27,7 @@ public class Screen extends Application {
     Group root;
     MapLoad mapLoad;
     Bullet bullet;
+    battlefield chosenMap = battlefield.MAP1;
 
     // shooting coordinates
     double shootingRightX;
@@ -56,6 +57,10 @@ public class Screen extends Application {
 
     int step = 2;
 
+    public enum battlefield {
+        MAP1, MAP2
+    }
+
     public Screen() {
         this.player = new Player(
                 PLAYER_X_STARTING_POSITION,
@@ -74,9 +79,17 @@ public class Screen extends Application {
     }
 
 
-
     public static void main(String[] args) {
         launch(args);
+    }
+
+    public void setMap(int mapIndex) {
+        if (mapIndex == 0) {
+            chosenMap = battlefield.MAP1;
+        } else if (mapIndex == 1) {
+            chosenMap = battlefield.MAP2;
+        }
+
     }
 
     @Override
@@ -86,9 +99,12 @@ public class Screen extends Application {
 
         mapLoad = new MapLoad();
 
-        // loadMap2(), for map 2;
-        // loadMap1(), for map 1;
-        mapLoad.loadMap2(root, stage);
+        if (chosenMap == battlefield.MAP1) {
+            mapLoad.loadMap1(root,stage);
+        } else if (chosenMap == battlefield.MAP2) {
+            mapLoad.loadMap2(root, stage);
+
+        }
 
         // bases for collision detection
         List<Base> bases = mapLoad.getBases();
