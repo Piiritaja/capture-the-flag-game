@@ -13,6 +13,7 @@ public class MapLoad extends Application {
 
     public List<Base> bases = new ArrayList<>();
 
+
     @Override
     public void start(Stage stage) {
 
@@ -107,6 +108,15 @@ public class MapLoad extends Application {
         MapLayer map = new MapLayer("assets/map/2teams/map1/testmap1.png");
         map.addToPane(root);
         return root;
+    }
+
+    public Base getBaseByColor(Base.baseColor color) {
+        for (Base base : bases) {
+            if (base.getBaseColor() == color) {
+                return base;
+            }
+        }
+        return null;
     }
 
     public List<Base> getBases() {
