@@ -52,6 +52,7 @@ public class Screen extends Application {
     int greenTeamScore = 0;
 
     battlefield chosenMap = battlefield.MAP1;
+    Player.playerColor color = Player.playerColor.RED;
 
     // shooting coordinates
     double shootingRightX;
@@ -64,8 +65,8 @@ public class Screen extends Application {
     double shootingLeftY;
 
     //Constants for player object
-    private static final int PLAYER_X_STARTING_POSITION = 65;
-    private static final int PLAYER_Y_STARTING_POSITION = 65;
+    private int playerXStartingPosition = 20;
+    private int playerYStartingPosition = 20;
 
     //Constants for flag object
     private static final int FLAG_X_STARTING_POSITION = 350;
@@ -84,18 +85,49 @@ public class Screen extends Application {
     }
 
     public Screen() {
-        player = new Player(
-                PLAYER_X_STARTING_POSITION,
-                PLAYER_Y_STARTING_POSITION,
-                0,
-                0
-        );
 
     }
 
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    public void setPlayerColor(int colorIndex) {
+        if (colorIndex == 0) {
+            this.color = Player.playerColor.GREEN;
+        } else if (colorIndex == 1) {
+            this.color = Player.playerColor.RED;
+        }
+    }
+
+    public void setPlayerXStartingPosition(Stage stage) {
+        if (color.equals(Player.playerColor.GREEN)) {
+            System.out.println("green");
+            this.playerXStartingPosition = (int) stage.widthProperty().get() - 80;
+            System.out.println(this.playerXStartingPosition);
+        } else if (color.equals(Player.playerColor.RED)) {
+            this.playerXStartingPosition = 40;
+        }
+    }
+
+    public void setPlayerYStartingPosition(Stage stage) {
+        if (color.equals(Player.playerColor.GREEN)) {
+            this.playerYStartingPosition = (int) stage.heightProperty().get() - 40;
+            System.out.println(this.playerYStartingPosition);
+        } else if (color.equals(Player.playerColor.RED)) {
+            this.playerYStartingPosition = 40;
+        }
+    }
+
+    public void createPlayer() {
+        this.player = new Player(
+                playerXStartingPosition,
+                playerYStartingPosition,
+                0,
+                0,
+                color.equals(Player.playerColor.GREEN) ? Player.playerColor.GREEN : Player.playerColor.RED
+        );
     }
 
     public void setMap(int mapIndex) {
