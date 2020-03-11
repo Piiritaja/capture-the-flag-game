@@ -7,11 +7,18 @@ import javafx.stage.Stage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class MapLoad extends Application {
 
     public List<Base> bases = new ArrayList<>();
+    private List<Object> objectsOnMap = new ArrayList<>();
+
+    public List<Object> getObjectsOnMap() {
+        return objectsOnMap;
+    }
+
 
     @Override
     public void start(Stage stage) {
@@ -24,41 +31,33 @@ public class MapLoad extends Application {
     }
 
     public void loadMap2(Group root, Stage stage) {
-        StackPane rootPane = new StackPane();
-
-        final double ASPECT_RATIO = 1.6;
-
         MapLayer floor = new MapLayer("assets/map/2teams/map2/floor.png");
         // floor.png is 1280x800
-        floor.addToPane(rootPane);
-        root.getChildren().add(rootPane);
+        floor.addToGroup(root);
 
+        // old walls image
+        /*
         MapLayer walls = new MapLayer("assets/map/2teams/map2/walls.png");
         walls.addToPane(rootPane);
-
-        // bind image size to stage size
-        rootPane.prefWidthProperty().bind(stage.getScene().widthProperty());
-        rootPane.prefHeightProperty().bind(stage.getScene().heightProperty());
-
-        stage.minWidthProperty().bind(rootPane.heightProperty().multiply(ASPECT_RATIO));
-        stage.minHeightProperty().bind(rootPane.widthProperty().divide(ASPECT_RATIO));
+        */
 
         //base loader
-
         double stageWidth = stage.widthProperty().get();
+        // heightratio : map consists of 25 tiles in height
+        // baseheightintiles : base height is 23 tiles
         final double heightRatio = 25;
+        final int baseHeightInTiles = 23;
         final double heightWallEdges = stage.heightProperty().get() / heightRatio * 2;
         // walls are originally 32px tall and the map height is 25*32px rectangles.
         // it is needed to remove the wall heights (top of map and bottom of map) from the base height
 
         final double baseWidthRatio = 8;
         final double baseWidth = stageWidth / baseWidthRatio;
-        final double baseHeight = stage.heightProperty().get() - heightWallEdges;
+        final double baseHeight = stage.heightProperty().get() / heightRatio * baseHeightInTiles;
         /* Map2 base width is 1/8 of the whole map width.
-            base height is equal to the map height
          */
 
-        // map consists of 40 32px rectangles.
+        // map consists of 40 32px rectangles (width).
         final double widthRatio = 40;
         final double baseStartY = heightWallEdges / 2;
 
@@ -74,7 +73,18 @@ public class MapLoad extends Application {
         bases.add(red);
         bases.add(green);
 
+        // add objects to map
+        objectsOnMap = Object.addObjectsToGroup(root, stage);
+        /*System.out.println(objectsOnMap
+        .stream()
+        .map(Object::getColumn)
+        .collect(Collectors.toList()));*/
+
         stage.widthProperty().addListener((observableValue, oldWidth, newWidth) -> {
+            //set floor width
+            floor.setFitWidth((double) newWidth);
+
+            // set bases widths
             for (Base base : getBases()) {
                 // width for base is 6x32 px for original size which is stage width / 8
                 final double newBaseWidth = (double) newWidth / baseWidthRatio;
@@ -88,36 +98,47 @@ public class MapLoad extends Application {
                     base.setX(xOffsetFromWalls);
                 }
             }
-        });
 
-        stage.heightProperty().addListener((observableValue, oldHeight, newHeight) -> {
-            for (Base base : getBases()) {
-                base.setHeight((double) newHeight);
-                base.setY((double) newHeight / heightRatio);
+            // set objects widths
+            for (Object object : objectsOnMap) {
+                object.setFitWidth((double) newWidth / widthRatio);
+                object.setX((double) newWidth / widthRatio * object.getColumn());
             }
         });
 
+        stage.heightProperty().addListener((observableValue, oldHeight, newHeight) -> {
+            // set floor height
+            floor.setFitHeight((double) newHeight);
 
+            // set base heights
+            for (Base base : getBases()) {
+                // 25 tiles makes the height of the screen; base height for this map is 23 tiles
+                base.setHeight((double) newHeight / heightRatio * baseHeightInTiles);
+                base.setY((double) newHeight / heightRatio);
+            }
+
+            // set objects heights
+            for (Object object : objectsOnMap) {
+                object.setFitHeight((double) newHeight / heightRatio);
+                object.setY((double) newHeight / heightRatio * object.getRow());
+
+            }
+        });
     }
 
 
     public void loadMap1(Group root, Stage stage) {
-        final double ASPECT_RATIO = 1.6;
-
-
-        StackPane rootPane = new StackPane();
-        root.setId("pane");
         MapLayer map = new MapLayer("assets/map/2teams/map1/testmap1.png");
-        map.addToPane(rootPane);
+        map.addToGroup(root);
+    }
 
-
-        rootPane.prefWidthProperty().bind(stage.getScene().widthProperty());
-        rootPane.prefHeightProperty().bind(stage.getScene().heightProperty());
-
-        stage.minWidthProperty().bind(rootPane.heightProperty().multiply(ASPECT_RATIO));
-        stage.minHeightProperty().bind(rootPane.widthProperty().divide(ASPECT_RATIO));
-
-        root.getChildren().add(rootPane);
+    public Base getBaseByColor(Base.baseColor color) {
+        for (Base base : bases) {
+            if (base.getBaseColor() == color) {
+                return base;
+            }
+        }
+        return null;
     }
 
     public List<Base> getBases() {

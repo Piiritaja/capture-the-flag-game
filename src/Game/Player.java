@@ -1,7 +1,10 @@
 package Game;
 
+import Game.maps.Object;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+
+import java.util.List;
 
 
 public class Player extends ImageView {
@@ -42,9 +45,19 @@ public class Player extends ImageView {
         this.dy = dy;
     }
 
-    public void tick() {
+    public void tick(List<Object> objectsOnMap) {
+        double x = this.getX();
+        double y = this.getY();
         this.setX(this.x += dx);
         this.setY(this.y += dy);
+        for (Object object : objectsOnMap) {
+            if (object.collides(this)) {
+                this.setX(x);
+                this.setY(y);
+                dx = 0;
+                dy = 0;
+            }
+        }
     }
 
     public void setDx(int dx) {
