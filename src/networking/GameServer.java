@@ -29,23 +29,24 @@ public class GameServer {
 
         try {
             server.bind(TCP_PORT,UDP_PORT);
-        } catch (IOException ignore) {
+        } catch (IOException e) {
+            e.printStackTrace();
 
         }
         registerPackets();
 
-        server.start();
     }
 
     public void registerPackets() {
         Kryo kryo = server.getKryo();
         kryo.register(serverListener.getClass());
+        kryo.register(Packets.Packet000Request.class);
     }
 
     public static void main(String[] args) throws IOException {
         Server server = new Server();
         server.start();
-        server.bind(54555, 54777);
+        server.bind(TCP_PORT, UDP_PORT);
 
     }
 

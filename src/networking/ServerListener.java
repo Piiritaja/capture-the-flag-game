@@ -5,20 +5,23 @@ import com.esotericsoftware.kryonet.Listener;
 
 public class ServerListener extends Listener {
 
-    public void connected() {
+    @Override
+    public void connected(Connection c) {
         System.out.println("Someone has disconnected");
 
     }
 
-    public void disconnected() {
+    @Override
+    public void disconnected(Connection c) {
         System.out.println("Someone has connected");
     }
 
 
-    public void recived(Connection connection, Object object) {
-        if (object instanceof Packets.Packet01Message) {
-            Packets.Packet01Message request = (Packets.Packet01Message) object;
-            System.out.println("[Server] >> " + request.message);
+    @Override
+    public void received(Connection connection, Object object) {
+        System.out.println("Looking");
+        if (object instanceof Packets.Packet000Request) {
+            System.out.println("Got ya");
 
         }
     }
