@@ -14,13 +14,26 @@ public class Player extends ImageView {
     private static final int PLAYER_HEIGHT = 32;
 
     //Constants for player model graphics
-    private static final String PLAYER_MAIN_IMAGE = "assets/player/red/still.png";
+    private static final String RED_PLAYER_MAIN_IMAGE = "assets/player/red/still.png";
+    private static final String GREEN_PLAYER_MAIN_IMAGE = "assets/player/green/still.png";
 
     public int dx, dy, x, y, width, height;
 
+    public enum playerColor {
+        RED, GREEN
+    }
 
-    public Player(int x, int y, int dx, int dy) {
-        Image image = new Image(PLAYER_MAIN_IMAGE);
+
+    public Player(int x, int y, int dx, int dy, playerColor color) {
+        Image image;
+        if (color.equals(playerColor.GREEN)) {
+            image = new Image(GREEN_PLAYER_MAIN_IMAGE);
+
+        } else if (color.equals(playerColor.RED)) {
+            image = new Image(RED_PLAYER_MAIN_IMAGE);
+        } else {
+            image = new Image(RED_PLAYER_MAIN_IMAGE);
+        }
         this.setImage(image);
         this.width = PLAYER_WIDTH;
         this.height = PLAYER_HEIGHT;
