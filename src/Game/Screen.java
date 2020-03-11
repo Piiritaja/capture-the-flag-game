@@ -147,7 +147,6 @@ public class Screen extends Application {
                 player.setFocusTraversable(true);
             }
         };
-
         timer.start();
         stage.show();
     }
