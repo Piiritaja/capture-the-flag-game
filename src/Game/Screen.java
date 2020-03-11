@@ -72,7 +72,6 @@ public class Screen extends Application {
                 Color.BLACK
         );
     }
-
     public static void main(String[] args) {
         launch(args);
     }

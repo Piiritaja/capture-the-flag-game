@@ -1,6 +1,7 @@
 package Game.bots;
 
 import Game.maps.Base;
+import Game.maps.Object;
 import javafx.scene.Group;
 import javafx.stage.Stage;
 
@@ -17,7 +18,7 @@ public class BotSpawner {
     public BotSpawner() {
     }
 
-    public void spawnBots(int amount, Stage stage, Group group, List<Base> bases) {
+    public void spawnBots(int amount, Stage stage, Group group, List<Base> bases, List<Object> objectsOnMap) {
         for (int i = 0; i < amount; i++) {
             double maxX = stage.widthProperty().get();
             double maxY = stage.heightProperty().get();
@@ -26,25 +27,40 @@ public class BotSpawner {
                 int locationX = random.nextInt((int) (((maxX - min) + 1) + min));
                 int locationY = random.nextInt((int) (((maxY - min) + 1) + min));
                 if (botLocations.containsKey(locationX)) {
-                    if (botLocations.get(locationX) != locationY && notInBase(locationX, bases)) {
-                        botLocations.put(locationX, locationY);
-                        group.getChildren().add(new Bot(locationX, locationY, locationX, locationY));
-                        break;
+                    if (botLocations.get(locationX) != locationY && notInBase(locationX, locationY, bases)) {
+                        Bot bot = new Bot(locationX, locationY, 0, 0);
+                        if (notColliding(bot, objectsOnMap)) {
+                            group.getChildren().add(bot);
+                            botLocations.put(locationX, locationY);
+                            break;
+                        }
                     }
                 } else {
-                    if (notInBase(locationX, bases)) {
-                        botLocations.put(locationX, locationY);
-                        group.getChildren().add(new Bot(locationX, locationY, 0, 0));
-                        break;
+                    if (notInBase(locationX, locationY, bases)) {
+                        Bot bot = new Bot(locationX, locationY, 0, 0);
+                        if (notColliding(bot, objectsOnMap)) {
+                            botLocations.put(locationX, locationY);
+                            group.getChildren().add(bot);
+                            break;
+                        }
                     }
                 }
             }
         }
     }
 
-    public boolean notInBase(int locationX, List<Base> bases) {
+    public boolean notInBase(int locationX, int locationY, List<Base> bases) {
         for (Base base : bases) {
-            if (!(locationX > base.getRightX() | locationX < base.getLeftX())) {
+            if (locationX < base.getRightX() && locationX > base.getLeftX()) {
+                return !(locationY > base.getTopY() && locationY < base.getBottomY());
+            }
+        }
+        return true;
+    }
+
+    private boolean notColliding(Bot bot, List<Object> objects) {
+        for (Object object : objects) {
+            if (object.collides(bot)) {
                 return false;
             }
         }
