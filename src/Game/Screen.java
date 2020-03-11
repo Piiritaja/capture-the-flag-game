@@ -3,16 +3,19 @@ package Game;
 import Game.bots.BotSpawner;
 import Game.maps.Base;
 import Game.maps.MapLoad;
+import Game.maps.Object;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
+import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
+
 import java.lang.Math.*;
 
 import java.util.List;
@@ -40,8 +43,8 @@ public class Screen extends Application {
     double shootingLeftY;
 
     //Constants for player object
-    private static final int PLAYER_X_STARTING_POSITION = 20;
-    private static final int PLAYER_Y_STARTING_POSITION = 20;
+    private static final int PLAYER_X_STARTING_POSITION = 65;
+    private static final int PLAYER_Y_STARTING_POSITION = 65;
 
     //Constants for flag object
     private static final int FLAG_X_STARTING_POSITION = 350;
@@ -94,34 +97,35 @@ public class Screen extends Application {
 
     @Override
     public void start(Stage stage) {
+        boolean fullScreen = stage.isFullScreen();
         root = new Group();
-        System.out.println(stage.widthProperty());
 
         mapLoad = new MapLoad();
 
+
         if (chosenMap == battlefield.MAP1) {
-            mapLoad.loadMap1(root,stage);
+            mapLoad.loadMap1(root, stage);
         } else if (chosenMap == battlefield.MAP2) {
             mapLoad.loadMap2(root, stage);
 
         }
+        stage.setScene(new Scene(root));
 
         // bases for collision detection
         List<Base> bases = mapLoad.getBases();
+        BotSpawner botSpawner = new BotSpawner();
+        botSpawner.spawnBots(4, stage, root, bases, mapLoad.getObjectsOnMap());
 
         // for loop can be used to loop through bases and check collision
-
-        BotSpawner botSpawner = new BotSpawner();
         root.getChildren().add(player);
-        botSpawner.spawnBots(3, stage, root, bases);
         //root.getChildren().add(new Bot(200, 200, 0, 0));
         root.getChildren().add(flag);
-        stage.getScene().setRoot(root);
 
+        List<Object> objectsOnMap = mapLoad.getObjectsOnMap();
         AnimationTimer timer = new AnimationTimer() {
             @Override
             public void handle(long l) {
-                player.tick();
+                player.tick(objectsOnMap);
                 catchTheFlag();
                 player.setOnKeyPressed(pressed);
                 player.setOnKeyReleased(released);
@@ -129,6 +133,7 @@ public class Screen extends Application {
                 player.setFocusTraversable(true);
             }
         };
+        stage.setFullScreen(fullScreen);
         timer.start();
         stage.show();
     }
