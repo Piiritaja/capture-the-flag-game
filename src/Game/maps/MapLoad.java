@@ -19,6 +19,7 @@ public class MapLoad extends Application {
         return objectsOnMap;
     }
 
+
     @Override
     public void start(Stage stage) {
 
@@ -129,6 +130,15 @@ public class MapLoad extends Application {
     public void loadMap1(Group root, Stage stage) {
         MapLayer map = new MapLayer("assets/map/2teams/map1/testmap1.png");
         map.addToGroup(root);
+    }
+
+    public Base getBaseByColor(Base.baseColor color) {
+        for (Base base : bases) {
+            if (base.getBaseColor() == color) {
+                return base;
+            }
+        }
+        return null;
     }
 
     public List<Base> getBases() {
