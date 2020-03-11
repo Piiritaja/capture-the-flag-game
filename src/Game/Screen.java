@@ -3,12 +3,13 @@ package Game;
 import Game.bots.BotSpawner;
 import Game.maps.Base;
 import Game.maps.MapLoad;
+import Game.maps.Object;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Group;
-import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -24,6 +25,9 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+
+import java.lang.Math.*;
+
 
 import java.util.List;
 import java.util.Objects;
@@ -47,6 +51,8 @@ public class Screen extends Application {
     int redTeamScore = 0;
     int greenTeamScore = 0;
 
+    battlefield chosenMap = battlefield.MAP1;
+
     // shooting coordinates
     double shootingRightX;
     double shootingRightY;
@@ -58,8 +64,8 @@ public class Screen extends Application {
     double shootingLeftY;
 
     //Constants for player object
-    private static final int PLAYER_X_STARTING_POSITION = 20;
-    private static final int PLAYER_Y_STARTING_POSITION = 20;
+    private static final int PLAYER_X_STARTING_POSITION = 65;
+    private static final int PLAYER_Y_STARTING_POSITION = 65;
 
     //Constants for flag object
     private static final int FLAG_X_STARTING_POSITION = 350;
@@ -72,6 +78,10 @@ public class Screen extends Application {
     private static final double ASPECT_RATIO = 1.6;
 
     int step = 2;
+
+    public enum battlefield {
+        MAP1, MAP2
+    }
 
     public Screen() {
         player = new Player(
@@ -88,17 +98,32 @@ public class Screen extends Application {
         launch(args);
     }
 
+    public void setMap(int mapIndex) {
+        if (mapIndex == 0) {
+            chosenMap = battlefield.MAP1;
+        } else if (mapIndex == 1) {
+            chosenMap = battlefield.MAP2;
+        }
+
+    }
+
     @Override
     public void start(Stage stage) {
+        boolean fullScreen = stage.isFullScreen();
         root = new Group();
         System.out.println(stage.widthProperty());
         this.stage = stage;
 
         mapLoad = new MapLoad();
 
-        // loadMap2(), for map 2;
-        // loadMap1(), for map 1;
-        mapLoad.loadMap2(root, stage);
+
+        if (chosenMap == battlefield.MAP1) {
+            mapLoad.loadMap1(root, stage);
+        } else if (chosenMap == battlefield.MAP2) {
+            mapLoad.loadMap2(root, stage);
+
+        }
+        stage.setScene(new Scene(root));
 
         // both bases
         greenBase = mapLoad.getBaseByColor(Base.baseColor.GREEN);
@@ -106,6 +131,8 @@ public class Screen extends Application {
 
         // bases for collision detection
         List<Base> bases = mapLoad.getBases();
+        BotSpawner botSpawner = new BotSpawner();
+        botSpawner.spawnBots(4, stage, root, bases, mapLoad.getObjectsOnMap());
 
 
         //both flags
@@ -125,19 +152,19 @@ public class Screen extends Application {
 
 
         // for loop can be used to loop through bases and check collision
-
-        BotSpawner botSpawner = new BotSpawner();
         root.getChildren().add(player);
-        botSpawner.spawnBots(3, stage, root, bases);
         //root.getChildren().add(new Bot(200, 200, 0, 0));
         root.getChildren().add(redFlag);
         stage.getScene().setRoot(root);
 
 
+
+
+        List<Object> objectsOnMap = mapLoad.getObjectsOnMap();
         timer = new AnimationTimer() {
             @Override
             public void handle(long l) {
-                player.tick();
+                player.tick(objectsOnMap);
                 catchTheFlag();
                 scoresCount();
                 scoreBoard();
@@ -147,6 +174,7 @@ public class Screen extends Application {
                 player.setFocusTraversable(true);
             }
         };
+        stage.setFullScreen(fullScreen);
         timer.start();
         stage.show();
     }
