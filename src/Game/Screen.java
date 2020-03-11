@@ -174,6 +174,11 @@ public class Screen extends Application {
         BotSpawner botSpawner = new BotSpawner();
         botSpawner.spawnBots(4, stage, root, bases, mapLoad.getObjectsOnMap());
 
+        setPlayerYStartingPosition(stage);
+        setPlayerXStartingPosition(stage);
+
+        createPlayer();
+
 
         //both flags
         redFlag = new Flag(

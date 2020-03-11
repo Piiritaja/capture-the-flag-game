@@ -18,7 +18,6 @@ public class ServerClient {
 
     private void registerPackets() {
         Kryo kryo = client.getKryo();
-        kryo.register(Packets.Packet01Message.class);
     }
 
     public static void main(String[] args) {
