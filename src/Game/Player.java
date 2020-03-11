@@ -34,8 +34,8 @@ public class Player extends ImageView {
         this.setImage(image);
         this.width = PLAYER_WIDTH;
         this.height = PLAYER_HEIGHT;
-        this.x = (int) this.getX();
-        this.y = (int) this.getY();
+        this.x = x;
+        this.y = y;
         this.dx = dx;
         this.dy = dy;
     }

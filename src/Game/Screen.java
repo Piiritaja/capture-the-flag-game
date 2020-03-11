@@ -87,17 +87,20 @@ public class Screen extends Application {
 
     public void setPlayerXStartingPosition(Stage stage) {
         if (color.equals(Player.playerColor.GREEN)) {
-            this.playerXStartingPosition = 40;
+            System.out.println("green");
+            this.playerXStartingPosition = (int) stage.widthProperty().get() - 40;
+            System.out.println(this.playerXStartingPosition);
         } else if (color.equals(Player.playerColor.RED)) {
-            this.playerXStartingPosition = (int) (stage.getWidth() - 40);
+            this.playerXStartingPosition = 40;
         }
     }
 
-        public void setPlayerYStartingPosition(Stage stage) {
+    public void setPlayerYStartingPosition(Stage stage) {
         if (color.equals(Player.playerColor.GREEN)) {
-            this.playerYStartingPosition = 40;
+            this.playerYStartingPosition = (int) stage.heightProperty().get() - 40;
+            System.out.println(this.playerYStartingPosition);
         } else if (color.equals(Player.playerColor.RED)) {
-            this.playerYStartingPosition = (int) (stage.getHeight() - 40);
+            this.playerYStartingPosition = 40;
         }
     }
 
