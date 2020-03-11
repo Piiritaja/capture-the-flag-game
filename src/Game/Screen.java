@@ -88,7 +88,7 @@ public class Screen extends Application {
     public void setPlayerXStartingPosition(Stage stage) {
         if (color.equals(Player.playerColor.GREEN)) {
             System.out.println("green");
-            this.playerXStartingPosition = (int) stage.widthProperty().get() - 40;
+            this.playerXStartingPosition = (int) stage.widthProperty().get() - 80;
             System.out.println(this.playerXStartingPosition);
         } else if (color.equals(Player.playerColor.RED)) {
             this.playerXStartingPosition = 40;
