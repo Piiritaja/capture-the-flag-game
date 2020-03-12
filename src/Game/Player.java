@@ -60,6 +60,7 @@ public class Player extends ImageView {
         }
     }
 
+
     public void setDx(int dx) {
         this.dx = dx;
     }
