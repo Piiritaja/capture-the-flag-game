@@ -1,0 +1,1 @@
+- Image size: 512x512 (px)
