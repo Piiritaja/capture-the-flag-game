@@ -28,7 +28,10 @@ public class GameServer {
         server.addListener(serverListener);
 
         try {
-            server.bind(TCP_PORT,UDP_PORT);
+            server.start();
+            server.bind(TCP_PORT, UDP_PORT);
+            System.out.println("Connected");
+
         } catch (IOException e) {
             e.printStackTrace();
 
@@ -43,10 +46,8 @@ public class GameServer {
         kryo.register(Packets.Packet000Request.class);
     }
 
-    public static void main(String[] args) throws IOException {
-        Server server = new Server();
-        server.start();
-        server.bind(TCP_PORT, UDP_PORT);
+    public static void main(String[] args) {
+        new GameServer();
 
     }
 
