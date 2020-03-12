@@ -54,8 +54,8 @@ public class Player extends ImageView {
             if (object.collides(this)) {
                 this.setX(x);
                 this.setY(y);
-                dx = 0;
-                dy = 0;
+                this.setX(this.x -= dx);
+                this.setY(this.y -= dy);
             }
         }
     }
