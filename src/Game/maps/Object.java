@@ -1,12 +1,10 @@
 package Game.maps;
 
-import Game.Player;
+import Game.player.Player;
 import Game.bots.Bot;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
@@ -77,8 +75,9 @@ public class Object extends ImageView {
         return objectBoundaries.getBoundsInLocal().intersects(playerBoundaries.getBoundsInLocal());
     }
 
-    public static List<Object> addObjectsToGroup(Group root, Stage stage) {
+    public static List<Object> addObjectsToGroup(Group root, Stage stage, Battlefield map) {
         String line;
+        String objectCsv = setCsv(map);
         int row = 0;
         int column;
         String[] field;
@@ -86,18 +85,17 @@ public class Object extends ImageView {
         final int mapWidthInTiles = 40;
         final int mapHeightInTiles = 25;
         try {
-            BufferedReader reader = new BufferedReader(new FileReader("src/assets/map/objects/map2walls.csv"));
+            BufferedReader reader = new BufferedReader(new FileReader(objectCsv));
             while ((line = reader.readLine()) != null) {
-                //System.out.println(line);
                 column = 0;
                 field = line.split(",");
                 for (String character : field) {
-                    if (character.equals("0")) {
+                    if (character.equals("0") || character.equals("2")) {
                         Object tile = new Object(Object.BRICK_TEXTURE);
                         tile.setRow(row);
                         tile.setColumn(column);
                         tile.setX(stage.widthProperty().get() / mapWidthInTiles * column);
-                        tile.setY(row * mapHeightInTiles);
+                        tile.setY(stage.heightProperty().get() / mapHeightInTiles * row);
                         root.getChildren().add(tile);
                         walls.add(tile);
                     } else if (character.equals("34")) {
@@ -105,7 +103,7 @@ public class Object extends ImageView {
                         tile.setRow(row);
                         tile.setColumn(column);
                         tile.setX(stage.widthProperty().get() / mapWidthInTiles * column);
-                        tile.setY(row * mapHeightInTiles);
+                        tile.setY(stage.heightProperty().get() / mapHeightInTiles * row);
                         root.getChildren().add(tile);
                         walls.add(tile);
                     }
@@ -117,5 +115,15 @@ public class Object extends ImageView {
             System.out.println("Error: add objects to group");
         }
         return walls;
+    }
+
+    private static String setCsv(Battlefield map) {
+        switch (map) {
+            case MAP1:
+                return "src/assets/map/objects/map1walls.csv";
+            case MAP2:
+                return "src/assets/map/objects/map2walls.csv";
+        }
+        return null;
     }
 }

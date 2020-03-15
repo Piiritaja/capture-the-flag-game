@@ -1,4 +1,4 @@
-package Game;
+package Game.player;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.PathTransition;

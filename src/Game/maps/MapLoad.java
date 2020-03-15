@@ -1,39 +1,36 @@
 package Game.maps;
 
-import javafx.application.Application;
+import Game.player.Flag;
 import javafx.scene.Group;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
-public class MapLoad extends Application {
+public class MapLoad {
 
     public List<Base> bases = new ArrayList<>();
     private List<Object> objectsOnMap = new ArrayList<>();
+    private Flag redFlag;
+    private Flag greenFlag;
+    private static final int FLAG_WIDTH = 10;
+    private static final int FLAG_HEIGHT = 10;
+    private String floorImagePath;
+    private Battlefield mapToLoad;
 
     public List<Object> getObjectsOnMap() {
         return objectsOnMap;
     }
 
-
-    @Override
-    public void start(Stage stage) {
-
-    }
-
-    public static void main(String[] args) {
-        launch(args);
-
-    }
-
-    public void loadMap2(Group root, Stage stage) {
-        MapLayer floor = new MapLayer("assets/map/2teams/map2/floor.png");
+    private void loadMap(Group root, Stage stage) {
+        MapLayer floor = new MapLayer(floorImagePath);
         // floor.png is 1280x800
         floor.addToGroup(root);
+        if (!stage.isFullScreen()) {
+            stage.setWidth(floor.getLayerWidth());
+            stage.setHeight(floor.getLayerHeight());
+        }
 
         // old walls image
         /*
@@ -62,23 +59,36 @@ public class MapLoad extends Application {
         final double baseStartY = heightWallEdges / 2;
 
         final double redBaseStartX = stageWidth / widthRatio;
-        Base red = new Base(Base.baseColor.RED, baseWidth, baseHeight, redBaseStartX, baseStartY);
+        Base redBase = new Base(Base.baseColor.RED, baseWidth, baseHeight, redBaseStartX, baseStartY);
         //1088 1280-160-32
         final double greenBaseStartX = stageWidth - baseWidth;
-        Base green = new Base(Base.baseColor.GREEN, baseWidth, baseHeight, greenBaseStartX, baseStartY);
+        Base greenBase = new Base(Base.baseColor.GREEN, baseWidth, baseHeight, greenBaseStartX, baseStartY);
 
 
-        root.getChildren().add(red);
-        root.getChildren().add(green);
-        bases.add(red);
-        bases.add(green);
+        root.getChildren().add(redBase);
+        root.getChildren().add(greenBase);
+        bases.add(redBase);
+        bases.add(greenBase);
 
         // add objects to map
-        objectsOnMap = Object.addObjectsToGroup(root, stage);
-        /*System.out.println(objectsOnMap
-        .stream()
-        .map(Object::getColumn)
-        .collect(Collectors.toList()));*/
+        objectsOnMap = Object.addObjectsToGroup(root, stage, mapToLoad);
+
+        //both flags
+        redFlag = new Flag(
+                (int) (greenBase.getRightX() - 50),
+                (int) (greenBase.getBottomY() / 2),
+                FLAG_WIDTH,
+                FLAG_HEIGHT,
+                Flag.flagColor.RED);
+
+        greenFlag = new Flag(
+                (int) redBase.getRightX() - 50,
+                (int) redBase.getBottomY() / 2,
+                FLAG_WIDTH,
+                FLAG_HEIGHT,
+                Flag.flagColor.GREEN);
+        root.getChildren().add(redFlag);
+        root.getChildren().add(greenFlag);
 
         stage.widthProperty().addListener((observableValue, oldWidth, newWidth) -> {
             //set floor width
@@ -127,10 +137,21 @@ public class MapLoad extends Application {
     }
 
 
-    public void loadMap1(Group root, Stage stage) {
-        MapLayer map = new MapLayer("assets/map/2teams/map1/testmap1.png");
-        map.addToGroup(root);
+    public void loadMap2(Group root, Stage stage) {
+        floorImagePath = "assets/map/2teams/map2/floor.png";
+        // floor.png is 1280x800
+        mapToLoad = Battlefield.MAP2;
+        loadMap(root, stage);
+
     }
+
+
+    public void loadMap1(Group root, Stage stage) {
+        floorImagePath = "assets/map/2teams/map1/floor.png";
+        mapToLoad = Battlefield.MAP1;
+        loadMap(root, stage);
+    }
+
 
     public Base getBaseByColor(Base.baseColor color) {
         for (Base base : bases) {
@@ -143,5 +164,13 @@ public class MapLoad extends Application {
 
     public List<Base> getBases() {
         return this.bases;
+    }
+
+    public Flag getRedFlag() {
+        return redFlag;
+    }
+
+    public Flag getGreenFlag() {
+        return greenFlag;
     }
 }
