@@ -1,10 +1,12 @@
 package Game;
 
+import Game.bots.Bot;
 import Game.bots.BotSpawner;
 import Game.maps.Base;
 import Game.maps.Battlefield;
 import Game.maps.MapLoad;
 import Game.maps.Object;
+import Game.player.Bullet;
 import Game.player.Flag;
 import Game.player.Player;
 import javafx.animation.AnimationTimer;
@@ -18,7 +20,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-
+import java.util.Iterator;
 import java.util.List;
 
 public class Screen extends Application {
@@ -29,6 +31,9 @@ public class Screen extends Application {
     Base redBase;
     AnimationTimer timer;
     Stage stage;
+    List<Object> objectsOnMap;
+    BotSpawner botSpawner;
+
 
     // teams scores
     int redTeamScore = 0;
@@ -64,9 +69,7 @@ public class Screen extends Application {
 
     public void setPlayerXStartingPosition(Stage stage) {
         if (color.equals(Player.playerColor.GREEN)) {
-            System.out.println("green");
-            this.playerXStartingPosition = (int) stage.widthProperty().get() - 80;
-            System.out.println(this.playerXStartingPosition);
+            this.playerXStartingPosition = (int) stage.widthProperty().get() - 100;
         } else if (color.equals(Player.playerColor.RED)) {
             this.playerXStartingPosition = 40;
         }
@@ -74,8 +77,7 @@ public class Screen extends Application {
 
     public void setPlayerYStartingPosition(Stage stage) {
         if (color.equals(Player.playerColor.GREEN)) {
-            this.playerYStartingPosition = (int) stage.heightProperty().get() - 40;
-            System.out.println(this.playerYStartingPosition);
+            this.playerYStartingPosition = (int) stage.heightProperty().get() - 500;
         } else if (color.equals(Player.playerColor.RED)) {
             this.playerYStartingPosition = 40;
         }
@@ -124,7 +126,7 @@ public class Screen extends Application {
 
         // bases for collision detection
         List<Base> bases = mapLoad.getBases();
-        BotSpawner botSpawner = new BotSpawner();
+        botSpawner = new BotSpawner();
         botSpawner.spawnBots(4, stage, root, bases, mapLoad.getObjectsOnMap());
 
         setPlayerYStartingPosition(stage);
@@ -137,47 +139,80 @@ public class Screen extends Application {
         redFlag = mapLoad.getRedFlag();
         greenFlag = mapLoad.getGreenFlag();
 
-        List<Object> objectsOnMap = mapLoad.getObjectsOnMap();
+        objectsOnMap = mapLoad.getObjectsOnMap();
         timer = new AnimationTimer() {
             @Override
             public void handle(long l) {
-                player.tick(objectsOnMap);
+                player.tick(objectsOnMap, botSpawner.botsOnMap);
                 catchTheFlag();
-                scoresCount();
                 scoreBoard();
+                bulletCollision();
                 player.setOnKeyPressed(player.pressed);
                 player.setOnKeyReleased(player.released);
                 root.setOnMouseClicked(player.shooting);
                 player.setFocusTraversable(true);
             }
         };
+
         stage.setFullScreen(fullScreen);
         timer.start();
         stage.show();
     }
 
-    // Player can take flag and release it in base
-    public void catchTheFlag() {
-        if (player.getBoundsInParent().intersects(redFlag.getBoundsInParent())) {
-            if (!(player.getX() < redBase.getRightX())) {
-                if (redFlag.getX() < 60 && redFlag.getY() < 60) {
-                    redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2);
-                } else {
-                    redFlag.relocate(player.getX(), player.getY());
+    private void bulletCollision() {
+        Iterator<Bullet> bullets = player.bullets.iterator();
+        while (bullets.hasNext()) {
+            Bullet bullet = bullets.next();
+            for (Object object : objectsOnMap) {
+                if (object.collides(bullet)) {
+                    root.getChildren().remove(bullet);
+                    bullets.remove();
+                    if (bullets.hasNext()) {
+                        bullet = bullets.next();
+                    } else {
+                        break;
+                    }
                 }
-            } else {
-                redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2);
-                timer.stop();
+            }
+            for (int i = 0; i < botSpawner.botsOnMap.size(); i++) {
+                Bot bot = botSpawner.botsOnMap.get(i);
+                if (bot.collides(bullet)) {
+                    root.getChildren().remove(bullet);
+                    bullets.remove();
+                    bot.lives -= 1;
+                    if (bot.getBotLives() <= 0) {
+                        root.getChildren().remove(bot);
+                        botSpawner.botsOnMap.remove(bot);
+                        i--;
+                    }
+                }
             }
         }
     }
 
-    // Counts teams scores
-    public void scoresCount() {
-        if (redFlag.getBoundsInParent().intersects(redBase.getBoundsInParent())) {
-            redTeamScore += 1;
-        } else if (greenFlag.getBoundsInParent().intersects(greenBase.getBoundsInParent())) {
-            greenTeamScore += 1;
+    // Player can take flag and release it in base
+    public void catchTheFlag() {
+        if (player.getColor() == Player.playerColor.RED) {
+            if (player.getBoundsInParent().intersects(redFlag.getBoundsInParent())) {
+                if (player.getX() > redBase.getRightX()) {
+                    redFlag.relocate(player.getX(), player.getY());
+                } else {
+                    redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
+                    redTeamScore += 1;
+                    timer.stop();
+                }
+            }
+        } else {
+            if (player.getBoundsInParent().intersects(greenFlag.getBoundsInParent())) {
+                if (player.getX() < greenBase.getLeftX()) {
+                    greenFlag.relocate(player.getX(), player.getY());
+                } else {
+                    greenFlag.relocate(greenBase.getRightX() - 50,
+                            greenBase.getBottomY() / 2);
+                    greenTeamScore += 1;
+                    timer.stop();
+                }
+            }
         }
     }
 
@@ -185,8 +220,8 @@ public class Screen extends Application {
     public void scoreBoard() {
         Rectangle scoreBoard = new Rectangle(500, 40);
         scoreBoard.setFill(Color.LIGHTGRAY);
-        Text redTeam = new Text("Red Team " + redTeamScore / 2);
-        Text greenTeam = new Text("Green Team " + greenTeamScore / 2);
+        Text redTeam = new Text("Red Team " + redTeamScore);
+        Text greenTeam = new Text("Green Team " + greenTeamScore);
         redTeam.setFill(Color.RED);
         redTeam.setFont(Font.font("Arial", FontWeight.EXTRA_BOLD, 30));
         greenTeam.setFill(Color.GREEN);

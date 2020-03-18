@@ -76,13 +76,13 @@ public class MapLoad {
         //both flags
         redFlag = new Flag(
                 (int) (greenBase.getRightX() - 50),
-                (int) (greenBase.getBottomY() / 2),
+                (int) (greenBase.getBottomY() / 2 - FLAG_HEIGHT),
                 FLAG_WIDTH,
                 FLAG_HEIGHT,
                 Flag.flagColor.RED);
 
         greenFlag = new Flag(
-                (int) redBase.getRightX() - 50,
+                (int) redBase.getLeftX() + 50,
                 (int) redBase.getBottomY() / 2,
                 FLAG_WIDTH,
                 FLAG_HEIGHT,

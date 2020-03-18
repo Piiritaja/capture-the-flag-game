@@ -1,5 +1,6 @@
 package Game.player;
 
+import Game.bots.Bot;
 import Game.maps.Object;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
@@ -11,6 +12,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
@@ -39,13 +42,23 @@ public class Player extends ImageView {
     double shootingLeftY;
 
     Bullet bullet;
+    public List<Bullet> bullets = new ArrayList<>();
+    //public Iterator<Bullet> bull = new Iterator<Bullet>();
     int step = 2;
 
     public int dx, dy, x, y, width, height;
+    private playerColor color;
 
     public enum playerColor {
-        RED, GREEN
-    }
+        RED(Color.RED),
+        GREEN(Color.GREEN);
+
+        public final Color color;
+
+        playerColor(Color color) {
+            this.color = color;
+        }
+        }
 
 
     public Player(int x, int y, int dx, int dy, playerColor color) {
@@ -67,15 +80,24 @@ public class Player extends ImageView {
         this.y = (int) this.getY();
         this.dx = dx;
         this.dy = dy;
+        this.color = color;
     }
 
-    public void tick(List<Object> objectsOnMap) {
+    public void tick(List<Object> objectsOnMap, List<Bot> botsOnMap) {
         double x = this.getX();
         double y = this.getY();
         this.setX(this.x += dx);
         this.setY(this.y += dy);
         for (Object object : objectsOnMap) {
             if (object.collides(this)) {
+                this.setX(x);
+                this.setY(y);
+                this.setX(this.x -= dx);
+                this.setY(this.y -= dy);
+            }
+        }
+        for (Bot bot : botsOnMap) {
+            if (bot.collides(this)) {
                 this.setX(x);
                 this.setY(y);
                 this.setX(this.x -= dx);
@@ -109,6 +131,7 @@ public class Player extends ImageView {
                 bullet.shoot(lineLeft, root, Math.min(500, shootingLeftX - mouseX));
             }
             root.getChildren().add(bullet);
+            bullets.add(bullet);
         }
     };
 
@@ -166,6 +189,8 @@ public class Player extends ImageView {
     public int getHeight() {
         return height;
     }
+
+    public playerColor getColor() { return color; }
 
     public void setRoot(Group root) {
         this.root = root;

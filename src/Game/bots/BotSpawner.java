@@ -5,6 +5,7 @@ import Game.maps.Object;
 import javafx.scene.Group;
 import javafx.stage.Stage;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ public class BotSpawner {
 
     private Random random = new Random();
     private Map<Integer, Integer> botLocations = new HashMap<>();
+    public List<Bot> botsOnMap = new ArrayList<>();
 
     public BotSpawner() {
     }
@@ -28,18 +30,20 @@ public class BotSpawner {
                 int locationY = random.nextInt((int) (((maxY - min) + 1) + min));
                 if (botLocations.containsKey(locationX)) {
                     if (botLocations.get(locationX) != locationY && notInBase(locationX, locationY, bases)) {
-                        Bot bot = new Bot(locationX, locationY, 0, 0);
+                        Bot bot = new Bot(locationX, locationY, 0, 0, 10);
                         if (notColliding(bot, objectsOnMap)) {
                             group.getChildren().add(bot);
+                            botsOnMap.add(bot);
                             botLocations.put(locationX, locationY);
                             break;
                         }
                     }
                 } else {
                     if (notInBase(locationX, locationY, bases)) {
-                        Bot bot = new Bot(locationX, locationY, 0, 0);
+                        Bot bot = new Bot(locationX, locationY, 0, 0, 10);
                         if (notColliding(bot, objectsOnMap)) {
                             botLocations.put(locationX, locationY);
+                            botsOnMap.add(bot);
                             group.getChildren().add(bot);
                             break;
                         }
