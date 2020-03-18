@@ -1,11 +1,14 @@
 package Game.maps;
 
+import Game.player.Bullet;
 import Game.player.Player;
 import Game.bots.Bot;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
 
 import java.io.BufferedReader;
@@ -73,6 +76,16 @@ public class Object extends ImageView {
         playerBoundaries.setHeight(bot.fitHeightProperty().get());
         playerBoundaries.setWidth(bot.fitWidthProperty().get());
         return objectBoundaries.getBoundsInLocal().intersects(playerBoundaries.getBoundsInLocal());
+    }
+
+    public boolean collides(Bullet bullet) {
+        Rectangle objectBoundaries = boundaries();
+        Rectangle playerBoundaries = new Rectangle();
+        playerBoundaries.setX(bullet.getCenterX() - bullet.getRadius());
+        playerBoundaries.setY(bullet.getCenterY() - bullet.getRadius());
+        playerBoundaries.setHeight(bullet.getRadius() * 2);
+        playerBoundaries.setWidth(bullet.getRadius() * 2);
+        return ((Path)Shape.intersect(bullet, objectBoundaries)).getElements().size() > 1;
     }
 
     public static List<Object> addObjectsToGroup(Group root, Stage stage, Battlefield map) {
