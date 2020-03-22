@@ -13,8 +13,10 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import networking.ServerClient;
+
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,9 +24,12 @@ public class Menu extends Application {
     private Stage mainStage;
     private Screen screen;
     private int chosenMapIndex;
+    private int currentConnections;
+    ServerClient client;
 
     public Menu() {
         this.screen = new Screen();
+        this.client = new ServerClient(this);
     }
 
     // Constants for ctf image
@@ -41,36 +46,46 @@ public class Menu extends Application {
     }
 
 
-    public Scene setUpPrimaryScene() throws FileNotFoundException {
+    public Scene setUpPrimaryScene() {
         Button button1 = new Button("Choose game mode");
         Button button2 = new Button("Quit");
         Button button3 = new Button("Full screen mode");
 
-        FileInputStream inputCtfImage = new FileInputStream("src/assets/pngwave.png");
-        Image ctfImage = new Image(inputCtfImage);
-        ImageView imageViewCtf = new ImageView(ctfImage);
+
+        ImageView imageViewCtf = new ImageView();
+        try {
+            FileInputStream inputCtfImage = new FileInputStream("src/assets/pngwave.png");
+            Image ctfImage = new Image(inputCtfImage);
+            imageViewCtf = new ImageView(ctfImage);
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
         imageViewCtf.setFitWidth(IMAGE_WIDTH);
         imageViewCtf.setFitHeight(IMAGE_HEIGHT);
-
-
         button1.getStyleClass().add("button");
         button2.getStyleClass().add("button");
         button3.getStyleClass().add("Button");
-
-        button1.setOnAction(actionEvent -> {
-            try {
-                GameChooser();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-        });
-        button2.setOnAction(actionEvent -> exitScreen(mainStage));
-        button3.setOnAction(actionEvent -> toggleFullScreen(mainStage));
-
         VBox vbox = new VBox(imageViewCtf, button1, button3, button2);
         vbox.getStyleClass().add("container");
 
+
+        button1.setOnAction(actionEvent -> {
+            GameChooser();
+        });
+        button2.setOnAction(actionEvent -> exitScreen());
+        button3.setOnAction(actionEvent -> toggleFullScreen(mainStage));
+
+
         return new Scene(vbox);
+    }
+
+    public void setNumberOfCurrentConnections(int connections) {
+        this.currentConnections = connections;
+
     }
 
 
@@ -87,7 +102,7 @@ public class Menu extends Application {
 
 
     @Override
-    public void start(Stage primaryStage) throws FileNotFoundException {
+    public void start(Stage primaryStage) {
         this.mainStage = primaryStage;
 
         Scene scene = setUpPrimaryScene();
@@ -99,7 +114,7 @@ public class Menu extends Application {
 
     }
 
-    public void GameChooser() throws FileNotFoundException {
+    public void GameChooser() {
         // Map picker
         Text t = new Text(10, 50, "Choose a map");
         Group root = new Group();
@@ -159,16 +174,23 @@ public class Menu extends Application {
         }
     }
 
-    private List<ImageView> loadTeamColors() throws FileNotFoundException {
-        FileInputStream teamGreenInputStream = new FileInputStream("src/assets/misc/green_team_circle.png");
-        Image teamGreenImage = new Image(teamGreenInputStream);
-        ImageView teamGreenImageView = new ImageView(teamGreenImage);
+    private List<ImageView> loadTeamColors() {
 
-        FileInputStream teamRedInputStream = new FileInputStream("src/assets/misc/red_team_circle.png");
-        Image teamRedImage = new Image(teamRedInputStream);
-        ImageView teamRedImageView = new ImageView(teamRedImage);
+        try {
+            FileInputStream teamGreenInputStream = new FileInputStream("src/assets/misc/green_team_circle.png");
+            Image teamGreenImage = new Image(teamGreenInputStream);
+            ImageView teamGreenImageView = new ImageView(teamGreenImage);
 
-        return Arrays.asList(teamGreenImageView, teamRedImageView);
+            FileInputStream teamRedInputStream = new FileInputStream("src/assets/misc/red_team_circle.png");
+            Image teamRedImage = new Image(teamRedInputStream);
+            ImageView teamRedImageView = new ImageView(teamRedImage);
+
+            return Arrays.asList(teamGreenImageView, teamRedImageView);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
 
     }
 
@@ -217,24 +239,32 @@ public class Menu extends Application {
     }
 
 
-    public List<ImageView> loadMapImages() throws FileNotFoundException {
-        FileInputStream map1InputStream = new FileInputStream("src/assets/map/2teams/map1/testmap1.png");
-        Image map1Image = new Image(map1InputStream);
-        ImageView map1ImageView = new ImageView(map1Image);
+    public List<ImageView> loadMapImages() {
 
-        FileInputStream map2InputStream = new FileInputStream("src/assets/map/2teams/map2/map2.png");
-        Image map2Image = new Image(map2InputStream);
-        ImageView map2ImageView = new ImageView(map2Image);
+        try {
+            FileInputStream map1InputStream = new FileInputStream("src/assets/map/2teams/map1/testmap1.png");
+            Image map1Image = new Image(map1InputStream);
+            ImageView map1ImageView = new ImageView(map1Image);
 
-        return Arrays.asList(map1ImageView, map2ImageView);
+            FileInputStream map2InputStream = new FileInputStream("src/assets/map/2teams/map2/map2.png");
+            Image map2Image = new Image(map2InputStream);
+            ImageView map2ImageView = new ImageView(map2Image);
+            return Arrays.asList(map1ImageView, map2ImageView);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+
     }
 
     private void toggleFullScreen(Stage stage) {
         stage.setFullScreen(!stage.isFullScreen());
     }
 
-    private void exitScreen(Stage stage) {
-        stage.close();
+    public void exitScreen() {
+        this.mainStage.close();
     }
 
     public int getChosenMapIndex() {

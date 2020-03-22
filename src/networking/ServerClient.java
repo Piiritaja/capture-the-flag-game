@@ -3,29 +3,43 @@ package networking;
 import Game.Menu;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
-import com.esotericsoftware.kryonet.Connection;
-import com.esotericsoftware.kryonet.Listener;
+import networking.packets.Packet000RequestAccess;
+import networking.packets.Packet001AllowAccess;
+import networking.packets.Packet002RequestConnections;
+import networking.packets.Packet003SendConnections;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
+
 
 public class ServerClient {
     private Client client;
     ClientNetworkListener clientNetworkListener;
+    Menu menu;
 
-    public ServerClient() {
+    //Server ports
+    private static final int TCP_PORT = 54555;
+    private static final int UDP_PORT = 54777;
+
+    /**
+     * Creates the client and connects it to a server on localhost.
+     * Initializes client listener
+     */
+    public ServerClient(Menu menu) {
+
+        this.menu = menu;
         this.client = new Client();
         clientNetworkListener = new ClientNetworkListener();
-        clientNetworkListener.init(this.client);
-        this.client.addListener(clientNetworkListener);
+
+        //Add and configure listener for the client
+        setupListener();
+
+        //Register packets for the client
         registerPackets();
+
+        //Connect the client with a new thread
         new Thread(client).start();
-        String[] arguments = {"tere"};
         try {
-            client.connect(5000, "localhost", 54555, 54777);
-            String[] args = {"tere"};
-            Menu.main(args);
+            client.connect(9999, "localhost", TCP_PORT, UDP_PORT);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -34,13 +48,25 @@ public class ServerClient {
     }
 
 
-    private void registerPackets() {
-        Kryo kryo = client.getKryo();
-        kryo.register(Packets.Packet000Request.class);
+    /**
+     * Set up client listener.
+     */
+    private void setupListener() {
+        clientNetworkListener.init(this.client, this);
+        this.client.addListener(clientNetworkListener);
     }
 
-    public static void main(String[] args) {
-        new ServerClient();
+
+    /**
+     * Register packets for client listener.
+     */
+    private void registerPackets() {
+        Kryo kryo = client.getKryo();
+        kryo.register(clientNetworkListener.getClass());
+        kryo.register(Packet000RequestAccess.class);
+        kryo.register(Packet001AllowAccess.class);
+        kryo.register(Packet002RequestConnections.class);
+        kryo.register(Packet003SendConnections.class);
 
     }
 }

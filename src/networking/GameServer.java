@@ -3,6 +3,10 @@ package networking;
 
 import com.esotericsoftware.kryonet.Server;
 import com.esotericsoftware.kryo.Kryo;
+import networking.packets.Packet000RequestAccess;
+import networking.packets.Packet001AllowAccess;
+import networking.packets.Packet002RequestConnections;
+import networking.packets.Packet003SendConnections;
 
 import java.io.IOException;
 
@@ -17,15 +21,23 @@ public class GameServer {
     private static final int UDP_PORT = 54777;
 
 
+    /**
+     * Set's up server and initializes server listener
+     */
     public GameServer() {
         this.server = new Server();
-        this.serverListener = new ServerListener();
+        this.serverListener = new ServerListener(this.server);
         setUpServer();
 
     }
 
+
+    /**
+     * Start server
+     */
     public void setUpServer() {
         server.addListener(serverListener);
+        registerPackets();
 
         try {
             server.start();
@@ -34,16 +46,22 @@ public class GameServer {
 
         } catch (IOException e) {
             e.printStackTrace();
-
         }
-        registerPackets();
 
     }
 
+
+    /**
+     * Register packets for server listener
+     */
     public void registerPackets() {
         Kryo kryo = server.getKryo();
         kryo.register(serverListener.getClass());
-        kryo.register(Packets.Packet000Request.class);
+        kryo.register(Packet000RequestAccess.class);
+        kryo.register(Packet001AllowAccess.class);
+        kryo.register(Packet002RequestConnections.class);
+        kryo.register(Packet003SendConnections.class);
+
     }
 
     public static void main(String[] args) {
