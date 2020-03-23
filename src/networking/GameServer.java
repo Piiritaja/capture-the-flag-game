@@ -15,6 +15,7 @@ public class GameServer {
 
     private Server server;
     private ServerListener serverListener;
+    private int numberOfConnections;
 
     //Server ports
     private static final int TCP_PORT = 54555;
@@ -22,11 +23,27 @@ public class GameServer {
 
 
     /**
+     * Save the number of connected clients to a variable.
+     * @param numberOfConnections amount to set the connections to.
+     */
+    public void setNumberOfConnections(int numberOfConnections) {
+        this.numberOfConnections = numberOfConnections;
+    }
+
+    /**
+     * Get the number of connected clients to the server.
+     * @return number of connected clients.
+     */
+    public int getNumberOfConnections() {
+        return this.numberOfConnections;
+    }
+
+    /**
      * Set's up server and initializes server listener
      */
     public GameServer() {
         this.server = new Server();
-        this.serverListener = new ServerListener(this.server);
+        this.serverListener = new ServerListener(this.server, this);
         setUpServer();
 
     }

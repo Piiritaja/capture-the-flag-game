@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import networking.ServerClient;
+import networking.ServerListener;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -40,17 +41,19 @@ public class Menu extends Application {
     private static final int MIN_SCREEN_HEIGHT = 600;
     private static final int MIN_SCREEN_WIDTH = 800;
 
-
-    public static void main(String[] args) {
-        launch(args);
-    }
+    private Text usersOnlineText = new Text(10, 50, "");
 
 
+    /**
+     * Creates, styles, and adds elements.
+     * Result is the menu screen.
+     *
+     * @return scene that was created in the method.
+     */
     public Scene setUpPrimaryScene() {
         Button button1 = new Button("Choose game mode");
         Button button2 = new Button("Quit");
         Button button3 = new Button("Full screen mode");
-
 
         ImageView imageViewCtf = new ImageView();
         try {
@@ -69,51 +72,64 @@ public class Menu extends Application {
         button1.getStyleClass().add("button");
         button2.getStyleClass().add("button");
         button3.getStyleClass().add("Button");
-        VBox vbox = new VBox(imageViewCtf, button1, button3, button2);
+        VBox vbox = new VBox(imageViewCtf, button1, button3, button2, this.usersOnlineText);
         vbox.getStyleClass().add("container");
-
 
         button1.setOnAction(actionEvent -> {
             GameChooser();
         });
         button2.setOnAction(actionEvent -> exitScreen());
-        button3.setOnAction(actionEvent -> toggleFullScreen(mainStage));
+        button3.setOnAction(actionEvent -> toggleFullScreen());
 
 
         return new Scene(vbox);
     }
 
+    /**
+     * Updates users online text field.
+     */
+    public void changeNumberOfConnectionsText() {
+        if (this.currentConnections <= 1) {
+            this.usersOnlineText.setText("No users online");
+        } else {
+            this.usersOnlineText.setText("Users online: " + (this.currentConnections - 1));
+
+        }
+
+    }
+
+    /**
+     * Saves the amount of online users.
+     *
+     * @param connections the value to assign to currentConnections.
+     */
     public void setNumberOfCurrentConnections(int connections) {
         this.currentConnections = connections;
+        changeNumberOfConnectionsText();
+
 
     }
 
 
-    private void configurePrimaryStage(Stage stage) {
-        stage.setTitle("Capture the flag");
+    /**
+     * Sets initial main stage height and width.
+     * Sets screen title.
+     */
+    private void configurePrimaryStage() {
+        mainStage.setTitle("Capture the flag");
 
-        stage.setX(0);
-        stage.setY(0);
+        mainStage.setX(0);
+        mainStage.setY(0);
 
-        stage.setMinHeight(MIN_SCREEN_HEIGHT);
-        stage.setMinWidth(MIN_SCREEN_WIDTH);
-        stage.initStyle(StageStyle.DECORATED);
+        mainStage.setMinHeight(MIN_SCREEN_HEIGHT);
+        mainStage.setMinWidth(MIN_SCREEN_WIDTH);
+        mainStage.initStyle(StageStyle.DECORATED);
     }
 
 
-    @Override
-    public void start(Stage primaryStage) {
-        this.mainStage = primaryStage;
-
-        Scene scene = setUpPrimaryScene();
-        scene.getStylesheets().add("assets/button-style.css");
-        mainStage.setScene(scene);
-        configurePrimaryStage(mainStage);
-
-        mainStage.show();
-
-    }
-
+    /**
+     * Screen for users to pick a map and a team.
+     */
     public void GameChooser() {
         // Map picker
         Text t = new Text(10, 50, "Choose a map");
@@ -155,6 +171,10 @@ public class Menu extends Application {
 
     }
 
+    /**
+     * @param images Team colors as images.
+     * @param hbox   Container where images should belong to.
+     */
     private void setTeamPickEffect(List<ImageView> images, HBox hbox) {
         for (ImageView image : images) {
             hbox.getChildren().add(image);
@@ -174,6 +194,11 @@ public class Menu extends Application {
         }
     }
 
+    /**
+     * Loads team colors from the assets folder.
+     *
+     * @return Team colors as ImageView items.
+     */
     private List<ImageView> loadTeamColors() {
 
         try {
@@ -194,6 +219,10 @@ public class Menu extends Application {
 
     }
 
+    /**
+     * @param images Map images.
+     * @param hbox   Container where images should belong to.
+     */
     private void setImagePickEffect(List<ImageView> images, HBox hbox) {
         for (ImageView image : images) {
             hbox.getChildren().add(image);
@@ -215,6 +244,10 @@ public class Menu extends Application {
 
     }
 
+    /**
+     * @param images map and teamColor images.
+     * @param hbox   container where the images should belong to.
+     */
     private void setImagesToScale(List<ImageView> images, HBox hbox) {
         mainStage.widthProperty().addListener((obs, oldVal, newVal) -> {
             for (ImageView image : images) {
@@ -239,6 +272,11 @@ public class Menu extends Application {
     }
 
 
+    /**
+     * Loads map images from the assets folder.
+     *
+     * @return map images as ImaView items.
+     */
     public List<ImageView> loadMapImages() {
 
         try {
@@ -259,15 +297,43 @@ public class Menu extends Application {
 
     }
 
-    private void toggleFullScreen(Stage stage) {
-        stage.setFullScreen(!stage.isFullScreen());
+    /**
+     * Toggles screen between sized and full screen.
+     */
+    private void toggleFullScreen() {
+        mainStage.setFullScreen(!mainStage.isFullScreen());
     }
 
+    /**
+     * Closes the stage.
+     */
     public void exitScreen() {
         this.mainStage.close();
     }
 
-    public int getChosenMapIndex() {
-        return chosenMapIndex;
+
+    /**
+     * Run when the class is called.
+     * Acts as main method for javaFx applications.
+     *
+     * @param primaryStage default stage that gets passed to the start method
+     */
+    @Override
+    public void start(Stage primaryStage) {
+        this.mainStage = primaryStage;
+
+        Scene scene = setUpPrimaryScene();
+        scene.getStylesheets().add("assets/button-style.css");
+        mainStage.setScene(scene);
+        configurePrimaryStage();
+
+        mainStage.show();
+
     }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+
 }

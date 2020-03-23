@@ -10,9 +10,8 @@ import networking.packets.Packet002RequestConnections;
 import networking.packets.Packet003SendConnections;
 
 public class ClientNetworkListener extends Listener {
-    Client client;
-    ServerClient serverClient;
-    private Menu menu;
+    private Client client;
+    private ServerClient serverClient;
 
 
     /**
@@ -34,7 +33,6 @@ public class ClientNetworkListener extends Listener {
     public void connected(Connection connection) {
         System.out.println("You are connected!");
 
-
     }
 
     /**
@@ -48,13 +46,7 @@ public class ClientNetworkListener extends Listener {
         System.out.println("You are disconnected!");
 
         // Runnable needed to call to exit the program on java fx application thread.
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                serverClient.menu.exitScreen();
-
-            }
-        });
+        Platform.runLater(() -> this.serverClient.menu.exitScreen());
     }
 
     /**
@@ -71,9 +63,11 @@ public class ClientNetworkListener extends Listener {
                 System.out.println("Connection not allowed!");
                 System.out.println("Disconnecting...");
                 connection.close();
+            } else {
+
+                System.out.println("Connection allowed");
+                connection.sendTCP(new Packet002RequestConnections());
             }
-            System.out.println("Connection allowed");
-            connection.sendTCP(new Packet002RequestConnections());
 
         } else if (object instanceof Packet003SendConnections) {
             int connections = ((Packet003SendConnections) object).connections;
@@ -83,6 +77,7 @@ public class ClientNetworkListener extends Listener {
                 System.out.println(String.format("%d other clients connected", connections));
 
             }
+            this.serverClient.menu.setNumberOfCurrentConnections(connections);
         }
 
     }

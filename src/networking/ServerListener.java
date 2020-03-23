@@ -3,16 +3,13 @@ package networking;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
-import networking.packets.Packet000RequestAccess;
 import networking.packets.Packet001AllowAccess;
 import networking.packets.Packet002RequestConnections;
 import networking.packets.Packet003SendConnections;
 
 public class ServerListener extends Listener {
     private Server server;
-
-    // For keeping track of the number of connected clients.
-    private int connections;
+    private GameServer gameServer;
 
 
     /**
@@ -20,9 +17,9 @@ public class ServerListener extends Listener {
      *
      * @param server server to assign to the listener.
      */
-    public ServerListener(Server server) {
+    public ServerListener(Server server, GameServer gameServer) {
         this.server = server;
-        this.connections = 0;
+        this.gameServer = gameServer;
     }
 
     /**
@@ -35,9 +32,9 @@ public class ServerListener extends Listener {
     public void connected(Connection c) {
         System.out.println("Someone has connected");
         System.out.println(this.server.getKryo().getDepth());
-        connections += 1;
+        gameServer.setNumberOfConnections(this.gameServer.getNumberOfConnections() + 1);
         Packet001AllowAccess allowAccess = new Packet001AllowAccess();
-        if (connections < 2) {
+        if (this.gameServer.getNumberOfConnections() <= 2) {
             allowAccess.allow = true;
         }
         c.sendTCP(allowAccess);
@@ -53,7 +50,7 @@ public class ServerListener extends Listener {
     @Override
     public void disconnected(Connection c) {
         System.out.println("Someone has disconnected");
-        connections -= 1;
+        this.gameServer.setNumberOfConnections(this.gameServer.getNumberOfConnections() - 1);
     }
 
 
@@ -68,8 +65,8 @@ public class ServerListener extends Listener {
         System.out.println(object);
         if (object instanceof Packet002RequestConnections) {
             Packet003SendConnections sendConnections = new Packet003SendConnections();
-            sendConnections.connections = connections;
-            connection.sendTCP(sendConnections);
+            sendConnections.connections = this.gameServer.getNumberOfConnections();
+            server.sendToAllTCP(sendConnections);
 
         }
 

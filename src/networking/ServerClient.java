@@ -39,7 +39,7 @@ public class ServerClient {
         //Connect the client with a new thread
         new Thread(client).start();
         try {
-            client.connect(9999, "localhost", TCP_PORT, UDP_PORT);
+            client.connect(9999, "192.168.1.200", TCP_PORT, UDP_PORT);
 
         } catch (IOException e) {
             e.printStackTrace();
