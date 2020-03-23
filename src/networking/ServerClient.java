@@ -52,7 +52,7 @@ public class ServerClient {
      * Set up client listener.
      */
     private void setupListener() {
-        clientNetworkListener.init(this.client, this);
+        clientNetworkListener.init(this);
         this.client.addListener(clientNetworkListener);
     }
 

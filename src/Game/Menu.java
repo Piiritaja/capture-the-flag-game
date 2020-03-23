@@ -14,10 +14,10 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import networking.ServerClient;
-import networking.ServerListener;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -41,6 +41,12 @@ public class Menu extends Application {
     private static final int MIN_SCREEN_HEIGHT = 600;
     private static final int MIN_SCREEN_WIDTH = 800;
 
+    // Css class for container
+    private static final String CONTAINER_CLASS = "container";
+    private static final String NOT_CHOSEN_OPACITY = "-fx-opacity: 50%";
+    private static final String CHOSEN_OPACITY = "-fx-opacity: 100%";
+
+
     private Text usersOnlineText = new Text(10, 50, "");
 
 
@@ -59,7 +65,7 @@ public class Menu extends Application {
         try {
             FileInputStream inputCtfImage = new FileInputStream("src/assets/pngwave.png");
             Image ctfImage = new Image(inputCtfImage);
-            imageViewCtf = new ImageView(ctfImage);
+            imageViewCtf.setImage(ctfImage);
 
 
         } catch (IOException e) {
@@ -73,11 +79,9 @@ public class Menu extends Application {
         button2.getStyleClass().add("button");
         button3.getStyleClass().add("Button");
         VBox vbox = new VBox(imageViewCtf, button1, button3, button2, this.usersOnlineText);
-        vbox.getStyleClass().add("container");
+        vbox.getStyleClass().add(CONTAINER_CLASS);
 
-        button1.setOnAction(actionEvent -> {
-            GameChooser();
-        });
+        button1.setOnAction(actionEvent -> gameChooser());
         button2.setOnAction(actionEvent -> exitScreen());
         button3.setOnAction(actionEvent -> toggleFullScreen());
 
@@ -130,7 +134,7 @@ public class Menu extends Application {
     /**
      * Screen for users to pick a map and a team.
      */
-    public void GameChooser() {
+    public void gameChooser() {
         // Map picker
         Text t = new Text(10, 50, "Choose a map");
         Group root = new Group();
@@ -144,7 +148,7 @@ public class Menu extends Application {
 
         t.getStyleClass().add("choose");
 
-        hbox.getStyleClass().add("container");
+        hbox.getStyleClass().add(CONTAINER_CLASS);
 
         setImagePickEffect(images, hbox);
 
@@ -158,13 +162,13 @@ public class Menu extends Application {
         List<ImageView> teamColors = loadTeamColors();
 
         HBox teamPickerHbox = new HBox();
-        teamPickerHbox.getStyleClass().add("container");
+        teamPickerHbox.getStyleClass().add(CONTAINER_CLASS);
 
         setTeamPickEffect(teamColors, teamPickerHbox);
         setImagesToScale(teamColors, teamPickerHbox);
 
         VBox vbox = new VBox(t, hbox, teamPickerTitle, teamPickerHbox, playButton);
-        vbox.getStyleClass().add("container");
+        vbox.getStyleClass().add(CONTAINER_CLASS);
         root.getChildren().add(vbox);
 
         mainStage.getScene().setRoot(root);
@@ -181,14 +185,14 @@ public class Menu extends Application {
             image.setFitHeight(mainStage.getHeight() / 4);
             image.setFitWidth(mainStage.getWidth() / 4);
             image.setPreserveRatio(true);
-            image.setStyle("-fx-opacity: 50%");
+            image.setStyle(NOT_CHOSEN_OPACITY);
             image.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
                 int colorIndex = images.indexOf(image);
                 screen.setPlayerColor(colorIndex);
                 for (ImageView image2 : images) {
-                    image2.setStyle("-fx-opacity: 50%");
+                    image2.setStyle(NOT_CHOSEN_OPACITY);
                 }
-                image.setStyle("-fx-opacity: 100%");
+                image.setStyle(CHOSEN_OPACITY);
                 event.consume();
             });
         }
@@ -213,7 +217,7 @@ public class Menu extends Application {
             return Arrays.asList(teamGreenImageView, teamRedImageView);
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
+            return new ArrayList<>();
         }
 
 
@@ -229,15 +233,15 @@ public class Menu extends Application {
             image.setFitHeight(mainStage.getHeight() / 4);
             image.setFitWidth(mainStage.getWidth() / 4);
             image.setPreserveRatio(true);
-            image.setStyle("-fx-opacity: 50%");
+            image.setStyle(NOT_CHOSEN_OPACITY);
             image.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
                 this.chosenMapIndex = images.indexOf(image);
                 screen.setMap(chosenMapIndex);
 
                 for (ImageView image2 : images) {
-                    image2.setStyle("-fx-opacity: 50%");
+                    image2.setStyle(NOT_CHOSEN_OPACITY);
                 }
-                image.setStyle("-fx-opacity: 100%");
+                image.setStyle(CHOSEN_OPACITY);
                 event.consume();
             });
         }
@@ -249,28 +253,27 @@ public class Menu extends Application {
      * @param hbox   container where the images should belong to.
      */
     private void setImagesToScale(List<ImageView> images, HBox hbox) {
-        mainStage.widthProperty().addListener((obs, oldVal, newVal) -> {
-            for (ImageView image : images) {
-                hbox.getChildren().remove(image);
-                hbox.getChildren().add(image);
-                image.setFitHeight(mainStage.getHeight() / 4);
-                image.setFitWidth(mainStage.getWidth() / 4);
-                image.setPreserveRatio(true);
-            }
-        });
+        mainStage.widthProperty().addListener((obs, oldVal, newVal) -> scaleListener(images, hbox));
 
-        mainStage.heightProperty().addListener((obs, oldVal, newVal) -> {
-            for (ImageView image : images) {
-                hbox.getChildren().remove(image);
-                hbox.getChildren().add(image);
-                image.setFitHeight(mainStage.getHeight() / 4);
-                image.setFitWidth(mainStage.getWidth() / 4);
-                image.setPreserveRatio(true);
-            }
-        });
-
+        mainStage.heightProperty().addListener((obs, oldVal, newVal) -> scaleListener(images, hbox));
     }
 
+
+    /**
+     * Method used in listeners for changing images to scale with screen.
+     *
+     * @param images Map or tea, color images.
+     * @param hbox   hbox that should contain the images.
+     */
+    public void scaleListener(List<ImageView> images, HBox hbox) {
+        for (ImageView image : images) {
+            hbox.getChildren().remove(image);
+            hbox.getChildren().add(image);
+            image.setFitHeight(mainStage.getHeight() / 4);
+            image.setFitWidth(mainStage.getWidth() / 4);
+            image.setPreserveRatio(true);
+        }
+    }
 
     /**
      * Loads map images from the assets folder.
@@ -291,7 +294,7 @@ public class Menu extends Application {
 
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
+            return new ArrayList<>();
         }
 
 

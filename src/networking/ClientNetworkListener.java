@@ -1,7 +1,6 @@
 package networking;
 
-import Game.Menu;
-import com.esotericsoftware.kryonet.Client;
+
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import javafx.application.Platform;
@@ -10,18 +9,16 @@ import networking.packets.Packet002RequestConnections;
 import networking.packets.Packet003SendConnections;
 
 public class ClientNetworkListener extends Listener {
-    private Client client;
     private ServerClient serverClient;
 
 
     /**
      * Assign client to listener.
      *
-     * @param client client to assign to listener.
+     * @param serverClient client to assign to listener.
      */
-    public void init(Client client, ServerClient serverClient) {
+    public void init(ServerClient serverClient) {
         this.serverClient = serverClient;
-        this.client = client;
     }
 
     /**
