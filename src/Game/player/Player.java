@@ -23,8 +23,8 @@ import static java.lang.StrictMath.abs;
 public class Player extends ImageView {
 
     //Constants for player size
-    private static final int PLAYER_WIDTH = 32;
-    private static final int PLAYER_HEIGHT = 32;
+    private static final int PLAYER_WIDTH = 60;
+    private static final int PLAYER_HEIGHT = 60;
 
     //Constants for player model graphics
     private static final String RED_PLAYER_MAIN_IMAGE = "assets/player/red/still.png";
@@ -72,8 +72,8 @@ public class Player extends ImageView {
             image = new Image(RED_PLAYER_MAIN_IMAGE);
         }
         this.setImage(image);
-        this.width = PLAYER_WIDTH;
-        this.height = PLAYER_HEIGHT;
+        this.setFitWidth(PLAYER_WIDTH);
+        this.setFitHeight(PLAYER_HEIGHT);
         this.setX(x);
         this.setY(y);
         this.x = (int) this.getX();
