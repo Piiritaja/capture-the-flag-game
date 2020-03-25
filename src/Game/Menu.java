@@ -187,6 +187,7 @@ public class Menu extends Application {
 
     public void startScreen() {
         Packet006RequestBotsLocation requestBotsLocation = new Packet006RequestBotsLocation();
+        requestBotsLocation.battlefield = this.screen.getChosenMap();
         client.sendTCP(requestBotsLocation);
         screen.start(mainStage);
     }

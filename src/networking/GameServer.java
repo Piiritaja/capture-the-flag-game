@@ -1,6 +1,7 @@
 package networking;
 
 
+import Game.maps.Battlefield;
 import com.esotericsoftware.kryonet.Server;
 import com.esotericsoftware.kryo.Kryo;
 import networking.packets.Packet000RequestAccess;
@@ -92,6 +93,7 @@ public class GameServer {
         kryo.register(java.util.HashMap.class);
         kryo.register(Double[].class);
         kryo.register(Integer.class);
+        kryo.register(Battlefield.class);
 
     }
 

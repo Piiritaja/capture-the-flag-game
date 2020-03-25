@@ -207,6 +207,7 @@ public class Screen extends Application {
             botsOnMap = botSpawner.getBotsOnMap();
         } else {
             Packet004RequestPlayers requestPlayers = new Packet004RequestPlayers();
+            requestPlayers.battlefield = getChosenMap();
             client.sendTCP(requestPlayers);
             for (Map.Entry<Integer, Double[]> entry : botLocationsXY.entrySet()) {
                 Double[] positions = entry.getValue();
@@ -237,6 +238,7 @@ public class Screen extends Application {
         Packet005SendPlayerPosition positionPacket = new Packet005SendPlayerPosition();
         positionPacket.xPosition = player.getX();
         positionPacket.yPosition = player.getY();
+        positionPacket.battlefield = getChosenMap();
         this.client.sendTCP(positionPacket);
 
         redFlag = mapLoad.getRedFlag();
