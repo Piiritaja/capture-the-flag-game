@@ -91,14 +91,14 @@ public class ClientNetworkListener extends Listener {
             if (serverClient.menu.getScreen().inGame) {
                 System.out.println("Sending sendBotsLocation packet");
                 Packet007SendBotsLocation sendBots = new Packet007SendBotsLocation();
-                sendBots.locations = serverClient.menu.getScreen().getBotLocations();
+                sendBots.locations = serverClient.menu.getScreen().getBotLocationsXY();
                 connection.sendTCP(sendBots);
                 System.out.println("Sent sendBotsLocation packet");
             }
 
         } else if (object instanceof Packet007SendBotsLocation) {
             System.out.println("Received sendBotsLocation packet");
-            serverClient.menu.getScreen().setBotLocations(((Packet007SendBotsLocation) object).locations);
+            serverClient.menu.getScreen().setBotLocationsXY(((Packet007SendBotsLocation) object).locations);
 
         }
 

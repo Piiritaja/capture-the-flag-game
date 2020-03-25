@@ -42,6 +42,7 @@ public class Screen extends Application {
     List<Object> objectsOnMap;
     List<Bot> botsOnMap;
     Map<Integer, Double[]> botLocations = new HashMap<>();
+    Map<Integer, Double[]> botLocationsXY = new HashMap<>();
 
     // map size constants
     private static final int MAP_WIDTH_IN_TILES = 40;
@@ -63,11 +64,18 @@ public class Screen extends Application {
 
     }
 
-    public Map<Integer, Double[]> getBotLocations() {
-        return this.botLocations;
+    public Map<Integer, Double[]> getBotLocationsXY() {
+        Double[] xy = new Double[2];
+        for (Bot bot : botsOnMap) {
+            xy[0] = bot.getX();
+            xy[1] = bot.getY();
+            botLocationsXY.put(bot.getBotId(), xy);
+
+        }
+        return this.botLocationsXY;
     }
 
-    public void setBotLocations(Map<Integer, Double[]> botLocations) {
+    public void setBotLocationsXY(Map<Integer, Double[]> botLocations) {
         this.botLocations = botLocations;
     }
 
@@ -202,15 +210,15 @@ public class Screen extends Application {
 
         // bases for collision detection
         List<Base> bases = mapLoad.getBases();
-        if (botLocations.isEmpty()) {
+        if (botLocationsXY.isEmpty()) {
             botSpawner.spawnBots(4, stage, root, bases, mapLoad.getObjectsOnMap());
             botsOnMap = botSpawner.getBotsOnMap();
         } else {
-            for (Map.Entry<Integer, Double[]> entry : botLocations.entrySet()) {
+            for (Map.Entry<Integer, Double[]> entry : botLocationsXY.entrySet()) {
                 Double[] positions = entry.getValue();
                 int id = entry.getKey();
-                Bot bot = new Bot((int) (positions[0] * MAP_WIDTH_IN_TILES), (int) (positions[1] * MAP_HEIGHT_IN_TILES), 0, 0, 10);
-                System.out.println(String.format("Created bot at %d, %d", (int) (positions[0] * MAP_WIDTH_IN_TILES), (int) (positions[1] * MAP_HEIGHT_IN_TILES)));
+                Bot bot = new Bot(positions[0].intValue(), positions[1].intValue(), 0, 0, 10);
+                System.out.println(String.format("Created bot at %d, %d", positions[0].intValue(), positions[1].intValue()));
                 bot.setBotId(id);
                 root.getChildren().add(bot);
                 botsOnMap.add(bot);
