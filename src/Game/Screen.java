@@ -76,7 +76,7 @@ public class Screen extends Application {
     }
 
     public void setBotLocationsXY(Map<Integer, Double[]> botLocations) {
-        this.botLocations = botLocations;
+        this.botLocationsXY = botLocations;
     }
 
 
