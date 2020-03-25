@@ -7,6 +7,7 @@ import networking.packets.Packet000RequestAccess;
 import networking.packets.Packet001AllowAccess;
 import networking.packets.Packet002RequestConnections;
 import networking.packets.Packet003SendConnections;
+import networking.packets.Packet005SendPlayerPosition;
 
 import java.io.IOException;
 
@@ -56,6 +57,15 @@ public class ServerClient {
         this.client.addListener(clientNetworkListener);
     }
 
+    /**
+     * Get the client associated with this server client.
+     *
+     * @return Client instance to return
+     */
+    public Client getClient() {
+        return this.client;
+    }
+
 
     /**
      * Register packets for client listener.
@@ -67,6 +77,7 @@ public class ServerClient {
         kryo.register(Packet001AllowAccess.class);
         kryo.register(Packet002RequestConnections.class);
         kryo.register(Packet003SendConnections.class);
+        kryo.register(Packet005SendPlayerPosition.class);
 
     }
 }

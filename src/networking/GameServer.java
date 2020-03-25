@@ -7,6 +7,7 @@ import networking.packets.Packet000RequestAccess;
 import networking.packets.Packet001AllowAccess;
 import networking.packets.Packet002RequestConnections;
 import networking.packets.Packet003SendConnections;
+import networking.packets.Packet005SendPlayerPosition;
 
 import java.io.IOException;
 
@@ -78,6 +79,7 @@ public class GameServer {
         kryo.register(Packet001AllowAccess.class);
         kryo.register(Packet002RequestConnections.class);
         kryo.register(Packet003SendConnections.class);
+        kryo.register(Packet005SendPlayerPosition.class);
 
     }
 

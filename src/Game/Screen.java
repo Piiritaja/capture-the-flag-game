@@ -9,6 +9,7 @@ import Game.maps.Object;
 import Game.player.Bullet;
 import Game.player.Flag;
 import Game.player.Player;
+import com.esotericsoftware.kryonet.Client;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Group;
@@ -20,6 +21,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import networking.packets.Packet005SendPlayerPosition;
 
 import java.util.Iterator;
 import java.util.List;
@@ -34,6 +36,11 @@ public class Screen extends Application {
     Stage stage;
     List<Object> objectsOnMap;
     BotSpawner botSpawner;
+    Client client;
+
+    public Screen(Client client) {
+        this.client = client;
+    }
 
 
     // teams scores
@@ -95,6 +102,18 @@ public class Screen extends Application {
         player.setRoot(root);
     }
 
+    public void createNewPlayer(double x, double y) {
+        Player otherPlayer = new Player(
+                (int) x,
+                (int) y,
+                0,
+                0,
+                color.equals(Player.playerColor.GREEN) ? Player.playerColor.RED : Player.playerColor.GREEN
+        );
+        otherPlayer.setRoot(root);
+        root.getChildren().add(otherPlayer);
+    }
+
     public void setMap(int mapIndex) {
         if (mapIndex == 0) {
             chosenMap = Battlefield.MAP1;
@@ -133,9 +152,16 @@ public class Screen extends Application {
         setPlayerYStartingPosition(stage);
         setPlayerXStartingPosition(stage);
 
+
         createPlayer();
 
         root.getChildren().add(player);
+
+        System.out.println(client.getID());
+        Packet005SendPlayerPosition positionPacket = new Packet005SendPlayerPosition();
+        positionPacket.xPosition = player.getX();
+        positionPacket.yPosition = player.getY();
+        this.client.sendTCP(positionPacket);
 
         redFlag = mapLoad.getRedFlag();
         greenFlag = mapLoad.getGreenFlag();
@@ -158,6 +184,11 @@ public class Screen extends Application {
         stage.setFullScreen(fullScreen);
         timer.start();
         stage.show();
+    }
+
+    public void spawnPlayer(double x, double y) {
+
+
     }
 
     private void bulletCollision() {

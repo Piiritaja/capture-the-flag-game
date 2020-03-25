@@ -6,6 +6,7 @@ import com.esotericsoftware.kryonet.Server;
 import networking.packets.Packet001AllowAccess;
 import networking.packets.Packet002RequestConnections;
 import networking.packets.Packet003SendConnections;
+import networking.packets.Packet005SendPlayerPosition;
 
 public class ServerListener extends Listener {
     private Server server;
@@ -68,6 +69,11 @@ public class ServerListener extends Listener {
             sendConnections.connections = this.gameServer.getNumberOfConnections();
             server.sendToAllTCP(sendConnections);
 
+        }
+        if (object instanceof Packet005SendPlayerPosition) {
+            System.out.println(((Packet005SendPlayerPosition) object).xPosition);
+            System.out.println(((Packet005SendPlayerPosition) object).yPosition);
+            server.sendToAllExceptTCP(connection.getID(), object);
         }
 
     }

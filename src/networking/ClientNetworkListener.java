@@ -7,6 +7,7 @@ import javafx.application.Platform;
 import networking.packets.Packet001AllowAccess;
 import networking.packets.Packet002RequestConnections;
 import networking.packets.Packet003SendConnections;
+import networking.packets.Packet005SendPlayerPosition;
 
 public class ClientNetworkListener extends Listener {
     private ServerClient serverClient;
@@ -75,6 +76,12 @@ public class ClientNetworkListener extends Listener {
 
             }
             this.serverClient.menu.setNumberOfCurrentConnections(connections);
+        } else if (object instanceof Packet005SendPlayerPosition) {
+            double playerXPosition = ((Packet005SendPlayerPosition) object).xPosition;
+            double playerYPosition = ((Packet005SendPlayerPosition) object).yPosition;
+            System.out.println("Received player position");
+            serverClient.menu.getScreen().createNewPlayer(playerXPosition, playerYPosition);
+            System.out.println("Created player");
         }
 
     }

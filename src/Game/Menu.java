@@ -1,5 +1,6 @@
 package Game;
 
+import com.esotericsoftware.kryonet.Client;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -26,11 +27,18 @@ public class Menu extends Application {
     private Screen screen;
     private int chosenMapIndex;
     private int currentConnections;
-    ServerClient client;
+    ServerClient serverClient;
+    Client client;
 
     public Menu() {
-        this.screen = new Screen();
-        this.client = new ServerClient(this);
+        this.serverClient = new ServerClient(this);
+        this.client = this.serverClient.getClient();
+        this.screen = new Screen(this.client);
+
+    }
+
+    public Screen getScreen() {
+        return this.screen;
     }
 
     // Constants for ctf image
