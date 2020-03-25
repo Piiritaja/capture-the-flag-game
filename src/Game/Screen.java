@@ -214,6 +214,7 @@ public class Screen extends Application {
 
     @Override
     public void start(Stage stage) {
+        inGame = true;
         boolean fullScreen = stage.isFullScreen();
         this.stage = stage;
 
