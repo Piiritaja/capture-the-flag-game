@@ -7,6 +7,7 @@ import networking.packets.Packet000RequestAccess;
 import networking.packets.Packet001AllowAccess;
 import networking.packets.Packet002RequestConnections;
 import networking.packets.Packet003SendConnections;
+import networking.packets.Packet004RequestPlayers;
 import networking.packets.Packet005SendPlayerPosition;
 import networking.packets.Packet006RequestBotsLocation;
 import networking.packets.Packet007SendBotsLocation;
@@ -79,6 +80,7 @@ public class ServerClient {
         kryo.register(Packet001AllowAccess.class);
         kryo.register(Packet002RequestConnections.class);
         kryo.register(Packet003SendConnections.class);
+        kryo.register(Packet004RequestPlayers.class);
         kryo.register(Packet005SendPlayerPosition.class);
         kryo.register(Packet006RequestBotsLocation.class);
         kryo.register(Packet007SendBotsLocation.class);
