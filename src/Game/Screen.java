@@ -22,6 +22,7 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import networking.packets.Packet005SendPlayerPosition;
@@ -57,6 +58,7 @@ public class Screen extends Application {
         this.inGame = false;
         mapLoad = new MapLoad();
         botSpawner = new BotSpawner();
+        botsOnMap = new ArrayList<>();
 
 
     }
@@ -202,6 +204,7 @@ public class Screen extends Application {
         List<Base> bases = mapLoad.getBases();
         if (botLocations.isEmpty()) {
             botSpawner.spawnBots(4, stage, root, bases, mapLoad.getObjectsOnMap());
+            botsOnMap = botSpawner.getBotsOnMap();
         } else {
             for (Map.Entry<Integer, Double[]> entry : botLocations.entrySet()) {
                 Double[] positions = entry.getValue();
@@ -213,7 +216,6 @@ public class Screen extends Application {
             }
         }
 
-        botsOnMap = botSpawner.getBotsOnMap();
         // save bot locations
         getBotLocationsOnMap();
 
