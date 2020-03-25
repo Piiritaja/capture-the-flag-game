@@ -10,6 +10,7 @@ import Game.player.Bullet;
 import Game.player.Flag;
 import Game.player.Player;
 import Game.player.SpriteAnimation;
+import com.esotericsoftware.kryonet.Client;
 import javafx.animation.Animation;
 import javafx.animation.AnimationTimer;
 import javafx.animation.FadeTransition;
@@ -31,6 +32,7 @@ import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import networking.packets.Packet005SendPlayerPosition;
 
 import java.util.Iterator;
 import java.util.List;
