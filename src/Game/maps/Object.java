@@ -70,22 +70,22 @@ public class Object extends ImageView {
 
     public boolean collides(Bot bot) {
         Rectangle objectBoundaries = boundaries();
-        Rectangle playerBoundaries = new Rectangle();
-        playerBoundaries.setX(bot.getX());
-        playerBoundaries.setY(bot.getY());
-        playerBoundaries.setHeight(bot.fitHeightProperty().get());
-        playerBoundaries.setWidth(bot.fitWidthProperty().get());
-        return objectBoundaries.getBoundsInLocal().intersects(playerBoundaries.getBoundsInLocal());
+        Rectangle botBoundaries = new Rectangle();
+        botBoundaries.setX(bot.getX());
+        botBoundaries.setY(bot.getY());
+        botBoundaries.setHeight(bot.fitHeightProperty().get() * 1.5);
+        botBoundaries.setWidth(bot.fitWidthProperty().get() * 1.5);
+        return objectBoundaries.getBoundsInLocal().intersects(botBoundaries.getBoundsInLocal());
     }
 
     public boolean collides(Bullet bullet) {
         Rectangle objectBoundaries = boundaries();
-        Rectangle playerBoundaries = new Rectangle();
-        playerBoundaries.setX(bullet.getCenterX() - bullet.getRadius());
-        playerBoundaries.setY(bullet.getCenterY() - bullet.getRadius());
-        playerBoundaries.setHeight(bullet.getRadius() * 2);
-        playerBoundaries.setWidth(bullet.getRadius() * 2);
-        return ((Path)Shape.intersect(bullet, objectBoundaries)).getElements().size() > 1;
+        Rectangle bulletBoundaries = new Rectangle();
+        bulletBoundaries.setX(bullet.getCenterX() - bullet.getRadius());
+        bulletBoundaries.setY(bullet.getCenterY() - bullet.getRadius());
+        bulletBoundaries.setHeight(bullet.getRadius() * 2);
+        bulletBoundaries.setWidth(bullet.getRadius() * 2);
+        return ((Path) Shape.intersect(bullet, objectBoundaries)).getElements().size() > 1;
     }
 
     public static List<Object> addObjectsToGroup(Group root, Stage stage, Battlefield map) {
@@ -107,16 +107,22 @@ public class Object extends ImageView {
                         Object tile = new Object(Object.BRICK_TEXTURE);
                         tile.setRow(row);
                         tile.setColumn(column);
-                        tile.setX(stage.widthProperty().get() / mapWidthInTiles * column);
-                        tile.setY(stage.heightProperty().get() / mapHeightInTiles * row);
+                        //tile.setX(stage.widthProperty().get() / mapWidthInTiles * column);
+                        tile.setFitWidth(stage.widthProperty().get() / mapWidthInTiles);
+                        tile.setFitHeight(stage.heightProperty().get() / mapHeightInTiles);
+                        tile.setX(column * mapWidthInTiles);
+                        tile.setY(row * mapHeightInTiles);
                         root.getChildren().add(tile);
                         walls.add(tile);
                     } else if (character.equals("34")) {
                         Object tile = new Object(Object.WOOD_TEXTURE);
                         tile.setRow(row);
                         tile.setColumn(column);
-                        tile.setX(stage.widthProperty().get() / mapWidthInTiles * column);
-                        tile.setY(stage.heightProperty().get() / mapHeightInTiles * row);
+                        //tile.setX(stage.widthProperty().get() / mapWidthInTiles * column);
+                        tile.setX(column * mapWidthInTiles);
+                        tile.setY(row * mapHeightInTiles);
+                        tile.setFitWidth(stage.widthProperty().get() / mapWidthInTiles);
+                        tile.setFitHeight(stage.heightProperty().get() / mapHeightInTiles);
                         root.getChildren().add(tile);
                         walls.add(tile);
                     }

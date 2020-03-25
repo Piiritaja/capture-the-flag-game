@@ -13,6 +13,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
@@ -64,6 +65,9 @@ public class Player extends ImageView {
     public int dx, dy, x, y, width, height;
     private playerColor color;
 
+    private double playerLocationXInTiles;
+    private double playerLocationYInTiles;
+
     public enum playerColor {
         RED(Color.RED),
         GREEN(Color.GREEN);
@@ -73,7 +77,7 @@ public class Player extends ImageView {
         playerColor(Color color) {
             this.color = color;
         }
-        }
+    }
 
 
     public Player(int x, int y, int dx, int dy, playerColor color) {
@@ -129,6 +133,7 @@ public class Player extends ImageView {
                 this.setY(this.y -= dy);
             }
         }
+
     }
 
     public EventHandler<MouseEvent> shooting = mouseEvent -> {
@@ -217,17 +222,35 @@ public class Player extends ImageView {
         this.dy = dy;
     }
 
-    public int getWidth() {
-        return width;
+    public double getWidth() {
+        return this.getFitWidth();
     }
 
-    public int getHeight() {
-        return height;
+    public double getHeight() {
+        return this.getFitHeight();
     }
 
-    public playerColor getColor() { return color; }
+    public playerColor getColor() {
+        return color;
+    }
 
     public void setRoot(Group root) {
         this.root = root;
+    }
+
+    public void setPlayerLocationXInTiles(double x) {
+        this.playerLocationXInTiles = x;
+    }
+
+    public void setPlayerLocationYInTiles(double y) {
+        this.playerLocationYInTiles = y;
+    }
+
+    public double getPlayerLocationXInTiles() {
+        return playerLocationXInTiles;
+    }
+
+    public double getPlayerLocationYInTiles() {
+        return playerLocationYInTiles;
     }
 }

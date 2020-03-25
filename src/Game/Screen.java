@@ -30,10 +30,12 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
+import java.util.Arrays;
+import java.util.HashMap;
 import javafx.util.Duration;
-
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class Screen extends Application {
     Player player;
@@ -45,6 +47,13 @@ public class Screen extends Application {
     Stage stage;
     List<Object> objectsOnMap;
     BotSpawner botSpawner;
+    List<Bot> botsOnMap;
+    Map<Integer, Double[]> botLocations = new HashMap<>();
+
+
+    // map size constants
+    private static final int MAP_WIDTH_IN_TILES = 40;
+    private static final int MAP_HEIGHT_IN_TILES = 25;
 
 
     // teams scores
@@ -66,6 +75,14 @@ public class Screen extends Application {
     //Shooting calculations
     double halfLengthX;
     double halfLengthY;
+
+    public static int getMAP_WIDTH_IN_TILES() {
+        return MAP_WIDTH_IN_TILES;
+    }
+
+    public static int getMAP_HEIGHT_IN_TILES() {
+        return MAP_HEIGHT_IN_TILES;
+    }
 
     public static void main(String[] args) {
         launch(args);
@@ -139,13 +156,20 @@ public class Screen extends Application {
 
         // bases for collision detection
         List<Base> bases = mapLoad.getBases();
+
         botSpawner = new BotSpawner();
         botSpawner.spawnBots(4, stage, root, bases, mapLoad.getObjectsOnMap());
+        botsOnMap = botSpawner.getBotsOnMap();
+        // save bot locations
+        getBotLocationsOnMap();
 
         setPlayerYStartingPosition(stage);
         setPlayerXStartingPosition(stage);
 
         createPlayer();
+
+        player.setPlayerLocationXInTiles(stage.widthProperty().get() / player.getX());
+        player.setPlayerLocationYInTiles(stage.heightProperty().get() / player.getY());
 
         root.getChildren().add(player);
 
@@ -156,7 +180,7 @@ public class Screen extends Application {
         timer = new AnimationTimer() {
             @Override
             public void handle(long l) {
-                player.tick(objectsOnMap, botSpawner.botsOnMap);
+                player.tick(objectsOnMap, botsOnMap);
                 catchTheFlag();
                 scoreBoard();
                 bulletCollision();
@@ -170,6 +194,50 @@ public class Screen extends Application {
         stage.setFullScreen(fullScreen);
         timer.start();
         stage.show();
+        updateScale();
+        mapLoad.updateScaleMap(stage);
+    }
+
+    private void updateScale() {
+        final double initialStageWidth = stage.widthProperty().get();
+        final double initialStageHeight = stage.heightProperty().get();
+        //player init
+        player.setFitWidth(initialStageWidth / MAP_WIDTH_IN_TILES * 1.5);
+        player.setFitHeight(initialStageHeight / MAP_HEIGHT_IN_TILES * 1.5);
+        //bot init
+        for (Bot bot : botsOnMap) {
+            bot.setBotWidth(initialStageWidth / MAP_WIDTH_IN_TILES * 2);
+            bot.setBotHeight(initialStageHeight / MAP_HEIGHT_IN_TILES * 2);
+            bot.setX(initialStageWidth / botLocations.get(bot.getBotId())[0]);
+            bot.setY(initialStageHeight / botLocations.get(bot.getBotId())[1]);
+        }
+
+        stage.widthProperty().addListener((observableValue, oldWidth, newWidth) -> {
+            player.setFitWidth((double) newWidth / MAP_WIDTH_IN_TILES * 1.5);
+            for (Bot bot : botsOnMap) {
+                bot.setBotWidth((double) newWidth / MAP_WIDTH_IN_TILES * 2);
+                bot.setX((double) newWidth / botLocations.get(bot.getBotId())[0]);
+            }
+        });
+
+        stage.heightProperty().addListener((observableValue, oldHeight, newHeight) -> {
+            player.setFitHeight((double) newHeight / MAP_HEIGHT_IN_TILES * 1.5);
+            for (Bot bot : botsOnMap) {
+                bot.setBotHeight((double) newHeight / MAP_HEIGHT_IN_TILES * 2);
+                bot.setY((double) newHeight / botLocations.get(bot.getBotId())[1]);
+            }
+        });
+    }
+
+    private void getBotLocationsOnMap() {
+        double initialStageWidth = stage.widthProperty().get();
+        double initialStageHeight = stage.heightProperty().get();
+        for (Bot bot : botsOnMap) {
+            Double[] botXY = new Double[2];
+            botXY[0] = initialStageWidth / bot.getX();
+            botXY[1] = initialStageHeight / bot.getY();
+            botLocations.put(bot.getBotId(), botXY);
+        }
     }
 
     private void bulletCollision() {
