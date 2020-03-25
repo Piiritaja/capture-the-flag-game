@@ -9,6 +9,8 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.util.Duration;
 
+import java.util.List;
+
 public class Bullet extends Circle {
 
     int x, y, radius;
@@ -25,7 +27,7 @@ public class Bullet extends Circle {
 
 
     // shooting bullets
-    public void shoot(Line line, Group root, double distance) {
+    public void shoot(Line line, Group root, double distance, List<Bullet> bullets) {
         PathTransition transition = new PathTransition();
         transition.setNode(this);
         if (distance > 0) {
@@ -37,7 +39,9 @@ public class Bullet extends Circle {
         Timeline playTime = new Timeline(
                 new KeyFrame(Duration.seconds(0), event -> transition.play()),
                 new KeyFrame(Duration.seconds(((distance + 50) / 400) * 0.8),
-                        event -> root.getChildren().remove(this)));
+                        event -> root.getChildren().remove(this)),
+                new KeyFrame(Duration.seconds(((distance + 50) / 400) * 0.8),
+                        event -> bullets.remove(this)));
         playTime.play();
     }
 }

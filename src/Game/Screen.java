@@ -9,10 +9,17 @@ import Game.maps.Object;
 import Game.player.Bullet;
 import Game.player.Flag;
 import Game.player.Player;
-import com.esotericsoftware.kryonet.Client;
+import Game.player.SpriteAnimation;
+import javafx.animation.Animation;
 import javafx.animation.AnimationTimer;
+import javafx.animation.FadeTransition;
 import javafx.application.Application;
+import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
+import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -20,8 +27,10 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
-import networking.packets.Packet005SendPlayerPosition;
+import javafx.util.Duration;
 
 import java.util.Iterator;
 import java.util.List;
@@ -136,6 +145,7 @@ public class Screen extends Application {
 
     }
 
+
     @Override
     public void start(Stage stage) {
         boolean fullScreen = stage.isFullScreen();
@@ -240,6 +250,7 @@ public class Screen extends Application {
                     redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
                     redTeamScore += 1;
                     timer.stop();
+                    start(stage);
                 }
             }
         } else {
@@ -251,6 +262,7 @@ public class Screen extends Application {
                             greenBase.getBottomY() / 2);
                     greenTeamScore += 1;
                     timer.stop();
+                    start(stage);
                 }
             }
         }
