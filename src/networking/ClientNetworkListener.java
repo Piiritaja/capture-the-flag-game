@@ -104,6 +104,7 @@ public class ClientNetworkListener extends Listener {
 
         } else if (object instanceof Packet006RequestBotsLocation) {
             System.out.println("Received requestBotsLocation packet");
+            System.out.println(((Packet006RequestBotsLocation) object).battlefield);
             if (serverClient.menu.getScreen().inGame && ((Packet006RequestBotsLocation) object).battlefield == serverClient.menu.getScreen().getChosenMap()) {
                 System.out.println("Sending sendBotsLocation packet");
                 Packet007SendBotsLocation sendBots = new Packet007SendBotsLocation();

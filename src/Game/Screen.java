@@ -203,9 +203,11 @@ public class Screen extends Application {
         // bases for collision detection
         List<Base> bases = mapLoad.getBases();
         if (botLocationsXY.isEmpty()) {
+            System.out.println("Yes players");
             botSpawner.spawnBots(4, stage, root, bases, mapLoad.getObjectsOnMap());
             botsOnMap = botSpawner.getBotsOnMap();
         } else {
+            System.out.println("no players");
             Packet004RequestPlayers requestPlayers = new Packet004RequestPlayers();
             requestPlayers.battlefield = getChosenMap();
             client.sendTCP(requestPlayers);
