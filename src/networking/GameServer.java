@@ -87,6 +87,7 @@ public class GameServer {
         kryo.register(Packet006RequestBotsLocation.class);
         kryo.register(Packet007SendBotsLocation.class);
         kryo.register(java.util.Map.class);
+        kryo.register(java.util.HashMap.class);
 
     }
 
