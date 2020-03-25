@@ -11,6 +11,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
+import javafx.stage.Stage;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -48,6 +49,9 @@ public class Player extends ImageView {
 
     public int dx, dy, x, y, width, height;
     private playerColor color;
+
+    private double playerLocationXInTiles;
+    private double playerLocationYInTiles;
 
     public enum playerColor {
         RED(Color.RED),
@@ -104,6 +108,7 @@ public class Player extends ImageView {
                 this.setY(this.y -= dy);
             }
         }
+
     }
 
     public EventHandler<MouseEvent> shooting = mouseEvent -> {
@@ -196,5 +201,21 @@ public class Player extends ImageView {
 
     public void setRoot(Group root) {
         this.root = root;
+    }
+
+    public void setPlayerLocationXInTiles(double x) {
+        this.playerLocationXInTiles = x;
+    }
+
+    public void setPlayerLocationYInTiles(double y) {
+        this.playerLocationYInTiles = y;
+    }
+
+    public double getPlayerLocationXInTiles() {
+        return playerLocationXInTiles;
+    }
+
+    public double getPlayerLocationYInTiles() {
+        return playerLocationYInTiles;
     }
 }

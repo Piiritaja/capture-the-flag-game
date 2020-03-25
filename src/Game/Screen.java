@@ -157,6 +157,9 @@ public class Screen extends Application {
 
         createPlayer();
 
+        player.setPlayerLocationXInTiles(stage.widthProperty().get() / player.getX());
+        player.setPlayerLocationYInTiles(stage.heightProperty().get() / player.getY());
+
         root.getChildren().add(player);
 
         redFlag = mapLoad.getRedFlag();
@@ -188,8 +191,8 @@ public class Screen extends Application {
         final double initialStageWidth = stage.widthProperty().get();
         final double initialStageHeight = stage.heightProperty().get();
         //player init
-        player.setFitWidth(initialStageWidth / MAP_WIDTH_IN_TILES);
-        player.setFitHeight(initialStageHeight / MAP_HEIGHT_IN_TILES);
+        player.setFitWidth(initialStageWidth / MAP_WIDTH_IN_TILES * 1.5);
+        player.setFitHeight(initialStageHeight / MAP_HEIGHT_IN_TILES * 1.5);
         //bot init
         for (Bot bot : botsOnMap) {
             bot.setBotWidth(initialStageWidth / MAP_WIDTH_IN_TILES * 2);
@@ -199,7 +202,7 @@ public class Screen extends Application {
         }
 
         stage.widthProperty().addListener((observableValue, oldWidth, newWidth) -> {
-            player.setFitWidth((double) newWidth / MAP_WIDTH_IN_TILES);
+            player.setFitWidth((double) newWidth / MAP_WIDTH_IN_TILES * 1.5);
             for (Bot bot : botsOnMap) {
                 bot.setBotWidth((double) newWidth / MAP_WIDTH_IN_TILES * 2);
                 bot.setX((double) newWidth / botLocations.get(bot.getBotId())[0]);
@@ -207,7 +210,7 @@ public class Screen extends Application {
         });
 
         stage.heightProperty().addListener((observableValue, oldHeight, newHeight) -> {
-            player.setFitWidth((double) newHeight / MAP_HEIGHT_IN_TILES);
+            player.setFitHeight((double) newHeight / MAP_HEIGHT_IN_TILES * 1.5);
             for (Bot bot : botsOnMap) {
                 bot.setBotHeight((double) newHeight / MAP_HEIGHT_IN_TILES * 2);
                 bot.setY((double) newHeight / botLocations.get(bot.getBotId())[1]);

@@ -119,15 +119,21 @@ public class MapLoad {
             double initialBaseWidth = initialWidth / baseWidthInTiles;
             double initialXOffsetFromWalls = initialWidth / MAP_WIDTH_IN_TILES;
             base.setWidth(initialBaseWidth);
+            base.setHeight(initialHeight / MAP_HEIGHT_IN_TILES * baseHeightInTiles);
+            base.setY(initialHeight / MAP_HEIGHT_IN_TILES);
             if (base.getBaseColor() == Base.baseColor.GREEN) {
                 base.setX(initialWidth
                         - initialBaseWidth
                         - initialWidth / MAP_WIDTH_IN_TILES);
+                // red flag position
+                redFlag.setX(base.getRightX() - base.widthProperty().get() / 2);
+                redFlag.setY(base.getBottomY() / 2 - FLAG_HEIGHT);
             } else {
                 base.setX(initialXOffsetFromWalls);
+                //green flag position
+                greenFlag.setX(base.getLeftX() + base.widthProperty().get() / 2);
+                greenFlag.setY(base.getBottomY() / 2);
             }
-            base.setHeight(initialHeight / MAP_HEIGHT_IN_TILES * baseHeightInTiles);
-            base.setY(initialHeight / MAP_HEIGHT_IN_TILES);
         }
 
         // initalize flags
@@ -136,6 +142,7 @@ public class MapLoad {
         redFlag.setHeight(initialHeight / FLAG_TO_TILE_RATIO_HEIGHT);
         greenFlag.setWidth(initialWidth / FLAG_TO_TILE_RATIO_WIDTH);
         greenFlag.setHeight(initialHeight / FLAG_TO_TILE_RATIO_HEIGHT);
+
 
         // initialize objects
         for (Object object : objectsOnMap) {
@@ -163,8 +170,14 @@ public class MapLoad {
                     base.setX((double) newWidth
                             - newBaseWidth
                             - (double) newWidth / MAP_WIDTH_IN_TILES);
+                    if (!redFlag.isPickedUp()) {
+                        redFlag.setX(base.getRightX() - base.widthProperty().get() / 2);
+                    }
                 } else {
                     base.setX(xOffsetFromWalls);
+                    if (!greenFlag.isPickedUp()) {
+                        greenFlag.setX(base.getLeftX() + base.widthProperty().get() / 2);
+                    }
                 }
             }
 
@@ -188,6 +201,15 @@ public class MapLoad {
                 // 25 tiles makes the height of the screen; base height for this map is 23 tiles
                 base.setHeight((double) newHeight / MAP_HEIGHT_IN_TILES * baseHeightInTiles);
                 base.setY((double) newHeight / MAP_HEIGHT_IN_TILES);
+                if (base.getBaseColor() == Base.baseColor.GREEN) {
+                    if (!redFlag.isPickedUp()) {
+                        redFlag.setY(base.getBottomY() / 2 - FLAG_HEIGHT);
+                    }
+                } else {
+                    if (!greenFlag.isPickedUp()) {
+                        greenFlag.setY(base.getBottomY() / 2);
+                    }
+                }
             }
 
             // set objects heights
