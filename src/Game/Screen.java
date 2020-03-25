@@ -65,8 +65,8 @@ public class Screen extends Application {
     }
 
     public Map<Integer, Double[]> getBotLocationsXY() {
-        Double[] xy = new Double[2];
         for (Bot bot : botsOnMap) {
+            Double[] xy = new Double[2];
             xy[0] = bot.getX();
             xy[1] = bot.getY();
             botLocationsXY.put(bot.getBotId(), xy);
