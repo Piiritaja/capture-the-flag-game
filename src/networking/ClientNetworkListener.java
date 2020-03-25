@@ -94,12 +94,6 @@ public class ClientNetworkListener extends Listener {
                 System.out.println("Sending sendBotsLocation packet");
                 Packet007SendBotsLocation sendBots = new Packet007SendBotsLocation();
                 sendBots.locations = serverClient.menu.getScreen().getBotLocationsXY();
-                Map<Integer, Double[]> positions = serverClient.menu.getScreen().getBotLocationsXY();
-                for (Map.Entry<Integer, Double[]> entry : positions.entrySet()) {
-                    System.out.println(entry.getKey());
-                    System.out.println(entry.getValue()[0]);
-                    System.out.println(entry.getValue()[1]);
-                }
                 connection.sendTCP(sendBots);
                 System.out.println("Sent sendBotsLocation packet");
             }
