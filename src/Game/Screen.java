@@ -9,18 +9,10 @@ import Game.maps.Object;
 import Game.player.Bullet;
 import Game.player.Flag;
 import Game.player.Player;
-import Game.player.SpriteAnimation;
 import com.esotericsoftware.kryonet.Client;
-import javafx.animation.Animation;
 import javafx.animation.AnimationTimer;
-import javafx.animation.FadeTransition;
 import javafx.application.Application;
-import javafx.geometry.Pos;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
-import javafx.scene.Scene;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -28,14 +20,10 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
-import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
-import java.util.Arrays;
 import java.util.HashMap;
 
-import javafx.util.Duration;
 import networking.packets.Packet005SendPlayerPosition;
 
 import java.util.Iterator;
@@ -68,8 +56,17 @@ public class Screen extends Application {
         System.out.println(root.getChildren().isEmpty());
         this.inGame = false;
         mapLoad = new MapLoad();
+        botSpawner = new BotSpawner();
 
 
+    }
+
+    public Map<Integer, Double[]> getBotLocations() {
+        return this.botLocations;
+    }
+
+    public void setBotLocations(Map<Integer, Double[]> botLocations) {
+        this.botLocations = botLocations;
     }
 
 
@@ -129,6 +126,17 @@ public class Screen extends Application {
         this.root = root;
     }
 
+    public void changeRoot() {
+        if (chosenMap == Battlefield.MAP1) {
+            mapLoad.loadMap1(root, stage);
+        } else if (chosenMap == Battlefield.MAP2) {
+            mapLoad.loadMap2(root, stage);
+
+        }
+
+
+    }
+
     public void setPlayerYStartingPosition(Stage stage) {
         if (color.equals(Player.playerColor.GREEN)) {
             this.playerYStartingPosition = (int) stage.heightProperty().get() - 500;
@@ -161,6 +169,7 @@ public class Screen extends Application {
     }
 
     public void setMap(int mapIndex) {
+
         if (mapIndex == 0) {
             chosenMap = Battlefield.MAP1;
         } else if (mapIndex == 1) {
@@ -170,12 +179,12 @@ public class Screen extends Application {
     }
 
 
-    public void startWithRoot() {
-        stage.getScene().setRoot(root);
+    @Override
+    public void start(Stage stage) {
+        inGame = true;
+        boolean fullScreen = stage.isFullScreen();
+        this.stage = stage;
 
-    }
-
-    public void startWithoutRoot() {
         stage.getScene().setRoot(root);
 
         if (chosenMap == Battlefield.MAP1) {
@@ -191,9 +200,19 @@ public class Screen extends Application {
 
         // bases for collision detection
         List<Base> bases = mapLoad.getBases();
+        if (botLocations.isEmpty()) {
+            botSpawner.spawnBots(4, stage, root, bases, mapLoad.getObjectsOnMap());
+        } else {
+            for (Map.Entry<Integer, Double[]> entry : botLocations.entrySet()) {
+                Double[] positions = entry.getValue();
+                int id = entry.getKey();
+                Bot bot = new Bot(positions[0].intValue(), positions[1].intValue(), 0, 0, 10);
+                bot.setBotId(id);
+                root.getChildren().add(bot);
+                botsOnMap.add(bot);
+            }
+        }
 
-        botSpawner = new BotSpawner();
-        botSpawner.spawnBots(4, stage, root, bases, mapLoad.getObjectsOnMap());
         botsOnMap = botSpawner.getBotsOnMap();
         // save bot locations
         getBotLocationsOnMap();
@@ -208,22 +227,6 @@ public class Screen extends Application {
         player.setPlayerLocationYInTiles(stage.heightProperty().get() / player.getY());
 
         root.getChildren().add(player);
-
-
-    }
-
-    @Override
-    public void start(Stage stage) {
-        inGame = true;
-        boolean fullScreen = stage.isFullScreen();
-        this.stage = stage;
-
-        if (!root.getChildren().isEmpty()) {
-            startWithRoot();
-
-        } else {
-            startWithoutRoot();
-        }
 
         // notify other players of your position
         Packet005SendPlayerPosition positionPacket = new Packet005SendPlayerPosition();
@@ -288,7 +291,7 @@ public class Screen extends Application {
         });
     }
 
-    private void getBotLocationsOnMap() {
+    private List<Bot> getBotLocationsOnMap() {
         double initialStageWidth = stage.widthProperty().get();
         double initialStageHeight = stage.heightProperty().get();
         for (Bot bot : botsOnMap) {
@@ -297,6 +300,7 @@ public class Screen extends Application {
             botXY[1] = initialStageHeight / bot.getY();
             botLocations.put(bot.getBotId(), botXY);
         }
+        return botsOnMap;
     }
 
 

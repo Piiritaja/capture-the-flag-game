@@ -8,8 +8,8 @@ import networking.packets.Packet001AllowAccess;
 import networking.packets.Packet002RequestConnections;
 import networking.packets.Packet003SendConnections;
 import networking.packets.Packet005SendPlayerPosition;
-import networking.packets.Packet006RequestRoot;
-import networking.packets.Packet007SendRoot;
+import networking.packets.Packet006RequestBotsLocation;
+import networking.packets.Packet007SendBotsLocation;
 
 public class ClientNetworkListener extends Listener {
     private ServerClient serverClient;
@@ -86,20 +86,20 @@ public class ClientNetworkListener extends Listener {
             System.out.println("Created player at:");
             System.out.println(playerXPosition);
             System.out.println(playerYPosition);
-        } else if (object instanceof Packet006RequestRoot) {
-            System.out.println("Received requestRoot packet");
+        } else if (object instanceof Packet006RequestBotsLocation) {
+            System.out.println("Received requestBotsLocation packet");
             if (serverClient.menu.getScreen().inGame) {
-                System.out.println("Sending sendRoot packet");
-                Packet007SendRoot sendRoot = new Packet007SendRoot();
-                sendRoot.root = serverClient.menu.getScreen().getRoot();
-                connection.sendTCP(sendRoot);
-                System.out.println("Sent sendingRoot packet");
+                System.out.println("Sending sendBotsLocation packet");
+                Packet007SendBotsLocation sendBots = new Packet007SendBotsLocation();
+                sendBots.locations = serverClient.menu.getScreen().getBotLocations();
+                connection.sendTCP(sendBots);
+                System.out.println("Sent sendBotsLocation packet");
             }
 
-        } else if (object instanceof Packet007SendRoot) {
-            System.out.println("Received sendRoot packet");
-            serverClient.menu.getScreen().setRoot(((Packet007SendRoot) object).root);
-            System.out.println("Changed root");
+        } else if (object instanceof Packet007SendBotsLocation) {
+            System.out.println("Received sendBotsLocation packet");
+            serverClient.menu.getScreen().setBotLocations(((Packet007SendBotsLocation) object).locations);
+
         }
 
     }

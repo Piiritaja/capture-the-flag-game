@@ -8,8 +8,8 @@ import networking.packets.Packet001AllowAccess;
 import networking.packets.Packet002RequestConnections;
 import networking.packets.Packet003SendConnections;
 import networking.packets.Packet005SendPlayerPosition;
-import networking.packets.Packet006RequestRoot;
-import networking.packets.Packet007SendRoot;
+import networking.packets.Packet006RequestBotsLocation;
+import networking.packets.Packet007SendBotsLocation;
 
 import java.io.IOException;
 
@@ -80,10 +80,9 @@ public class ServerClient {
         kryo.register(Packet002RequestConnections.class);
         kryo.register(Packet003SendConnections.class);
         kryo.register(Packet005SendPlayerPosition.class);
-        kryo.register(Packet006RequestRoot.class);
-        kryo.register(Packet007SendRoot.class);
-        kryo.register(javafx.scene.Group.class);
-        kryo.register(com.sun.javafx.geom.RectBounds.class);
+        kryo.register(Packet006RequestBotsLocation.class);
+        kryo.register(Packet007SendBotsLocation.class);
+        kryo.register(java.util.Map.class);
 
 
     }

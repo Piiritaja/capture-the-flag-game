@@ -7,10 +7,8 @@ import networking.packets.Packet001AllowAccess;
 import networking.packets.Packet002RequestConnections;
 import networking.packets.Packet003SendConnections;
 import networking.packets.Packet005SendPlayerPosition;
-import networking.packets.Packet006RequestRoot;
-import networking.packets.Packet007SendRoot;
-
-import java.sql.SQLOutput;
+import networking.packets.Packet006RequestBotsLocation;
+import networking.packets.Packet007SendBotsLocation;
 
 public class ServerListener extends Listener {
     private Server server;
@@ -80,13 +78,13 @@ public class ServerListener extends Listener {
             server.sendToAllExceptTCP(connection.getID(), object);
             System.out.println("Sent sendPlayerPosition packet to all other clients");
         }
-        if (object instanceof Packet006RequestRoot) {
-            System.out.println("Received requestRoot packet");
-            server.sendToAllExceptTCP(connection.getID(), new Packet006RequestRoot());
-            System.out.println("Sent requestRoot packet to all other clients");
+        if (object instanceof Packet006RequestBotsLocation) {
+            System.out.println("Received requestBotsLocation packet");
+            server.sendToAllExceptTCP(connection.getID(), new Packet006RequestBotsLocation());
+            System.out.println("Sent requestBotsLocation packet to all other clients");
         }
-        if (object instanceof Packet007SendRoot) {
-            System.out.println("Received sendRoot packet");
+        if (object instanceof Packet007SendBotsLocation) {
+            System.out.println("Received sendBotsLocation packet");
             server.sendToAllExceptTCP(connection.getID(), object);
         }
 
