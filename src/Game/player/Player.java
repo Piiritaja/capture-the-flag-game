@@ -58,7 +58,7 @@ public class Player extends ImageView {
         playerColor(Color color) {
             this.color = color;
         }
-        }
+    }
 
 
     public Player(int x, int y, int dx, int dy, playerColor color) {
@@ -182,15 +182,17 @@ public class Player extends ImageView {
         this.dy = dy;
     }
 
-    public int getWidth() {
-        return width;
+    public double getWidth() {
+        return this.getFitWidth();
     }
 
-    public int getHeight() {
-        return height;
+    public double getHeight() {
+        return this.getFitHeight();
     }
 
-    public playerColor getColor() { return color; }
+    public playerColor getColor() {
+        return color;
+    }
 
     public void setRoot(Group root) {
         this.root = root;
