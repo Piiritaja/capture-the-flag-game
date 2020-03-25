@@ -81,7 +81,7 @@ public class ClientNetworkListener extends Listener {
             this.serverClient.menu.setNumberOfCurrentConnections(connections);
         } else if (object instanceof Packet004RequestPlayers) {
             System.out.println("Received requestPlayers");
-            if (serverClient.menu.getScreen().inGame && serverClient.menu.getScreen().getChosenMap() == ((Packet004RequestPlayers) object).battlefield) {
+            if (serverClient.menu.getScreen().isInGame() && serverClient.menu.getScreen().getChosenMap() == ((Packet004RequestPlayers) object).battlefield) {
                 Packet005SendPlayerPosition sendPlayerPosition = new Packet005SendPlayerPosition();
 
                 sendPlayerPosition.xPosition = serverClient.menu.getScreen().getPlayer().getX();
@@ -94,7 +94,7 @@ public class ClientNetworkListener extends Listener {
 
         } else if (object instanceof Packet005SendPlayerPosition) {
             System.out.println("Received sendPlayerPosition packet");
-            if (this.serverClient.menu.getScreen().inGame && ((Packet005SendPlayerPosition) object).battlefield == this.serverClient.menu.getScreen().getChosenMap()) {
+            if (this.serverClient.menu.getScreen().isInGame() && ((Packet005SendPlayerPosition) object).battlefield == this.serverClient.menu.getScreen().getChosenMap()) {
                 double playerXPosition = ((Packet005SendPlayerPosition) object).xPosition;
                 double playerYPosition = ((Packet005SendPlayerPosition) object).yPosition;
                 Platform.runLater(() -> this.serverClient.menu.getScreen().createNewPlayer(playerXPosition, playerYPosition));
@@ -105,7 +105,7 @@ public class ClientNetworkListener extends Listener {
 
         } else if (object instanceof Packet006RequestBotsLocation) {
             System.out.println("Received requestBotsLocation packet");
-            if (serverClient.menu.getScreen().inGame && ((Packet006RequestBotsLocation) object).battlefield == serverClient.menu.getScreen().getChosenMap()) {
+            if (serverClient.menu.getScreen().isInGame() && ((Packet006RequestBotsLocation) object).battlefield == serverClient.menu.getScreen().getChosenMap()) {
                 System.out.println("Sending sendBotsLocation packet");
                 Packet007SendBotsLocation sendBots = new Packet007SendBotsLocation();
                 sendBots.locations = serverClient.menu.getScreen().getBotLocationsXY();

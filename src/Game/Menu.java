@@ -31,17 +31,6 @@ public class Menu extends Application {
     ServerClient serverClient;
     Client client;
 
-    public Menu() {
-        this.serverClient = new ServerClient(this);
-        this.client = this.serverClient.getClient();
-        this.screen = new Screen(this.client);
-
-    }
-
-    public Screen getScreen() {
-        return this.screen;
-    }
-
     // Constants for ctf image
     private static final int IMAGE_WIDTH = 600;
     private static final int IMAGE_HEIGHT = 300;
@@ -58,6 +47,24 @@ public class Menu extends Application {
 
     private Text usersOnlineText = new Text(10, 50, "");
 
+    /**
+     * Constructor for Menu class.
+     * Create new server client and client from the server client.
+     * Create new screen and assign it to this object.
+     */
+    public Menu() {
+        this.serverClient = new ServerClient(this);
+        this.client = this.serverClient.getClient();
+        this.screen = new Screen(this.client);
+
+    }
+
+    /**
+     * @return Screen screen assigned to the Menu object.
+     */
+    public Screen getScreen() {
+        return this.screen;
+    }
 
     /**
      * Creates, styles, and adds elements.
@@ -185,6 +192,10 @@ public class Menu extends Application {
 
     }
 
+    /**
+     * Method to go from the Choose map screen to Game screen.
+     * Requests bots from other clients already in that map.
+     */
     public void startScreen() {
         Packet006RequestBotsLocation requestBotsLocation = new Packet006RequestBotsLocation();
         requestBotsLocation.battlefield = this.screen.getChosenMap();

@@ -43,7 +43,6 @@ public class ServerListener extends Listener {
         }
         c.sendTCP(allowAccess);
 
-
     }
 
     /**
@@ -78,6 +77,7 @@ public class ServerListener extends Listener {
         if (object instanceof Packet004RequestPlayers) {
             System.out.println("Received requestPlayers");
             server.sendToAllExceptTCP(connection.getID(), object);
+            System.out.println("Sent requestPlayers packet to all other clients");
         }
         if (object instanceof Packet005SendPlayerPosition) {
             System.out.println("Received sendPlayerPosition packet");
@@ -92,6 +92,7 @@ public class ServerListener extends Listener {
         if (object instanceof Packet007SendBotsLocation) {
             System.out.println("Received sendBotsLocation packet");
             server.sendToAllExceptTCP(connection.getID(), object);
+            System.out.println("Sent sendBotsLocation packet to all other clients");
         }
 
     }

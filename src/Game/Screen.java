@@ -33,25 +33,25 @@ import java.util.List;
 import java.util.Map;
 
 public class Screen extends Application {
-    Player player;
+    private Player player;
     private Group root;
-    MapLoad mapLoad;
-    Base greenBase;
-    Base redBase;
-    AnimationTimer timer;
-    Stage stage;
-    List<Object> objectsOnMap;
-    List<Bot> botsOnMap;
-    Map<Integer, Double[]> botLocations = new HashMap<>();
-    Map<Integer, Double[]> botLocationsXY = new HashMap<>();
+    private MapLoad mapLoad;
+    private Base greenBase;
+    private Base redBase;
+    private AnimationTimer timer;
+    private Stage stage;
+    private List<Object> objectsOnMap;
+    private List<Bot> botsOnMap;
+    private Map<Integer, Double[]> botLocations = new HashMap<>();
+    private Map<Integer, Double[]> botLocationsXY = new HashMap<>();
 
     // map size constants
     private static final int MAP_WIDTH_IN_TILES = 40;
     private static final int MAP_HEIGHT_IN_TILES = 25;
 
-    BotSpawner botSpawner;
-    Client client;
-    public boolean inGame;
+    private BotSpawner botSpawner;
+    private Client client;
+    private boolean inGame;
 
     public Screen(Client client) {
         this.client = client;
@@ -62,6 +62,10 @@ public class Screen extends Application {
         botsOnMap = new ArrayList<>();
 
 
+    }
+
+    public boolean isInGame() {
+        return this.inGame;
     }
 
     public Battlefield getChosenMap() {
