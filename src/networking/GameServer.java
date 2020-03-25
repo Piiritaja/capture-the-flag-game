@@ -85,6 +85,7 @@ public class GameServer {
         kryo.register(Packet003SendConnections.class);
         kryo.register(Packet005SendPlayerPosition.class);
         kryo.register(Packet006RequestRoot.class);
+        kryo.register(Packet007SendRoot.class);
     }
 
     public static void main(String[] args) {
