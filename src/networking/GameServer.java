@@ -8,6 +8,8 @@ import networking.packets.Packet001AllowAccess;
 import networking.packets.Packet002RequestConnections;
 import networking.packets.Packet003SendConnections;
 import networking.packets.Packet005SendPlayerPosition;
+import networking.packets.Packet006RequestRoot;
+import networking.packets.Packet007SendRoot;
 
 import java.io.IOException;
 
@@ -25,6 +27,7 @@ public class GameServer {
 
     /**
      * Save the number of connected clients to a variable.
+     *
      * @param numberOfConnections amount to set the connections to.
      */
     public void setNumberOfConnections(int numberOfConnections) {
@@ -33,6 +36,7 @@ public class GameServer {
 
     /**
      * Get the number of connected clients to the server.
+     *
      * @return number of connected clients.
      */
     public int getNumberOfConnections() {
@@ -80,7 +84,7 @@ public class GameServer {
         kryo.register(Packet002RequestConnections.class);
         kryo.register(Packet003SendConnections.class);
         kryo.register(Packet005SendPlayerPosition.class);
-
+        kryo.register(Packet006RequestRoot.class);
     }
 
     public static void main(String[] args) {

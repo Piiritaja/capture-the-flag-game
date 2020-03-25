@@ -7,6 +7,8 @@ import networking.packets.Packet001AllowAccess;
 import networking.packets.Packet002RequestConnections;
 import networking.packets.Packet003SendConnections;
 import networking.packets.Packet005SendPlayerPosition;
+import networking.packets.Packet006RequestRoot;
+import networking.packets.Packet007SendRoot;
 
 public class ServerListener extends Listener {
     private Server server;
@@ -73,6 +75,12 @@ public class ServerListener extends Listener {
         if (object instanceof Packet005SendPlayerPosition) {
             System.out.println(((Packet005SendPlayerPosition) object).xPosition);
             System.out.println(((Packet005SendPlayerPosition) object).yPosition);
+            server.sendToAllExceptTCP(connection.getID(), object);
+        }
+        if (object instanceof Packet006RequestRoot) {
+            server.sendToAllExceptTCP(connection.getID(), new Packet006RequestRoot());
+        }
+        if (object instanceof Packet007SendRoot) {
             server.sendToAllExceptTCP(connection.getID(), object);
         }
 

@@ -28,7 +28,7 @@ import java.util.List;
 
 public class Screen extends Application {
     Player player;
-    Group root;
+    private Group root;
     MapLoad mapLoad;
     Base greenBase;
     Base redBase;
@@ -37,10 +37,13 @@ public class Screen extends Application {
     List<Object> objectsOnMap;
     BotSpawner botSpawner;
     Client client;
+    public boolean inGame;
 
     public Screen(Client client) {
         this.client = client;
         this.root = new Group();
+        System.out.println(root.getChildren().isEmpty());
+        this.inGame = false;
 
     }
 
@@ -83,6 +86,14 @@ public class Screen extends Application {
         } else if (color.equals(Player.playerColor.RED)) {
             this.playerXStartingPosition = 40;
         }
+    }
+
+    public Group getRoot() {
+        return this.root;
+    }
+
+    public void setRoot(Group root) {
+        this.root = root;
     }
 
     public void setPlayerYStartingPosition(Stage stage) {
@@ -132,13 +143,12 @@ public class Screen extends Application {
 
         mapLoad = new MapLoad();
 
-
         if (chosenMap == Battlefield.MAP1) {
             mapLoad.loadMap1(root, stage);
         } else if (chosenMap == Battlefield.MAP2) {
             mapLoad.loadMap2(root, stage);
-
         }
+
         stage.getScene().setRoot(root);
 
         // both bases
@@ -159,7 +169,6 @@ public class Screen extends Application {
 
         root.getChildren().add(player);
 
-        System.out.println(client.getID());
         Packet005SendPlayerPosition positionPacket = new Packet005SendPlayerPosition();
         positionPacket.xPosition = player.getX();
         positionPacket.yPosition = player.getY();
@@ -186,12 +195,9 @@ public class Screen extends Application {
         stage.setFullScreen(fullScreen);
         timer.start();
         stage.show();
+        this.inGame = true;
     }
 
-    public void spawnPlayer(double x, double y) {
-
-
-    }
 
     private void bulletCollision() {
         Iterator<Bullet> bullets = player.bullets.iterator();

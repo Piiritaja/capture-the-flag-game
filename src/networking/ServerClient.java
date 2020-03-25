@@ -8,6 +8,8 @@ import networking.packets.Packet001AllowAccess;
 import networking.packets.Packet002RequestConnections;
 import networking.packets.Packet003SendConnections;
 import networking.packets.Packet005SendPlayerPosition;
+import networking.packets.Packet006RequestRoot;
+import networking.packets.Packet007SendRoot;
 
 import java.io.IOException;
 
@@ -78,6 +80,8 @@ public class ServerClient {
         kryo.register(Packet002RequestConnections.class);
         kryo.register(Packet003SendConnections.class);
         kryo.register(Packet005SendPlayerPosition.class);
+        kryo.register(Packet006RequestRoot.class);
+        kryo.register(Packet007SendRoot.class);
 
     }
 }

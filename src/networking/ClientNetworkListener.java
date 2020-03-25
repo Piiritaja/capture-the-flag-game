@@ -8,6 +8,8 @@ import networking.packets.Packet001AllowAccess;
 import networking.packets.Packet002RequestConnections;
 import networking.packets.Packet003SendConnections;
 import networking.packets.Packet005SendPlayerPosition;
+import networking.packets.Packet006RequestRoot;
+import networking.packets.Packet007SendRoot;
 
 public class ClientNetworkListener extends Listener {
     private ServerClient serverClient;
@@ -82,8 +84,17 @@ public class ClientNetworkListener extends Listener {
             System.out.println(playerXPosition);
             System.out.println(playerYPosition);
             System.out.println("Received player position");
-            serverClient.menu.getScreen().createNewPlayer(playerXPosition, playerYPosition);
+            Platform.runLater(() -> this.serverClient.menu.getScreen().createNewPlayer(playerXPosition, playerYPosition));
             System.out.println("Created player");
+        } else if (object instanceof Packet006RequestRoot) {
+            if (serverClient.menu.getScreen().inGame) {
+                Packet007SendRoot sendRoot = new Packet007SendRoot();
+                sendRoot.root = serverClient.menu.getScreen().getRoot();
+                connection.sendTCP(sendRoot);
+            }
+
+        } else if (object instanceof Packet007SendRoot) {
+            serverClient.menu.getScreen().setRoot(((Packet007SendRoot) object).root);
         }
 
     }
