@@ -57,7 +57,6 @@ public class ClientNetworkListener extends Listener {
      */
     @Override
     public void received(Connection connection, Object object) {
-        System.out.println(object);
         if (object instanceof Packet001AllowAccess) {
             if (!((Packet001AllowAccess) object).allow) {
                 System.out.println("Connection not allowed!");
@@ -70,31 +69,35 @@ public class ClientNetworkListener extends Listener {
             }
 
         } else if (object instanceof Packet003SendConnections) {
+            System.out.println("Received sendConnections packet");
             int connections = ((Packet003SendConnections) object).connections;
             if (connections == 1) {
                 System.out.println("No other clients connected");
             } else {
-                System.out.println(String.format("%d other clients connected", connections));
+                System.out.println(String.format("%d other clients connected", connections - 1));
 
             }
             this.serverClient.menu.setNumberOfCurrentConnections(connections);
         } else if (object instanceof Packet005SendPlayerPosition) {
+            System.out.println("Received sendPlayerPosition packet");
             double playerXPosition = ((Packet005SendPlayerPosition) object).xPosition;
             double playerYPosition = ((Packet005SendPlayerPosition) object).yPosition;
+            Platform.runLater(() -> this.serverClient.menu.getScreen().createNewPlayer(playerXPosition, playerYPosition));
+            System.out.println("Created player at:");
             System.out.println(playerXPosition);
             System.out.println(playerYPosition);
-            System.out.println("Received player position");
-            Platform.runLater(() -> this.serverClient.menu.getScreen().createNewPlayer(playerXPosition, playerYPosition));
-            System.out.println("Created player");
         } else if (object instanceof Packet006RequestRoot) {
+            System.out.println("Received requestRoot packet");
             if (serverClient.menu.getScreen().inGame) {
+                System.out.println("Sending sendRoot packet");
                 Packet007SendRoot sendRoot = new Packet007SendRoot();
                 sendRoot.root = serverClient.menu.getScreen().getRoot();
                 connection.sendTCP(sendRoot);
+                System.out.println("Sent sendingRoot packet");
             }
 
         } else if (object instanceof Packet007SendRoot) {
-            System.out.println("Changing root");
+            System.out.println("Received sendRoot packet");
             serverClient.menu.getScreen().setRoot(((Packet007SendRoot) object).root);
             System.out.println("Changed root");
         }

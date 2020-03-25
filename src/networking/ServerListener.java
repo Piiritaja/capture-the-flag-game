@@ -10,6 +10,8 @@ import networking.packets.Packet005SendPlayerPosition;
 import networking.packets.Packet006RequestRoot;
 import networking.packets.Packet007SendRoot;
 
+import java.sql.SQLOutput;
+
 public class ServerListener extends Listener {
     private Server server;
     private GameServer gameServer;
@@ -65,22 +67,26 @@ public class ServerListener extends Listener {
      */
     @Override
     public void received(Connection connection, Object object) {
-        System.out.println(object);
         if (object instanceof Packet002RequestConnections) {
+            System.out.println("Received requestedConnections packet");
             Packet003SendConnections sendConnections = new Packet003SendConnections();
             sendConnections.connections = this.gameServer.getNumberOfConnections();
             server.sendToAllTCP(sendConnections);
+            System.out.println("Sent sendConnections packet to all clients");
 
         }
         if (object instanceof Packet005SendPlayerPosition) {
-            System.out.println(((Packet005SendPlayerPosition) object).xPosition);
-            System.out.println(((Packet005SendPlayerPosition) object).yPosition);
+            System.out.println("Received sendPlayerPosition packet");
             server.sendToAllExceptTCP(connection.getID(), object);
+            System.out.println("Sent sendPlayerPosition packet to all other clients");
         }
         if (object instanceof Packet006RequestRoot) {
+            System.out.println("Received requestRoot packet");
             server.sendToAllExceptTCP(connection.getID(), new Packet006RequestRoot());
+            System.out.println("Sent requestRoot packet to all other clients");
         }
         if (object instanceof Packet007SendRoot) {
+            System.out.println("Received sendRoot packet");
             server.sendToAllExceptTCP(connection.getID(), object);
         }
 

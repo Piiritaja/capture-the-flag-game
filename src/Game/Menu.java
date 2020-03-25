@@ -15,6 +15,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import networking.ServerClient;
+import networking.packets.Packet006RequestRoot;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -143,6 +144,8 @@ public class Menu extends Application {
      * Screen for users to pick a map and a team.
      */
     public void gameChooser() {
+        Packet006RequestRoot requestRoot = new Packet006RequestRoot();
+        client.sendTCP(requestRoot);
         // Map picker
         Text t = new Text(10, 50, "Choose a map");
         Group root = new Group();
