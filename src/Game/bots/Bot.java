@@ -4,7 +4,6 @@ import Game.player.Bullet;
 import Game.player.Player;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.shape.Circle;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
@@ -17,21 +16,22 @@ public class Bot extends ImageView {
     private static final Image BOT_STILL_IMAGE = new Image("assets/bot/still.png");
     private static final Image BOT_WALK_IMAGE_1 = new Image("assets/bot/walk1.png");
     private static final Image BOT_WALK_IMAGE_2 = new Image("assets/bot/walk2.png");
+    private int botId;
 
     //Constants for bot model graphics
 
     public int dx, dy, x, y, lives;
 
-    public Bot (int x, int y, int dx, int dy, int lives) {
+    public Bot(int x, int y, int dx, int dy, int lives) {
         this.setImage(BOT_STILL_IMAGE);
         this.fitWidthProperty().set(BOT_WIDTH);
         this.fitHeightProperty().set(BOT_HEIGHT);
         this.dx = dx;
         this.dy = dy;
-        this.x = (int) this.getX();
-        this.y = (int) this.getY();
         this.setX(x);
         this.setY(y);
+        this.x = (int) this.getX();
+        this.y = (int) this.getY();
         this.lives = lives;
     }
 
@@ -66,7 +66,7 @@ public class Bot extends ImageView {
         playerBoundaries.setY(bullet.getCenterY() - bullet.getRadius());
         playerBoundaries.setHeight(bullet.getRadius() * 2);
         playerBoundaries.setWidth(bullet.getRadius() * 2);
-        return ((Path)Shape.intersect(bullet, objectBoundaries)).getElements().size() > 1;
+        return ((Path) Shape.intersect(bullet, objectBoundaries)).getElements().size() > 1;
     }
 
     public void setDx(int dx) {
@@ -79,12 +79,12 @@ public class Bot extends ImageView {
 
     public void setBotHeight(double botHeight) {
         BOT_HEIGHT = botHeight;
-        this.fitHeightProperty().set(BOT_HEIGHT);
+        this.setFitHeight(BOT_HEIGHT);
     }
 
     public void setBotWidth(double botWidth) {
         BOT_WIDTH = botWidth;
-        this.fitWidthProperty().set(BOT_WIDTH);
+        this.setFitWidth(BOT_WIDTH);
     }
 
     public double getBotHeight() {
@@ -97,5 +97,13 @@ public class Bot extends ImageView {
 
     public int getBotLives() {
         return lives;
+    }
+
+    public void setBotId(int id) {
+        this.botId = id;
+    }
+
+    public int getBotId() {
+        return botId;
     }
 }

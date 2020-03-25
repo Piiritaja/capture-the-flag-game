@@ -35,6 +35,7 @@ public class BotSpawner {
                             group.getChildren().add(bot);
                             botsOnMap.add(bot);
                             botLocations.put(locationX, locationY);
+                            bot.setBotId(botsOnMap.size());
                             break;
                         }
                     }
@@ -45,6 +46,7 @@ public class BotSpawner {
                             botLocations.put(locationX, locationY);
                             botsOnMap.add(bot);
                             group.getChildren().add(bot);
+                            bot.setBotId(botsOnMap.size());
                             break;
                         }
                     }
@@ -69,6 +71,10 @@ public class BotSpawner {
             }
         }
         return true;
+    }
+
+    public List<Bot> getBotsOnMap() {
+        return botsOnMap;
     }
 
 }
