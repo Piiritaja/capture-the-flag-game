@@ -25,6 +25,7 @@ import javafx.stage.Stage;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import networking.packets.Packet004RequestPlayers;
 import networking.packets.Packet005SendPlayerPosition;
 
 import java.util.Iterator;
@@ -218,6 +219,8 @@ public class Screen extends Application {
             botSpawner.spawnBots(4, stage, root, bases, mapLoad.getObjectsOnMap());
             botsOnMap = botSpawner.getBotsOnMap();
         } else {
+            Packet004RequestPlayers requestPlayers = new Packet004RequestPlayers();
+            client.sendTCP(requestPlayers);
             for (Map.Entry<Integer, Double[]> entry : botLocationsXY.entrySet()) {
                 Double[] positions = entry.getValue();
                 int id = entry.getKey();
