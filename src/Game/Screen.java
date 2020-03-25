@@ -65,6 +65,10 @@ public class Screen extends Application {
 
     }
 
+    public Battlefield getChosenMap() {
+        return chosenMap;
+    }
+
     public Player getPlayer() {
         return this.player;
     }
@@ -89,7 +93,7 @@ public class Screen extends Application {
     int redTeamScore = 0;
     int greenTeamScore = 0;
 
-    Battlefield chosenMap = Battlefield.MAP1;
+    Battlefield chosenMap = Battlefield.EMPTY;
     Player.playerColor color = Player.playerColor.RED;
 
 
@@ -131,25 +135,6 @@ public class Screen extends Application {
         } else if (color.equals(Player.playerColor.RED)) {
             this.playerXStartingPosition = 40;
         }
-    }
-
-    public Group getRoot() {
-        return this.root;
-    }
-
-    public void setRoot(Group root) {
-        this.root = root;
-    }
-
-    public void changeRoot() {
-        if (chosenMap == Battlefield.MAP1) {
-            mapLoad.loadMap1(root, stage);
-        } else if (chosenMap == Battlefield.MAP2) {
-            mapLoad.loadMap2(root, stage);
-
-        }
-
-
     }
 
     public void setPlayerYStartingPosition(Stage stage) {
@@ -207,6 +192,8 @@ public class Screen extends Application {
         } else if (chosenMap == Battlefield.MAP2) {
             mapLoad.loadMap2(root, stage);
 
+        } else {
+            throw new EnumConstantNotPresentException(Battlefield.class, "");
         }
 
         // both bases
