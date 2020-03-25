@@ -94,7 +94,9 @@ public class ClientNetworkListener extends Listener {
             }
 
         } else if (object instanceof Packet007SendRoot) {
+            System.out.println("Changing root");
             serverClient.menu.getScreen().setRoot(((Packet007SendRoot) object).root);
+            System.out.println("Changed root");
         }
 
     }

@@ -58,6 +58,7 @@ public class Player extends ImageView {
     double shootingLeftX;
     double shootingLeftY;
 
+
     Bullet bullet;
     public List<Bullet> bullets = new ArrayList<>();
     int step = 2;

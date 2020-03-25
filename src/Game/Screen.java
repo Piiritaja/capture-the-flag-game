@@ -31,8 +31,10 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
+
 import java.util.Arrays;
 import java.util.HashMap;
+
 import javafx.util.Duration;
 import networking.packets.Packet005SendPlayerPosition;
 
@@ -49,6 +51,13 @@ public class Screen extends Application {
     AnimationTimer timer;
     Stage stage;
     List<Object> objectsOnMap;
+    List<Bot> botsOnMap;
+    Map<Integer, Double[]> botLocations = new HashMap<>();
+
+    // map size constants
+    private static final int MAP_WIDTH_IN_TILES = 40;
+    private static final int MAP_HEIGHT_IN_TILES = 25;
+
     BotSpawner botSpawner;
     Client client;
     public boolean inGame;
@@ -58,6 +67,8 @@ public class Screen extends Application {
         this.root = new Group();
         System.out.println(root.getChildren().isEmpty());
         this.inGame = false;
+        mapLoad = new MapLoad();
+
 
     }
 
@@ -159,20 +170,20 @@ public class Screen extends Application {
     }
 
 
-    @Override
-    public void start(Stage stage) {
-        boolean fullScreen = stage.isFullScreen();
-        this.stage = stage;
+    public void startWithRoot() {
+        stage.getScene().setRoot(root);
 
-        mapLoad = new MapLoad();
+    }
+
+    public void startWithoutRoot() {
+        stage.getScene().setRoot(root);
 
         if (chosenMap == Battlefield.MAP1) {
             mapLoad.loadMap1(root, stage);
         } else if (chosenMap == Battlefield.MAP2) {
             mapLoad.loadMap2(root, stage);
-        }
 
-        stage.getScene().setRoot(root);
+        }
 
         // both bases
         greenBase = mapLoad.getBaseByColor(Base.baseColor.GREEN);
@@ -198,6 +209,22 @@ public class Screen extends Application {
 
         root.getChildren().add(player);
 
+
+    }
+
+    @Override
+    public void start(Stage stage) {
+        boolean fullScreen = stage.isFullScreen();
+        this.stage = stage;
+
+        if (!root.getChildren().isEmpty()) {
+            startWithRoot();
+
+        } else {
+            startWithoutRoot();
+        }
+
+        // notify other players of your position
         Packet005SendPlayerPosition positionPacket = new Packet005SendPlayerPosition();
         positionPacket.xPosition = player.getX();
         positionPacket.yPosition = player.getY();
@@ -205,8 +232,9 @@ public class Screen extends Application {
 
         redFlag = mapLoad.getRedFlag();
         greenFlag = mapLoad.getGreenFlag();
-
         objectsOnMap = mapLoad.getObjectsOnMap();
+
+
         timer = new AnimationTimer() {
             @Override
             public void handle(long l) {
