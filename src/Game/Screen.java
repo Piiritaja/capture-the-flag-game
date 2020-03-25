@@ -209,8 +209,8 @@ public class Screen extends Application {
             for (Map.Entry<Integer, Double[]> entry : botLocations.entrySet()) {
                 Double[] positions = entry.getValue();
                 int id = entry.getKey();
-                Bot bot = new Bot(positions[0].intValue(), positions[1].intValue(), 0, 0, 10);
-                System.out.println(String.format("Created bot at %d, %d", positions[0].intValue(), positions[1].intValue()));
+                Bot bot = new Bot((int) (positions[0] * MAP_WIDTH_IN_TILES), (int) (positions[1] * MAP_HEIGHT_IN_TILES), 0, 0, 10);
+                System.out.println(String.format("Created bot at %d, %d", (int) (positions[0] * MAP_WIDTH_IN_TILES), (int) (positions[1] * MAP_HEIGHT_IN_TILES)));
                 bot.setBotId(id);
                 root.getChildren().add(bot);
                 botsOnMap.add(bot);
@@ -294,7 +294,7 @@ public class Screen extends Application {
         });
     }
 
-    private List<Bot> getBotLocationsOnMap() {
+    private void getBotLocationsOnMap() {
         double initialStageWidth = stage.widthProperty().get();
         double initialStageHeight = stage.heightProperty().get();
         for (Bot bot : botsOnMap) {
@@ -303,7 +303,6 @@ public class Screen extends Application {
             botXY[1] = initialStageHeight / bot.getY();
             botLocations.put(bot.getBotId(), botXY);
         }
-        return botsOnMap;
     }
 
 
