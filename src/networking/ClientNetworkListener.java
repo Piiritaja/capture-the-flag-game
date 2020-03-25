@@ -109,6 +109,7 @@ public class ClientNetworkListener extends Listener {
                 System.out.println("Sending sendBotsLocation packet");
                 Packet007SendBotsLocation sendBots = new Packet007SendBotsLocation();
                 sendBots.locations = serverClient.menu.getScreen().getBotLocationsXY();
+                sendBots.battlefield = ((Packet006RequestBotsLocation) object).battlefield;
                 connection.sendTCP(sendBots);
                 System.out.println("Sent sendBotsLocation packet");
             }
