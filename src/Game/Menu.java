@@ -55,8 +55,14 @@ public class Menu extends Application {
     public Menu() {
         this.serverClient = new ServerClient(this);
         this.client = this.serverClient.getClient();
-        this.screen = new Screen(this.client);
+        this.screen = new Screen(this.serverClient);
 
+    }
+
+    public Menu(ServerClient serverClient) {
+        this.serverClient = serverClient;
+        this.client = serverClient.getClient();
+        this.screen = new Screen(this.serverClient);
     }
 
     /**

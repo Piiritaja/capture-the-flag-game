@@ -10,6 +10,7 @@ import networking.packets.Packet004RequestPlayers;
 import networking.packets.Packet005SendPlayerPosition;
 import networking.packets.Packet006RequestBotsLocation;
 import networking.packets.Packet007SendBotsLocation;
+import networking.packets.Packet008SendPlayerID;
 
 public class ServerListener extends Listener {
     private Server server;
@@ -73,26 +74,30 @@ public class ServerListener extends Listener {
             System.out.println("Sent sendConnections packet to all clients");
 
         }
-
-        if (object instanceof Packet004RequestPlayers) {
+        else if (object instanceof Packet004RequestPlayers) {
             System.out.println("Received requestPlayers");
             server.sendToAllExceptTCP(connection.getID(), object);
             System.out.println("Sent requestPlayers packet to all other clients");
         }
-        if (object instanceof Packet005SendPlayerPosition) {
+        else if (object instanceof Packet005SendPlayerPosition) {
             System.out.println("Received sendPlayerPosition packet");
             server.sendToAllExceptTCP(connection.getID(), object);
             System.out.println("Sent sendPlayerPosition packet to all other clients");
         }
-        if (object instanceof Packet006RequestBotsLocation) {
+        else if (object instanceof Packet006RequestBotsLocation) {
             System.out.println("Received requestBotsLocation packet");
             server.sendToAllExceptTCP(connection.getID(), object);
             System.out.println("Sent requestBotsLocation packet to all other clients");
         }
-        if (object instanceof Packet007SendBotsLocation) {
+        else if (object instanceof Packet007SendBotsLocation) {
             System.out.println("Received sendBotsLocation packet");
             server.sendToAllExceptTCP(connection.getID(), object);
             System.out.println("Sent sendBotsLocation packet to all other clients");
+        }
+        else if (object instanceof Packet008SendPlayerID) {
+            System.out.println("Received sendPlayerID packet");
+            server.sendToAllExceptTCP(connection.getID(),object);
+            System.out.println("Sent sendPlayerID packet to all other clients");
         }
 
     }

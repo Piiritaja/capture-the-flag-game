@@ -11,6 +11,7 @@ import networking.packets.Packet004RequestPlayers;
 import networking.packets.Packet005SendPlayerPosition;
 import networking.packets.Packet006RequestBotsLocation;
 import networking.packets.Packet007SendBotsLocation;
+import networking.packets.Packet008SendPlayerID;
 
 public class ClientNetworkListener extends Listener {
     private ServerClient serverClient;
@@ -48,6 +49,12 @@ public class ClientNetworkListener extends Listener {
 
         // Runnable needed to call to exit the program on java fx application thread.
         Platform.runLater(() -> this.serverClient.menu.exitScreen());
+        if (this.serverClient.menu.getScreen().getPlayer().getId() != null) {
+            Packet008SendPlayerID sendPlayerId = new Packet008SendPlayerID();
+            sendPlayerId.playerID = this.serverClient.menu.getScreen().getPlayer().getId();
+            connection.sendTCP(sendPlayerId);
+        }
+
     }
 
     /**
@@ -87,6 +94,7 @@ public class ClientNetworkListener extends Listener {
                 sendPlayerPosition.xPosition = serverClient.menu.getScreen().getPlayer().getX();
                 sendPlayerPosition.yPosition = serverClient.menu.getScreen().getPlayer().getY();
                 sendPlayerPosition.battlefield = ((Packet004RequestPlayers) object).battlefield;
+                sendPlayerPosition.id = serverClient.menu.getScreen().getPlayer().getId();
 
                 connection.sendTCP(sendPlayerPosition);
                 System.out.println("Sent sendPlayers");
@@ -97,7 +105,8 @@ public class ClientNetworkListener extends Listener {
             if (this.serverClient.menu.getScreen().isInGame() && ((Packet005SendPlayerPosition) object).battlefield == this.serverClient.menu.getScreen().getChosenMap()) {
                 double playerXPosition = ((Packet005SendPlayerPosition) object).xPosition;
                 double playerYPosition = ((Packet005SendPlayerPosition) object).yPosition;
-                Platform.runLater(() -> this.serverClient.menu.getScreen().createNewPlayer(playerXPosition, playerYPosition));
+                String id = ((Packet005SendPlayerPosition) object).id;
+                Platform.runLater(() -> this.serverClient.menu.getScreen().createNewPlayer(playerXPosition, playerYPosition, id));
                 System.out.println("Created player at:");
                 System.out.println(playerXPosition);
                 System.out.println(playerYPosition);
@@ -121,6 +130,8 @@ public class ClientNetworkListener extends Listener {
             if (((Packet007SendBotsLocation) object).battlefield == serverClient.menu.getScreen().getChosenMap()) {
                 serverClient.menu.getScreen().setBotLocationsXY(((Packet007SendBotsLocation) object).locations);
                 System.out.println("Set bots location");
+            } else if (object instanceof Packet008SendPlayerID) {
+                System.out.println("Received player id: " + ((Packet008SendPlayerID) object).playerID);
             }
 
         }
