@@ -1,31 +1,50 @@
 package networking;
 
 import Game.Menu;
+import Game.maps.Battlefield;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
-import com.esotericsoftware.kryonet.Connection;
-import com.esotericsoftware.kryonet.Listener;
+import networking.packets.Packet000RequestAccess;
+import networking.packets.Packet001AllowAccess;
+import networking.packets.Packet002RequestConnections;
+import networking.packets.Packet003SendConnections;
+import networking.packets.Packet004RequestPlayers;
+import networking.packets.Packet005SendPlayerPosition;
+import networking.packets.Packet006RequestBotsLocation;
+import networking.packets.Packet007SendBotsLocation;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
+
 
 public class ServerClient {
     private Client client;
     ClientNetworkListener clientNetworkListener;
+    Menu menu;
 
-    public ServerClient() {
+    //Server ports
+    private static final int TCP_PORT = 54555;
+    private static final int UDP_PORT = 54777;
+
+    /**
+     * Creates the client and connects it to a server on localhost.
+     * Initializes client listener
+     */
+    public ServerClient(Menu menu) {
+
+        this.menu = menu;
         this.client = new Client();
         clientNetworkListener = new ClientNetworkListener();
-        clientNetworkListener.init(this.client);
-        this.client.addListener(clientNetworkListener);
+
+        //Add and configure listener for the client
+        setupListener();
+
+        //Register packets for the client
         registerPackets();
+
+        //Connect the client with a new thread
         new Thread(client).start();
-        String[] arguments = {"tere"};
         try {
-            client.connect(5000, "localhost", 54555, 54777);
-            String[] args = {"tere"};
-            Menu.main(args);
+            client.connect(9999, "192.168.1.200", TCP_PORT, UDP_PORT);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -34,13 +53,44 @@ public class ServerClient {
     }
 
 
-    private void registerPackets() {
-        Kryo kryo = client.getKryo();
-        kryo.register(Packets.Packet000Request.class);
+    /**
+     * Set up client listener.
+     */
+    private void setupListener() {
+        clientNetworkListener.init(this);
+        this.client.addListener(clientNetworkListener);
     }
 
-    public static void main(String[] args) {
-        new ServerClient();
+    /**
+     * Get the client associated with this server client.
+     *
+     * @return Client instance to return
+     */
+    public Client getClient() {
+        return this.client;
+    }
+
+
+    /**
+     * Register packets for client listener.
+     */
+    private void registerPackets() {
+        Kryo kryo = client.getKryo();
+        kryo.register(clientNetworkListener.getClass());
+        kryo.register(Packet000RequestAccess.class);
+        kryo.register(Packet001AllowAccess.class);
+        kryo.register(Packet002RequestConnections.class);
+        kryo.register(Packet003SendConnections.class);
+        kryo.register(Packet004RequestPlayers.class);
+        kryo.register(Packet005SendPlayerPosition.class);
+        kryo.register(Packet006RequestBotsLocation.class);
+        kryo.register(Packet007SendBotsLocation.class);
+        kryo.register(java.util.Map.class);
+        kryo.register(java.util.HashMap.class);
+        kryo.register(Double[].class);
+        kryo.register(Integer.class);
+        kryo.register(Battlefield.class);
+
 
     }
 }

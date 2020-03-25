@@ -9,17 +9,10 @@ import Game.maps.Object;
 import Game.player.Bullet;
 import Game.player.Flag;
 import Game.player.Player;
-import Game.player.SpriteAnimation;
-import javafx.animation.Animation;
+import com.esotericsoftware.kryonet.Client;
 import javafx.animation.AnimationTimer;
-import javafx.animation.FadeTransition;
 import javafx.application.Application;
-import javafx.geometry.Pos;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
-import javafx.scene.Scene;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -27,40 +20,83 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
-import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
-import java.util.Arrays;
+
+import java.util.ArrayList;
 import java.util.HashMap;
-import javafx.util.Duration;
+
+import networking.packets.Packet004RequestPlayers;
+import networking.packets.Packet005SendPlayerPosition;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 public class Screen extends Application {
-    Player player;
-    Group root;
-    MapLoad mapLoad;
-    Base greenBase;
-    Base redBase;
-    AnimationTimer timer;
-    Stage stage;
-    List<Object> objectsOnMap;
-    BotSpawner botSpawner;
-    List<Bot> botsOnMap;
-    Map<Integer, Double[]> botLocations = new HashMap<>();
-
+    private Player player;
+    private Group root;
+    private MapLoad mapLoad;
+    private Base greenBase;
+    private Base redBase;
+    private AnimationTimer timer;
+    private Stage stage;
+    private List<Object> objectsOnMap;
+    private List<Bot> botsOnMap;
+    private Map<Integer, Double[]> botLocations = new HashMap<>();
+    private Map<Integer, Double[]> botLocationsXY = new HashMap<>();
 
     // map size constants
     private static final int MAP_WIDTH_IN_TILES = 40;
     private static final int MAP_HEIGHT_IN_TILES = 25;
+
+    private BotSpawner botSpawner;
+    private Client client;
+    private boolean inGame;
+
+    public Screen(Client client) {
+        this.client = client;
+        this.root = new Group();
+        this.inGame = false;
+        mapLoad = new MapLoad();
+        botSpawner = new BotSpawner();
+        botsOnMap = new ArrayList<>();
+
+
+    }
+
+    public boolean isInGame() {
+        return this.inGame;
+    }
+
+    public Battlefield getChosenMap() {
+        return chosenMap;
+    }
+
+    public Player getPlayer() {
+        return this.player;
+    }
+
+    public Map<Integer, Double[]> getBotLocationsXY() {
+        for (Bot bot : botsOnMap) {
+            Double[] xy = new Double[2];
+            xy[0] = bot.getX();
+            xy[1] = bot.getY();
+            botLocationsXY.put(bot.getBotId(), xy);
+
+        }
+        return this.botLocationsXY;
+    }
+
+    public void setBotLocationsXY(Map<Integer, Double[]> botLocations) {
+        this.botLocationsXY = botLocations;
+    }
 
 
     // teams scores
     int redTeamScore = 0;
     int greenTeamScore = 0;
 
-    Battlefield chosenMap = Battlefield.MAP1;
+    Battlefield chosenMap = Battlefield.EMPTY;
     Player.playerColor color = Player.playerColor.RED;
 
 
@@ -123,7 +159,20 @@ public class Screen extends Application {
         player.setRoot(root);
     }
 
+    public void createNewPlayer(double x, double y) {
+        Player otherPlayer = new Player(
+                (int) x,
+                (int) y,
+                0,
+                0,
+                color.equals(Player.playerColor.GREEN) ? Player.playerColor.RED : Player.playerColor.GREEN
+        );
+        otherPlayer.setRoot(root);
+        root.getChildren().add(otherPlayer);
+    }
+
     public void setMap(int mapIndex) {
+
         if (mapIndex == 0) {
             chosenMap = Battlefield.MAP1;
         } else if (mapIndex == 1) {
@@ -135,20 +184,20 @@ public class Screen extends Application {
 
     @Override
     public void start(Stage stage) {
+        inGame = true;
         boolean fullScreen = stage.isFullScreen();
-        root = new Group();
         this.stage = stage;
 
-        mapLoad = new MapLoad();
-
+        stage.getScene().setRoot(root);
 
         if (chosenMap == Battlefield.MAP1) {
             mapLoad.loadMap1(root, stage);
         } else if (chosenMap == Battlefield.MAP2) {
             mapLoad.loadMap2(root, stage);
 
+        } else {
+            throw new EnumConstantNotPresentException(Battlefield.class, "");
         }
-        stage.getScene().setRoot(root);
 
         // both bases
         greenBase = mapLoad.getBaseByColor(Base.baseColor.GREEN);
@@ -156,15 +205,30 @@ public class Screen extends Application {
 
         // bases for collision detection
         List<Base> bases = mapLoad.getBases();
+        if (botLocationsXY.isEmpty()) {
+            botSpawner.spawnBots(4, stage, root, bases, mapLoad.getObjectsOnMap());
+            botsOnMap = botSpawner.getBotsOnMap();
+        } else {
+            Packet004RequestPlayers requestPlayers = new Packet004RequestPlayers();
+            requestPlayers.battlefield = getChosenMap();
+            client.sendTCP(requestPlayers);
+            for (Map.Entry<Integer, Double[]> entry : botLocationsXY.entrySet()) {
+                Double[] positions = entry.getValue();
+                int id = entry.getKey();
+                Bot bot = new Bot(positions[0].intValue(), positions[1].intValue(), 0, 0, 10);
+                System.out.println(String.format("Created bot at %d, %d", positions[0].intValue(), positions[1].intValue()));
+                bot.setBotId(id);
+                root.getChildren().add(bot);
+                botsOnMap.add(bot);
+            }
+        }
 
-        botSpawner = new BotSpawner();
-        botSpawner.spawnBots(4, stage, root, bases, mapLoad.getObjectsOnMap());
-        botsOnMap = botSpawner.getBotsOnMap();
         // save bot locations
         getBotLocationsOnMap();
 
         setPlayerYStartingPosition(stage);
         setPlayerXStartingPosition(stage);
+
 
         createPlayer();
 
@@ -173,10 +237,18 @@ public class Screen extends Application {
 
         root.getChildren().add(player);
 
+        // notify other players of your position
+        Packet005SendPlayerPosition positionPacket = new Packet005SendPlayerPosition();
+        positionPacket.xPosition = player.getX();
+        positionPacket.yPosition = player.getY();
+        positionPacket.battlefield = getChosenMap();
+        this.client.sendTCP(positionPacket);
+
         redFlag = mapLoad.getRedFlag();
         greenFlag = mapLoad.getGreenFlag();
-
         objectsOnMap = mapLoad.getObjectsOnMap();
+
+
         timer = new AnimationTimer() {
             @Override
             public void handle(long l) {
@@ -239,6 +311,7 @@ public class Screen extends Application {
             botLocations.put(bot.getBotId(), botXY);
         }
     }
+
 
     private void bulletCollision() {
         Iterator<Bullet> bullets = player.bullets.iterator();

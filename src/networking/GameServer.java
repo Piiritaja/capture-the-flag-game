@@ -1,8 +1,17 @@
 package networking;
 
 
+import Game.maps.Battlefield;
 import com.esotericsoftware.kryonet.Server;
 import com.esotericsoftware.kryo.Kryo;
+import networking.packets.Packet000RequestAccess;
+import networking.packets.Packet001AllowAccess;
+import networking.packets.Packet002RequestConnections;
+import networking.packets.Packet003SendConnections;
+import networking.packets.Packet004RequestPlayers;
+import networking.packets.Packet005SendPlayerPosition;
+import networking.packets.Packet006RequestBotsLocation;
+import networking.packets.Packet007SendBotsLocation;
 
 import java.io.IOException;
 
@@ -11,21 +20,48 @@ public class GameServer {
 
     private Server server;
     private ServerListener serverListener;
+    private int numberOfConnections;
 
     //Server ports
     private static final int TCP_PORT = 54555;
     private static final int UDP_PORT = 54777;
 
 
+    /**
+     * Save the number of connected clients to a variable.
+     *
+     * @param numberOfConnections amount to set the connections to.
+     */
+    public void setNumberOfConnections(int numberOfConnections) {
+        this.numberOfConnections = numberOfConnections;
+    }
+
+    /**
+     * Get the number of connected clients to the server.
+     *
+     * @return number of connected clients.
+     */
+    public int getNumberOfConnections() {
+        return this.numberOfConnections;
+    }
+
+    /**
+     * Set's up server and initializes server listener
+     */
     public GameServer() {
         this.server = new Server();
-        this.serverListener = new ServerListener();
+        this.serverListener = new ServerListener(this.server, this);
         setUpServer();
 
     }
 
+
+    /**
+     * Start server
+     */
     public void setUpServer() {
         server.addListener(serverListener);
+        registerPackets();
 
         try {
             server.start();
@@ -34,16 +70,31 @@ public class GameServer {
 
         } catch (IOException e) {
             e.printStackTrace();
-
         }
-        registerPackets();
 
     }
 
+
+    /**
+     * Register packets for server listener
+     */
     public void registerPackets() {
         Kryo kryo = server.getKryo();
         kryo.register(serverListener.getClass());
-        kryo.register(Packets.Packet000Request.class);
+        kryo.register(Packet000RequestAccess.class);
+        kryo.register(Packet001AllowAccess.class);
+        kryo.register(Packet002RequestConnections.class);
+        kryo.register(Packet003SendConnections.class);
+        kryo.register(Packet004RequestPlayers.class);
+        kryo.register(Packet005SendPlayerPosition.class);
+        kryo.register(Packet006RequestBotsLocation.class);
+        kryo.register(Packet007SendBotsLocation.class);
+        kryo.register(java.util.Map.class);
+        kryo.register(java.util.HashMap.class);
+        kryo.register(Double[].class);
+        kryo.register(Integer.class);
+        kryo.register(Battlefield.class);
+
     }
 
     public static void main(String[] args) {

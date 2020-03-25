@@ -58,6 +58,7 @@ public class Player extends ImageView {
     double shootingLeftX;
     double shootingLeftY;
 
+
     Bullet bullet;
     public List<Bullet> bullets = new ArrayList<>();
     int step = 2;
@@ -85,10 +86,10 @@ public class Player extends ImageView {
             image = new Image(GREEN_PLAYER_MAIN_IMAGE);
         } else if (color.equals(playerColor.RED)) {
             image = new Image(RED_PLAYER_MAIN_IMAGE);
-            walkingRightImage = new Image("assets/player/red/walkingRight.png");
-            walkingLeftImage = new Image("assets/player/red/walkingLeft.png");
-            walkingUpImage = new Image("assets/player/red/walkingUp.png");
-            walkingDownImage = new Image("assets/player/red/walkingDown.png");
+            //walkingRightImage = new Image("assets/player/red/walkingRight.png");
+            //walkingLeftImage = new Image("assets/player/red/walkingLeft.png");
+            //walkingUpImage = new Image("assets/player/red/walkingUp.png");
+            //walkingDownImage = new Image("assets/player/red/walkingDown.png");
         } else {
             image = new Image(RED_PLAYER_MAIN_IMAGE);
         }
@@ -102,14 +103,14 @@ public class Player extends ImageView {
         this.dx = dx;
         this.dy = dy;
         this.color = color;
-        this.setViewport(new Rectangle2D(OFFSET_X, OFFSET_Y, PLAYER_WIDTH, PLAYER_HEIGHT));
-        animation = new SpriteAnimation(
+        //this.setViewport(new Rectangle2D(OFFSET_X, OFFSET_Y, PLAYER_WIDTH, PLAYER_HEIGHT));
+/*        animation = new SpriteAnimation(
                 this,
                 Duration.millis(700),
                 COUNT, COLUMNS,
                 OFFSET_X, OFFSET_Y,
                 PLAYER_WIDTH, PLAYER_HEIGHT
-        );
+        );*/
     }
 
     public void tick(List<Object> objectsOnMap, List<Bot> botsOnMap) {
@@ -196,7 +197,7 @@ public class Player extends ImageView {
             this.setImage(walkingLeftImage);
             setDx(-step);
         }
-        animation.play();
+        //animation.play();
     };
 
     // Player movement keyReleased
@@ -210,7 +211,7 @@ public class Player extends ImageView {
         } else if (keyEvent.getCode().equals(KeyCode.A)) {
             setDx(0);
         }
-        animation.pause();
+        //animation.pause();
     };
 
 
