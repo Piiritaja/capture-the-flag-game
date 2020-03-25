@@ -79,6 +79,8 @@ public class ClientNetworkListener extends Listener {
         } else if (object instanceof Packet005SendPlayerPosition) {
             double playerXPosition = ((Packet005SendPlayerPosition) object).xPosition;
             double playerYPosition = ((Packet005SendPlayerPosition) object).yPosition;
+            System.out.println(playerXPosition);
+            System.out.println(playerYPosition);
             System.out.println("Received player position");
             serverClient.menu.getScreen().createNewPlayer(playerXPosition, playerYPosition);
             System.out.println("Created player");

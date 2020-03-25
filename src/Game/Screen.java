@@ -40,6 +40,8 @@ public class Screen extends Application {
 
     public Screen(Client client) {
         this.client = client;
+        this.root = new Group();
+
     }
 
 
@@ -126,7 +128,6 @@ public class Screen extends Application {
     @Override
     public void start(Stage stage) {
         boolean fullScreen = stage.isFullScreen();
-        root = new Group();
         this.stage = stage;
 
         mapLoad = new MapLoad();
@@ -154,6 +155,7 @@ public class Screen extends Application {
 
 
         createPlayer();
+
 
         root.getChildren().add(player);
 
