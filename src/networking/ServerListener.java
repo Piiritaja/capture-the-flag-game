@@ -86,7 +86,7 @@ public class ServerListener extends Listener {
         }
         if (object instanceof Packet006RequestBotsLocation) {
             System.out.println("Received requestBotsLocation packet");
-            server.sendToAllExceptTCP(connection.getID(), new Packet006RequestBotsLocation());
+            server.sendToAllExceptTCP(connection.getID(), object);
             System.out.println("Sent requestBotsLocation packet to all other clients");
         }
         if (object instanceof Packet007SendBotsLocation) {
