@@ -64,6 +64,10 @@ public class Screen extends Application {
 
     }
 
+    public Player getPlayer() {
+        return this.player;
+    }
+
     public Map<Integer, Double[]> getBotLocationsXY() {
         for (Bot bot : botsOnMap) {
             Double[] xy = new Double[2];

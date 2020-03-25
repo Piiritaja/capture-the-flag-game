@@ -7,6 +7,7 @@ import javafx.application.Platform;
 import networking.packets.Packet001AllowAccess;
 import networking.packets.Packet002RequestConnections;
 import networking.packets.Packet003SendConnections;
+import networking.packets.Packet004RequestPlayers;
 import networking.packets.Packet005SendPlayerPosition;
 import networking.packets.Packet006RequestBotsLocation;
 import networking.packets.Packet007SendBotsLocation;
@@ -78,6 +79,17 @@ public class ClientNetworkListener extends Listener {
 
             }
             this.serverClient.menu.setNumberOfCurrentConnections(connections);
+        } else if (object instanceof Packet004RequestPlayers) {
+            if (serverClient.menu.getScreen().inGame) {
+                Packet005SendPlayerPosition sendPlayerPosition = new Packet005SendPlayerPosition();
+
+                sendPlayerPosition.xPosition = serverClient.menu.getScreen().getPlayer().getX();
+                sendPlayerPosition.yPosition = serverClient.menu.getScreen().getPlayer().getY();
+
+                connection.sendTCP(sendPlayerPosition);
+
+            }
+
         } else if (object instanceof Packet005SendPlayerPosition) {
             System.out.println("Received sendPlayerPosition packet");
             double playerXPosition = ((Packet005SendPlayerPosition) object).xPosition;

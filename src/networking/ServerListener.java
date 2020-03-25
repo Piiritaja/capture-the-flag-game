@@ -6,6 +6,7 @@ import com.esotericsoftware.kryonet.Server;
 import networking.packets.Packet001AllowAccess;
 import networking.packets.Packet002RequestConnections;
 import networking.packets.Packet003SendConnections;
+import networking.packets.Packet004RequestPlayers;
 import networking.packets.Packet005SendPlayerPosition;
 import networking.packets.Packet006RequestBotsLocation;
 import networking.packets.Packet007SendBotsLocation;
@@ -72,6 +73,11 @@ public class ServerListener extends Listener {
             server.sendToAllTCP(sendConnections);
             System.out.println("Sent sendConnections packet to all clients");
 
+        }
+
+        if (object instanceof Packet004RequestPlayers) {
+            System.out.println("Received requestPlayers");
+            server.sendToAllExceptTCP(connection.getID(), object);
         }
         if (object instanceof Packet005SendPlayerPosition) {
             System.out.println("Received sendPlayerPosition packet");
