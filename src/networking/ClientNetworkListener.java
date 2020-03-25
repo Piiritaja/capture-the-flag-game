@@ -11,8 +11,6 @@ import networking.packets.Packet005SendPlayerPosition;
 import networking.packets.Packet006RequestBotsLocation;
 import networking.packets.Packet007SendBotsLocation;
 
-import java.util.Map;
-
 public class ClientNetworkListener extends Listener {
     private ServerClient serverClient;
 

@@ -144,13 +144,12 @@ public class Menu extends Application {
      * Screen for users to pick a map and a team.
      */
     public void gameChooser() {
-        Packet006RequestBotsLocation requestBotsLocation = new Packet006RequestBotsLocation();
-        client.sendTCP(requestBotsLocation);
+
         // Map picker
         Text t = new Text(10, 50, "Choose a map");
         Group root = new Group();
         Button playButton = new Button("start game");
-        playButton.setOnAction(actionEvent -> screen.start(mainStage));
+        playButton.setOnAction(actionEvent -> startScreen());
 
         this.mainStage.getScene().setRoot(root);
         List<ImageView> images = loadMapImages();
@@ -184,6 +183,12 @@ public class Menu extends Application {
 
         mainStage.getScene().setRoot(root);
 
+    }
+
+    public void startScreen() {
+        Packet006RequestBotsLocation requestBotsLocation = new Packet006RequestBotsLocation();
+        client.sendTCP(requestBotsLocation);
+        screen.start(mainStage);
     }
 
     /**
