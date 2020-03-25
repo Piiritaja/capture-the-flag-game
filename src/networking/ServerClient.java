@@ -82,6 +82,7 @@ public class ServerClient {
         kryo.register(Packet005SendPlayerPosition.class);
         kryo.register(Packet006RequestRoot.class);
         kryo.register(Packet007SendRoot.class);
+        kryo.register(javafx.scene.Group.class);
 
     }
 }
