@@ -210,6 +210,7 @@ public class Screen extends Application {
                 Double[] positions = entry.getValue();
                 int id = entry.getKey();
                 Bot bot = new Bot(positions[0].intValue(), positions[1].intValue(), 0, 0, 10);
+                System.out.println(String.format("Created bot at %d, %d", positions[0].intValue(), positions[1].intValue()));
                 bot.setBotId(id);
                 root.getChildren().add(bot);
                 botsOnMap.add(bot);
