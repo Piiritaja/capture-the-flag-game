@@ -2,7 +2,9 @@ package Game.player;
 
 import Game.bots.Bot;
 import Game.maps.Object;
+import javafx.animation.Animation;
 import javafx.event.EventHandler;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -12,6 +14,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -24,12 +27,25 @@ import static java.lang.StrictMath.abs;
 public class Player extends ImageView {
 
     //Constants for player size
-    private static final int PLAYER_WIDTH = 60;
-    private static final int PLAYER_HEIGHT = 60;
+    private static final int PLAYER_WIDTH = 34;
+    private static final int PLAYER_HEIGHT = 34;
+    private static final int COLUMNS = 4;
+    private static final int COUNT = 4;
+    private static final int OFFSET_X = 0;
+    private static final int OFFSET_Y = 0;
+    //public ImageView imageView;
+    Image image;
+    Animation animation;
+
 
     //Constants for player model graphics
     private static final String RED_PLAYER_MAIN_IMAGE = "assets/player/red/still.png";
     private static final String GREEN_PLAYER_MAIN_IMAGE = "assets/player/green/still.png";
+    //private static final String RED_PLAYER_WALKING = "assets/player/red/walkingRight.png";
+    private Image walkingRightImage;
+    private Image walkingLeftImage;
+    private Image walkingUpImage;
+    private Image walkingDownImage;
     private Group root;
 
     // shooting coordinates
@@ -44,7 +60,6 @@ public class Player extends ImageView {
 
     Bullet bullet;
     public List<Bullet> bullets = new ArrayList<>();
-    //public Iterator<Bullet> bull = new Iterator<Bullet>();
     int step = 2;
 
     public int dx, dy, x, y, width, height;
@@ -66,12 +81,14 @@ public class Player extends ImageView {
 
 
     public Player(int x, int y, int dx, int dy, playerColor color) {
-        Image image;
         if (color.equals(playerColor.GREEN)) {
             image = new Image(GREEN_PLAYER_MAIN_IMAGE);
-
         } else if (color.equals(playerColor.RED)) {
             image = new Image(RED_PLAYER_MAIN_IMAGE);
+            walkingRightImage = new Image("assets/player/red/walkingRight.png");
+            walkingLeftImage = new Image("assets/player/red/walkingLeft.png");
+            walkingUpImage = new Image("assets/player/red/walkingUp.png");
+            walkingDownImage = new Image("assets/player/red/walkingDown.png");
         } else {
             image = new Image(RED_PLAYER_MAIN_IMAGE);
         }
@@ -85,6 +102,14 @@ public class Player extends ImageView {
         this.dx = dx;
         this.dy = dy;
         this.color = color;
+        this.setViewport(new Rectangle2D(OFFSET_X, OFFSET_Y, PLAYER_WIDTH, PLAYER_HEIGHT));
+        animation = new SpriteAnimation(
+                this,
+                Duration.millis(700),
+                COUNT, COLUMNS,
+                OFFSET_X, OFFSET_Y,
+                PLAYER_WIDTH, PLAYER_HEIGHT
+        );
     }
 
     public void tick(List<Object> objectsOnMap, List<Bot> botsOnMap) {
@@ -123,17 +148,21 @@ public class Player extends ImageView {
             double allowedLengthX = abs(getX() - mouseX);
             double allowedLengthY = abs(getY() - mouseY);
             if (getY() >= mouseY && mouseX >= getX() - allowedLengthY && mouseX <= getX() + allowedLengthY) {
+                this.setImage(walkingUpImage);
                 bullet = new Bullet((int) shootingUpX, (int) shootingUpY, 3, Color.YELLOW);
-                bullet.shoot(lineUp, root, Math.min(500, shootingUpY - mouseY));
+                bullet.shoot(lineUp, root, Math.min(500, shootingUpY - mouseY), bullets);
             } else if (getY() < mouseY && mouseX >= getX() - allowedLengthY && mouseX <= getX() + allowedLengthY) {
+                this.setImage(walkingDownImage);
                 bullet = new Bullet((int) shootingDownX, (int) shootingDownY, 3, Color.YELLOW);
-                bullet.shoot(lineDown, root, Math.min(500, mouseY - shootingDownY));
+                bullet.shoot(lineDown, root, Math.min(500, mouseY - shootingDownY), bullets);
             } else if (getX() < mouseX && mouseY >= getY() - allowedLengthX && mouseY <= getY() + allowedLengthX) {
+                this.setImage(walkingRightImage);
                 bullet = new Bullet((int) shootingRightX, (int) shootingRightY, 3, Color.YELLOW);
-                bullet.shoot(lineRight, root, Math.min(500, mouseX - shootingRightX));
+                bullet.shoot(lineRight, root, Math.min(500, mouseX - shootingRightX), bullets);
             } else if (getX() >= mouseX && mouseY >= getY() - allowedLengthX && mouseY <= getY() + allowedLengthX) {
+                this.setImage(walkingLeftImage);
                 bullet = new Bullet((int) shootingLeftX, (int) shootingLeftY, 3, Color.YELLOW);
-                bullet.shoot(lineLeft, root, Math.min(500, shootingLeftX - mouseX));
+                bullet.shoot(lineLeft, root, Math.min(500, shootingLeftX - mouseX), bullets);
             }
             root.getChildren().add(bullet);
             bullets.add(bullet);
@@ -155,14 +184,19 @@ public class Player extends ImageView {
     // Player movement keyPressed
     public EventHandler<KeyEvent> pressed = keyEvent -> {
         if (keyEvent.getCode().equals(KeyCode.W)) {
+            this.setImage(walkingUpImage);
             setDy(-step);
         } else if (keyEvent.getCode().equals(KeyCode.S)) {
+            this.setImage(walkingDownImage);
             setDy(step);
         } else if (keyEvent.getCode().equals(KeyCode.D)) {
+            this.setImage(walkingRightImage);
             setDx(step);
         } else if (keyEvent.getCode().equals(KeyCode.A)) {
+            this.setImage(walkingLeftImage);
             setDx(-step);
         }
+        animation.play();
     };
 
     // Player movement keyReleased
@@ -176,6 +210,7 @@ public class Player extends ImageView {
         } else if (keyEvent.getCode().equals(KeyCode.A)) {
             setDx(0);
         }
+        animation.pause();
     };
 
 
