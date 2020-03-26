@@ -17,9 +17,21 @@ public class BotSpawner {
     private Map<Integer, Integer> botLocations = new HashMap<>();
     public List<Bot> botsOnMap = new ArrayList<>();
 
+    /**
+     * Bot spawner to add bots to the map.
+     */
     public BotSpawner() {
     }
 
+    /**
+     * Spawns bots according to given inputs.
+     *
+     * @param amount       amount of bots to be added
+     * @param stage        JavaFx stage that the bots are added to
+     * @param group        JavaFx group that the bots are added to
+     * @param bases        Bases that the bot can't be spawned into
+     * @param objectsOnMap List of objects that the bots can not spawn into
+     */
     public void spawnBots(int amount, Stage stage, Group group, List<Base> bases, List<Object> objectsOnMap) {
         for (int i = 0; i < amount; i++) {
             double maxX = stage.widthProperty().get();
@@ -55,6 +67,12 @@ public class BotSpawner {
         }
     }
 
+    /**
+     * @param locationX X coordinate of the bot
+     * @param locationY Y coordinate of the bot
+     * @param bases     Bases on the map
+     * @return true if bot is inside a base, false if not
+     */
     public boolean notInBase(int locationX, int locationY, List<Base> bases) {
         for (Base base : bases) {
             if (locationX < base.getRightX() && locationX > base.getLeftX()) {
@@ -64,6 +82,11 @@ public class BotSpawner {
         return true;
     }
 
+    /**
+     * @param bot     Bot that the collision is checked with
+     * @param objects Objects thate the collision are checked with
+     * @return if the bot collides with an object
+     */
     private boolean notColliding(Bot bot, List<Object> objects) {
         for (Object object : objects) {
             if (object.collides(bot)) {
@@ -73,6 +96,9 @@ public class BotSpawner {
         return true;
     }
 
+    /**
+     * @return Bots that were added by this spawner
+     */
     public List<Bot> getBotsOnMap() {
         return botsOnMap;
     }

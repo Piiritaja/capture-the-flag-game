@@ -17,6 +17,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Objects that are displayed on the map.
+ * Has collision detector.
+ * Map consists of 25 rows and 40 columns of object slots.
+ */
 public class Object extends ImageView {
 
     private int width = 32;
@@ -32,23 +37,43 @@ public class Object extends ImageView {
         this.setImage(new Image(texture));
     }
 
+    /**
+     * Set objects row on the map (25 rows x 40 columns).
+     *
+     * @param row: Row to set the object to.
+     */
     public void setRow(int row) {
         this.row = row;
     }
 
+    /**
+     * Set objects column on the map (25 rows x 40 columns).
+     *
+     * @param column: Row to set the object to.
+     */
     public void setColumn(int column) {
         this.column = column;
     }
 
+    /**
+     * @return The row that the object is on.
+     */
     public int getRow() {
         return row;
     }
 
+    /**
+     * @return the column that the object is on.
+     */
     public int getColumn() {
         return column;
     }
 
-
+    /**
+     * Creates invisible boundaries for the object to be used in collision detection.
+     *
+     * @return Rectangle: The rectangle is used for collision detection.
+     */
     private Rectangle boundaries() {
         Rectangle objectBoundaries = new Rectangle();
         objectBoundaries.setX(this.getX());
@@ -58,6 +83,12 @@ public class Object extends ImageView {
         return objectBoundaries;
     }
 
+    /**
+     * Checks if this object collides with a player.
+     *
+     * @param player Player object to be checked collision with.
+     * @return true of false - according to if the two objects collide or not.
+     */
     public boolean collides(Player player) {
         Rectangle objectBoundaries = boundaries();
         Rectangle playerBoundaries = new Rectangle();
@@ -68,6 +99,12 @@ public class Object extends ImageView {
         return objectBoundaries.getBoundsInLocal().intersects(playerBoundaries.getBoundsInLocal());
     }
 
+    /**
+     * Checks if this object collides with a bot.
+     *
+     * @param bot Bot object to be checked collision with.
+     * @return true of false - according to if the two objects collide or not.
+     */
     public boolean collides(Bot bot) {
         Rectangle objectBoundaries = boundaries();
         Rectangle botBoundaries = new Rectangle();
@@ -78,6 +115,12 @@ public class Object extends ImageView {
         return objectBoundaries.getBoundsInLocal().intersects(botBoundaries.getBoundsInLocal());
     }
 
+    /**
+     * Checks if this object collides with a bullet.
+     *
+     * @param bullet Bot object to be checked collision with.
+     * @return true of false - according to if the two objects collide or not.
+     */
     public boolean collides(Bullet bullet) {
         Rectangle objectBoundaries = boundaries();
         Rectangle bulletBoundaries = new Rectangle();
@@ -88,6 +131,15 @@ public class Object extends ImageView {
         return ((Path) Shape.intersect(bullet, objectBoundaries)).getElements().size() > 1;
     }
 
+    /**
+     * Adds objects to the map.
+     * Object locations are described in .csv files.
+     *
+     * @param root  Game Window stage root that the objects are in.
+     * @param stage Game Window stage
+     * @param map   Objects are loaded according to the chosen map
+     * @return List of objects added to the map
+     */
     public static List<Object> addObjectsToGroup(Group root, Stage stage, Battlefield map) {
         String line;
         String objectCsv = setCsv(map);
@@ -136,6 +188,13 @@ public class Object extends ImageView {
         return walls;
     }
 
+
+    /**
+     * Method used to set the correct .csv file for object loading.
+     *
+     * @param map Map which the objects are loaded onto
+     * @return Path to the correct .csv file
+     */
     private static String setCsv(Battlefield map) {
         switch (map) {
             case MAP1:

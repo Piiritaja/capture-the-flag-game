@@ -309,7 +309,11 @@ public class Screen extends Application {
         }
     }
 
-
+    /**
+     * Update the scaling of objects on map.
+     * Used for player and bots.
+     * Sets the size and location according to the JavaFx Stage of this class (main game window).
+     */
     private void updateScale() {
         final double initialStageWidth = stage.widthProperty().get();
         final double initialStageHeight = stage.heightProperty().get();
@@ -341,6 +345,9 @@ public class Screen extends Application {
         });
     }
 
+    /**
+     * Adds bot locations according to the windows size to botLocations variable.
+     */
     private void getBotLocationsOnMap() {
         double initialStageWidth = stage.widthProperty().get();
         double initialStageHeight = stage.heightProperty().get();
