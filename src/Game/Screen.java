@@ -1,6 +1,5 @@
 package Game;
 
-import Game.bots.Bot;
 import Game.bots.BotSpawner;
 import Game.maps.Base;
 import Game.maps.Battlefield;
@@ -9,17 +8,9 @@ import Game.maps.Object;
 import Game.player.Bullet;
 import Game.player.Flag;
 import Game.player.Player;
-import Game.player.SpriteAnimation;
-import javafx.animation.Animation;
 import javafx.animation.AnimationTimer;
-import javafx.animation.FadeTransition;
 import javafx.application.Application;
-import javafx.geometry.Pos;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
-import javafx.scene.Scene;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -27,12 +18,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
-import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
-import javafx.util.Duration;
-
-import java.util.Iterator;
 import java.util.List;
 
 public class Screen extends Application {
@@ -45,6 +31,7 @@ public class Screen extends Application {
     Stage stage;
     List<Object> objectsOnMap;
     BotSpawner botSpawner;
+    Bullet bullet = new Bullet(0, 0, 3, Color.GREEN);
 
 
     // teams scores
@@ -63,9 +50,6 @@ public class Screen extends Application {
     private Flag greenFlag;
     private Flag redFlag;
 
-    //Shooting calculations
-    double halfLengthX;
-    double halfLengthY;
 
     public static void main(String[] args) {
         launch(args);
@@ -159,7 +143,7 @@ public class Screen extends Application {
                 player.tick(objectsOnMap, botSpawner.botsOnMap);
                 catchTheFlag();
                 scoreBoard();
-                bulletCollision();
+                bullet.bulletCollision(player, objectsOnMap, root, botSpawner);
                 player.setOnKeyPressed(player.pressed);
                 player.setOnKeyReleased(player.released);
                 root.setOnMouseClicked(player.shooting);
@@ -172,43 +156,12 @@ public class Screen extends Application {
         stage.show();
     }
 
-    private void bulletCollision() {
-        Iterator<Bullet> bullets = player.bullets.iterator();
-        while (bullets.hasNext()) {
-            Bullet bullet = bullets.next();
-            for (Object object : objectsOnMap) {
-                if (object.collides(bullet)) {
-                    root.getChildren().remove(bullet);
-                    bullets.remove();
-                    if (bullets.hasNext()) {
-                        bullet = bullets.next();
-                    } else {
-                        break;
-                    }
-                }
-            }
-            for (int i = 0; i < botSpawner.botsOnMap.size(); i++) {
-                Bot bot = botSpawner.botsOnMap.get(i);
-                if (bot.collides(bullet)) {
-                    root.getChildren().remove(bullet);
-                    bullets.remove();
-                    bot.lives -= 1;
-                    if (bot.getBotLives() <= 0) {
-                        root.getChildren().remove(bot);
-                        botSpawner.botsOnMap.remove(bot);
-                        i--;
-                    }
-                }
-            }
-        }
-    }
-
     // Player can take flag and release it in base
     public void catchTheFlag() {
         if (player.getColor() == Player.playerColor.RED) {
             if (player.getBoundsInParent().intersects(redFlag.getBoundsInParent())) {
-                if (player.getX() > redBase.getRightX()) {
-                    redFlag.relocate(player.getX(), player.getY());
+                if (player.getX() > redBase.getRightX() - redBase.getRightX() / 5) {
+                    redFlag.relocate(player.getX() + 10, player.getY() + 10);
                 } else {
                     redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
                     redTeamScore += 1;
@@ -219,7 +172,7 @@ public class Screen extends Application {
         } else {
             if (player.getBoundsInParent().intersects(greenFlag.getBoundsInParent())) {
                 if (player.getX() < greenBase.getLeftX()) {
-                    greenFlag.relocate(player.getX(), player.getY());
+                    greenFlag.relocate(player.getX() + 10, player.getY() + 10);
                 } else {
                     greenFlag.relocate(greenBase.getRightX() - 50,
                             greenBase.getBottomY() / 2);
