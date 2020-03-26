@@ -1,4 +1,4 @@
-package Game;
+package Game.player;
 
 import javafx.scene.paint.Color;
 
@@ -8,6 +8,7 @@ public class Flag extends Rectangle {
 
     int x, y, width, height;
     private flagColor color;
+    private boolean pickedUp = false;
     public enum flagColor {
         RED(Color.RED),
         GREEN(Color.GREEN);
@@ -29,5 +30,13 @@ public class Flag extends Rectangle {
 
     public flagColor getColor() {
         return this.color;
+    }
+
+    public void pickUp() {
+        this.pickedUp = true;
+    }
+
+    public boolean isPickedUp() {
+        return pickedUp;
     }
 }

@@ -1,101 +1,131 @@
 package Game;
 
+import Game.bots.Bot;
 import Game.bots.BotSpawner;
 import Game.maps.Base;
+import Game.maps.Battlefield;
 import Game.maps.MapLoad;
 import Game.maps.Object;
+import Game.player.Bullet;
+import Game.player.Flag;
+import Game.player.Player;
+import com.esotericsoftware.kryonet.Client;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
-import javafx.event.EventHandler;
-import javafx.geometry.Insets;
 import javafx.scene.Group;
-import javafx.scene.Scene;
+import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.TilePane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-import java.lang.Math.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 
+import networking.ServerClient;
+import networking.packets.Packet004RequestPlayers;
+import networking.packets.Packet005SendPlayerPosition;
+import networking.packets.Packet008SendPlayerID;
 
+import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
-
-import static java.lang.StrictMath.abs;
-
+import java.util.Map;
+import java.util.UUID;
 
 public class Screen extends Application {
-    Player player;
-    Flag redFlag;
-    Flag greenFlag;
-    Group root;
-    MapLoad mapLoad;
-    Bullet bullet;
-    Base greenBase;
-    Base redBase;
-    AnimationTimer timer;
-    Stage stage;
+
+    Bullet bullet = new Bullet(0, 0, 3, Color.GREEN);
+
+    private Player player;
+    private Group root;
+    private MapLoad mapLoad;
+    private Base greenBase;
+    private Base redBase;
+    private AnimationTimer timer;
+    private Stage stage;
+    private List<Object> objectsOnMap;
+    private List<Bot> botsOnMap;
+    private Map<Integer, Double[]> botLocations = new HashMap<>();
+    private Map<Integer, Double[]> botLocationsXY = new HashMap<>();
+
+    // map size constants
+    private static final int MAP_WIDTH_IN_TILES = 40;
+    private static final int MAP_HEIGHT_IN_TILES = 25;
+
+    private BotSpawner botSpawner;
+    private ServerClient serverclient;
+    private Client client;
+    private boolean inGame;
+
+    public Screen(ServerClient serverclient) {
+        this.serverclient = serverclient;
+        this.client = serverclient.getClient();
+        this.root = new Group();
+        this.inGame = false;
+        mapLoad = new MapLoad();
+        botSpawner = new BotSpawner();
+        botsOnMap = new ArrayList<>();
+
+
+    }
+
+    public boolean isInGame() {
+        return this.inGame;
+    }
+
+    public Battlefield getChosenMap() {
+        return chosenMap;
+    }
+
+    public Player getPlayer() {
+        return this.player;
+    }
+
+    public Map<Integer, Double[]> getBotLocationsXY() {
+        for (Bot bot : botsOnMap) {
+            Double[] xy = new Double[2];
+            xy[0] = bot.getX();
+            xy[1] = bot.getY();
+            botLocationsXY.put(bot.getBotId(), xy);
+
+        }
+        return this.botLocationsXY;
+    }
+
+    public void setBotLocationsXY(Map<Integer, Double[]> botLocations) {
+        this.botLocationsXY = botLocations;
+    }
+
 
     // teams scores
     int redTeamScore = 0;
     int greenTeamScore = 0;
 
-    battlefield chosenMap = battlefield.MAP1;
+    Battlefield chosenMap = Battlefield.EMPTY;
     Player.playerColor color = Player.playerColor.RED;
 
-    // shooting coordinates
-    double shootingRightX;
-    double shootingRightY;
-    double shootingUpX;
-    double shootingUpY;
-    double shootingDownX;
-    double shootingDownY;
-    double shootingLeftX;
-    double shootingLeftY;
 
     //Constants for player object
     private int playerXStartingPosition = 20;
     private int playerYStartingPosition = 20;
 
     //Constants for flag object
-    private static final int FLAG_X_STARTING_POSITION = 350;
-    private static final int FLAG_Y_STARTING_POSITION = 350;
-    private static final int FLAG_WIDTH = 10;
-    private static final int FLAG_HEIGHT = 10;
+    private Flag greenFlag;
+    private Flag redFlag;
 
-    //Shooting calculations
-    double halfLengthX;
-    double halfLengthY;
 
-    private static final double ASPECT_RATIO = 1.6;
-
-    int step = 2;
-
-    public enum battlefield {
-        MAP1, MAP2
+    public static int getMAP_WIDTH_IN_TILES() {
+        return MAP_WIDTH_IN_TILES;
     }
 
-    public Screen() {
-        player = new Player(
-                PLAYER_X_STARTING_POSITION,
-                PLAYER_Y_STARTING_POSITION,
-                0,
-                0
-        );
-
+    public static int getMAP_HEIGHT_IN_TILES() {
+        return MAP_HEIGHT_IN_TILES;
     }
-
 
     public static void main(String[] args) {
         launch(args);
@@ -111,9 +141,7 @@ public class Screen extends Application {
 
     public void setPlayerXStartingPosition(Stage stage) {
         if (color.equals(Player.playerColor.GREEN)) {
-            System.out.println("green");
-            this.playerXStartingPosition = (int) stage.widthProperty().get() - 80;
-            System.out.println(this.playerXStartingPosition);
+            this.playerXStartingPosition = (int) stage.widthProperty().get() - 100;
         } else if (color.equals(Player.playerColor.RED)) {
             this.playerXStartingPosition = 40;
         }
@@ -121,8 +149,7 @@ public class Screen extends Application {
 
     public void setPlayerYStartingPosition(Stage stage) {
         if (color.equals(Player.playerColor.GREEN)) {
-            this.playerYStartingPosition = (int) stage.heightProperty().get() - 40;
-            System.out.println(this.playerYStartingPosition);
+            this.playerYStartingPosition = (int) stage.heightProperty().get() - 500;
         } else if (color.equals(Player.playerColor.RED)) {
             this.playerYStartingPosition = 40;
         }
@@ -136,34 +163,51 @@ public class Screen extends Application {
                 0,
                 color.equals(Player.playerColor.GREEN) ? Player.playerColor.GREEN : Player.playerColor.RED
         );
+        player.setRoot(root);
+        player.setId(UUID.randomUUID().toString());
+    }
+
+    public void createNewPlayer(double x, double y, String id) {
+        Player otherPlayer = new Player(
+                (int) x,
+                (int) y,
+                0,
+                0,
+                color.equals(Player.playerColor.GREEN) ? Player.playerColor.RED : Player.playerColor.GREEN
+        );
+        otherPlayer.setRoot(root);
+        player.setId(id);
+        root.getChildren().add(otherPlayer);
     }
 
     public void setMap(int mapIndex) {
+
         if (mapIndex == 0) {
-            chosenMap = battlefield.MAP1;
+            chosenMap = Battlefield.MAP1;
         } else if (mapIndex == 1) {
-            chosenMap = battlefield.MAP2;
+            chosenMap = Battlefield.MAP2;
         }
 
     }
 
+
     @Override
     public void start(Stage stage) {
+        inGame = true;
         boolean fullScreen = stage.isFullScreen();
-        root = new Group();
-        System.out.println(stage.widthProperty());
         this.stage = stage;
 
-        mapLoad = new MapLoad();
 
+        stage.getScene().setRoot(root);
 
-        if (chosenMap == battlefield.MAP1) {
+        if (chosenMap == Battlefield.MAP1) {
             mapLoad.loadMap1(root, stage);
-        } else if (chosenMap == battlefield.MAP2) {
+        } else if (chosenMap == Battlefield.MAP2) {
             mapLoad.loadMap2(root, stage);
 
+        } else {
+            throw new EnumConstantNotPresentException(Battlefield.class, "");
         }
-        stage.setScene(new Scene(root));
 
         // both bases
         greenBase = mapLoad.getBaseByColor(Base.baseColor.GREEN);
@@ -171,147 +215,169 @@ public class Screen extends Application {
 
         // bases for collision detection
         List<Base> bases = mapLoad.getBases();
-        BotSpawner botSpawner = new BotSpawner();
-        botSpawner.spawnBots(4, stage, root, bases, mapLoad.getObjectsOnMap());
+
+        if (botLocationsXY.isEmpty()) {
+            botSpawner.spawnBots(4, stage, root, bases, mapLoad.getObjectsOnMap());
+            botsOnMap = botSpawner.getBotsOnMap();
+        } else {
+            Packet004RequestPlayers requestPlayers = new Packet004RequestPlayers();
+            requestPlayers.battlefield = getChosenMap();
+            client.sendTCP(requestPlayers);
+            for (Map.Entry<Integer, Double[]> entry : botLocationsXY.entrySet()) {
+                Double[] positions = entry.getValue();
+                int id = entry.getKey();
+                Bot bot = new Bot(positions[0].intValue(), positions[1].intValue(), 0, 0, 10);
+                System.out.println(String.format("Created bot at %d, %d", positions[0].intValue(), positions[1].intValue()));
+                bot.setBotId(id);
+                root.getChildren().add(bot);
+                botsOnMap.add(bot);
+            }
+        }
+
+        // save bot locations
+        getBotLocationsOnMap();
 
         setPlayerYStartingPosition(stage);
         setPlayerXStartingPosition(stage);
 
+
         createPlayer();
 
+        player.setPlayerLocationXInTiles(stage.widthProperty().get() / player.getX());
+        player.setPlayerLocationYInTiles(stage.heightProperty().get() / player.getY());
 
-        //both flags
-        redFlag = new Flag(
-                (int) (greenBase.getRightX() - 50),
-                (int) (greenBase.getBottomY() / 2),
-                FLAG_WIDTH,
-                FLAG_HEIGHT,
-                Flag.flagColor.RED);
-
-        greenFlag = new Flag(
-                (int) redBase.getRightX() - 50,
-                (int) redBase.getBottomY() / 2,
-                FLAG_WIDTH,
-                FLAG_HEIGHT,
-                Flag.flagColor.GREEN);
-
-
-        // for loop can be used to loop through bases and check collision
         root.getChildren().add(player);
-        //root.getChildren().add(new Bot(200, 200, 0, 0));
-        root.getChildren().add(redFlag);
-        stage.getScene().setRoot(root);
+
+        // notify other players of your position
+        Packet005SendPlayerPosition positionPacket = new Packet005SendPlayerPosition();
+        positionPacket.xPosition = player.getX();
+        positionPacket.yPosition = player.getY();
+        positionPacket.battlefield = getChosenMap();
+        positionPacket.id = player.getId();
+        this.client.sendTCP(positionPacket);
+
+        redFlag = mapLoad.getRedFlag();
+        greenFlag = mapLoad.getGreenFlag();
+        objectsOnMap = mapLoad.getObjectsOnMap();
 
 
-
-
-        List<Object> objectsOnMap = mapLoad.getObjectsOnMap();
         timer = new AnimationTimer() {
             @Override
             public void handle(long l) {
-                player.tick(objectsOnMap);
+                player.tick(objectsOnMap, botsOnMap);
                 catchTheFlag();
-                scoresCount();
                 scoreBoard();
-                player.setOnKeyPressed(pressed);
-                player.setOnKeyReleased(released);
-                root.setOnMouseClicked(shooting);
+                bullet.bulletCollision(player, objectsOnMap, root, botSpawner);
+                player.setOnKeyPressed(player.pressed);
+                player.setOnKeyReleased(player.released);
+                root.setOnMouseClicked(player.shooting);
                 player.setFocusTraversable(true);
             }
         };
+
+        stage.getScene().setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ESCAPE) {
+                exitScreen();
+            }
+        });
+
         stage.setFullScreen(fullScreen);
         timer.start();
         stage.show();
+        updateScale();
+        mapLoad.updateScaleMap(stage);
     }
 
-    public EventHandler<MouseEvent> shooting = mouseEvent -> {
-        getGunCoordinates();
-        double mouseY = mouseEvent.getY();
-        double mouseX = mouseEvent.getX();
-        Line lineRight = new Line(shootingRightX, shootingRightY, Math.min(shootingRightX + 500, mouseX), mouseY);
-        Line lineLeft = new Line(shootingLeftX, shootingLeftY, Math.max(shootingLeftX - 500, mouseX), mouseY);
-        Line lineDown = new Line(shootingDownX, shootingDownY, mouseX, Math.min(shootingDownY + 500, mouseY));
-        Line lineUp = new Line(shootingUpX, shootingUpY, mouseX, Math.max(shootingUpY - 500, mouseY));
-        if (Objects.equals(mouseEvent.getEventType(), MouseEvent.MOUSE_CLICKED)) {
-            double allowedLengthX = abs(player.getX() - mouseX);
-            double allowedLengthY = abs(player.getY() - mouseY);
-            if (player.getY() >= mouseY && mouseX >= player.getX() - allowedLengthY && mouseX <= player.getX() + allowedLengthY) {
-                bullet = new Bullet((int) shootingUpX, (int) shootingUpY, 3, Color.YELLOW);
-                bullet.shoot(lineUp, root, Math.min(500, shootingUpY - mouseY));
-            } else if (player.getY() < mouseY && mouseX >= player.getX() - allowedLengthY && mouseX <= player.getX() + allowedLengthY) {
-                bullet = new Bullet((int) shootingDownX, (int) shootingDownY, 3, Color.YELLOW);
-                bullet.shoot(lineDown, root, Math.min(500, mouseY - shootingDownY));
-            } else if (player.getX() < mouseX && mouseY >= player.getY() - allowedLengthX && mouseY <= player.getY() + allowedLengthX) {
-                bullet = new Bullet((int) shootingRightX, (int) shootingRightY, 3, Color.YELLOW);
-                bullet.shoot(lineRight, root, Math.min(500, mouseX - shootingRightX));
-            } else if (player.getX() >= mouseX && mouseY >= player.getY() - allowedLengthX && mouseY <= player.getY() + allowedLengthX) {
-                bullet = new Bullet((int) shootingLeftX, (int) shootingLeftY, 3, Color.YELLOW);
-                bullet.shoot(lineLeft, root, Math.min(500, shootingLeftX - mouseX));
+    private void exitScreen() {
+        Packet008SendPlayerID sendPlayerID = new Packet008SendPlayerID();
+        sendPlayerID.playerID = player.getId();
+        this.client.sendTCP(sendPlayerID);
+        stage.close();
+        Menu menu = new Menu(serverclient);
+        menu.start(new Stage());
+
+    }
+
+    public void removePlayerWithId(String id) {
+        for (Node node : root.getChildren()) {
+            if (node instanceof Player) {
+                if (id.equals(node.getId())) {
+                    System.out.println("Removed player");
+                    root.getChildren().remove(node);
+                }
             }
-            root.getChildren().add(bullet);
         }
-    };
-
-    // From where bullets come out
-    public void getGunCoordinates() {
-        shootingRightX = player.getX() + player.getWidth();
-        shootingRightY = player.getY() + player.getHeight();
-        shootingUpX = player.getX() + player.getWidth();
-        shootingUpY = player.getY();
-        shootingDownX = player.getX();
-        shootingDownY = player.getY() + player.getHeight();
-        shootingLeftX = player.getX();
-        shootingLeftY = player.getY();
     }
 
-    // Player movement keyPressed
-    public EventHandler<KeyEvent> pressed = keyEvent -> {
-        if (keyEvent.getCode().equals(KeyCode.W)) {
-            player.setDy(-step);
-        } else if (keyEvent.getCode().equals(KeyCode.S)) {
-            player.setDy(step);
-        } else if (keyEvent.getCode().equals(KeyCode.D)) {
-            player.setDx(step);
-        } else if (keyEvent.getCode().equals(KeyCode.A)) {
-            player.setDx(-step);
-        }
-    };
 
-    // Player movement keyReleased
-    public EventHandler<KeyEvent> released = keyEvent -> {
-        if (keyEvent.getCode().equals(KeyCode.W)) {
-            player.setDy(0);
-        } else if (keyEvent.getCode().equals(KeyCode.S)) {
-            player.setDy(0);
-        } else if (keyEvent.getCode().equals(KeyCode.D)) {
-            player.setDx(0);
-        } else if (keyEvent.getCode().equals(KeyCode.A)) {
-            player.setDx(0);
+    private void updateScale() {
+        final double initialStageWidth = stage.widthProperty().get();
+        final double initialStageHeight = stage.heightProperty().get();
+        //player init
+        player.setFitWidth(initialStageWidth / MAP_WIDTH_IN_TILES * 1.5);
+        player.setFitHeight(initialStageHeight / MAP_HEIGHT_IN_TILES * 1.5);
+        //bot init
+        for (Bot bot : botsOnMap) {
+            bot.setBotWidth(initialStageWidth / MAP_WIDTH_IN_TILES * 2);
+            bot.setBotHeight(initialStageHeight / MAP_HEIGHT_IN_TILES * 2);
+            bot.setX(initialStageWidth / botLocations.get(bot.getBotId())[0]);
+            bot.setY(initialStageHeight / botLocations.get(bot.getBotId())[1]);
         }
-    };
+
+        stage.widthProperty().addListener((observableValue, oldWidth, newWidth) -> {
+            player.setFitWidth((double) newWidth / MAP_WIDTH_IN_TILES * 1.5);
+            for (Bot bot : botsOnMap) {
+                bot.setBotWidth((double) newWidth / MAP_WIDTH_IN_TILES * 2);
+                bot.setX((double) newWidth / botLocations.get(bot.getBotId())[0]);
+            }
+        });
+
+        stage.heightProperty().addListener((observableValue, oldHeight, newHeight) -> {
+            player.setFitHeight((double) newHeight / MAP_HEIGHT_IN_TILES * 1.5);
+            for (Bot bot : botsOnMap) {
+                bot.setBotHeight((double) newHeight / MAP_HEIGHT_IN_TILES * 2);
+                bot.setY((double) newHeight / botLocations.get(bot.getBotId())[1]);
+            }
+        });
+    }
+
+    private void getBotLocationsOnMap() {
+        double initialStageWidth = stage.widthProperty().get();
+        double initialStageHeight = stage.heightProperty().get();
+        for (Bot bot : botsOnMap) {
+            Double[] botXY = new Double[2];
+            botXY[0] = initialStageWidth / bot.getX();
+            botXY[1] = initialStageHeight / bot.getY();
+            botLocations.put(bot.getBotId(), botXY);
+        }
+    }
+
 
     // Player can take flag and release it in base
     public void catchTheFlag() {
-        if (player.getBoundsInParent().intersects(redFlag.getBoundsInParent())) {
-            if (!(player.getX() < redBase.getRightX())) {
-                if (redFlag.getX() < 60 && redFlag.getY() < 60) {
-                    redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2);
+        if (player.getColor() == Player.playerColor.RED) {
+            if (player.getBoundsInParent().intersects(redFlag.getBoundsInParent())) {
+                if (player.getX() > redBase.getRightX() - redBase.getRightX() / 5) {
+                    redFlag.relocate(player.getX() + 10, player.getY() + 10);
                 } else {
-                    redFlag.relocate(player.getX(), player.getY());
+                    redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
+                    redTeamScore += 1;
+                    timer.stop();
+                    start(stage);
                 }
-            } else {
-                redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2);
-                timer.stop();
             }
-        }
-    }
-
-    // Counts teams scores
-    public void scoresCount() {
-            if (redFlag.getBoundsInParent().intersects(redBase.getBoundsInParent())) {
-                redTeamScore += 1;
-            } else if (greenFlag.getBoundsInParent().intersects(greenBase.getBoundsInParent())) {
-                greenTeamScore += 1;
+        } else {
+            if (player.getBoundsInParent().intersects(greenFlag.getBoundsInParent())) {
+                if (player.getX() < greenBase.getLeftX()) {
+                    greenFlag.relocate(player.getX() + 10, player.getY() + 10);
+                } else {
+                    greenFlag.relocate(greenBase.getRightX() - 50,
+                            greenBase.getBottomY() / 2);
+                    greenTeamScore += 1;
+                    timer.stop();
+                    start(stage);
+                }
+            }
         }
     }
 
@@ -319,10 +385,12 @@ public class Screen extends Application {
     public void scoreBoard() {
         Rectangle scoreBoard = new Rectangle(500, 40);
         scoreBoard.setFill(Color.LIGHTGRAY);
-        Text redTeam = new Text("Red Team " + redTeamScore / 2);
-        Text greenTeam = new Text("Green Team " + greenTeamScore / 2);
-        redTeam.setFill(Color.RED); redTeam.setFont(Font.font("Arial", FontWeight.EXTRA_BOLD, 30));
-        greenTeam.setFill(Color.GREEN); greenTeam.setFont(Font.font("Arial", FontWeight.EXTRA_BOLD, 30));
+        Text redTeam = new Text("Red Team " + redTeamScore);
+        Text greenTeam = new Text("Green Team " + greenTeamScore);
+        redTeam.setFill(Color.RED);
+        redTeam.setFont(Font.font("Arial", FontWeight.EXTRA_BOLD, 30));
+        greenTeam.setFill(Color.GREEN);
+        greenTeam.setFont(Font.font("Arial", FontWeight.EXTRA_BOLD, 30));
         StackPane stack = new StackPane();
         GridPane scores = new GridPane();
         stack.setLayoutX(stage.widthProperty().get() / 2 - (scoreBoard.getWidth() / 2));

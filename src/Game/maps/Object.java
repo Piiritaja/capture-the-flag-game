@@ -1,13 +1,14 @@
 package Game.maps;
 
-import Game.Player;
+import Game.player.Bullet;
+import Game.player.Player;
 import Game.bots.Bot;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
+import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
 
 import java.io.BufferedReader;
@@ -60,25 +61,36 @@ public class Object extends ImageView {
     public boolean collides(Player player) {
         Rectangle objectBoundaries = boundaries();
         Rectangle playerBoundaries = new Rectangle();
-        playerBoundaries.setX(player.getX());
-        playerBoundaries.setY(player.getY());
-        playerBoundaries.setHeight(player.getHeight());
-        playerBoundaries.setWidth(player.getWidth());
+        playerBoundaries.setX(player.getX() + player.width / 4.0);
+        playerBoundaries.setY(player.getY() + player.height / 4.0);
+        playerBoundaries.setHeight(player.getHeight() - player.height / 2.0);
+        playerBoundaries.setWidth(player.getWidth() - player.width / 2.0);
         return objectBoundaries.getBoundsInLocal().intersects(playerBoundaries.getBoundsInLocal());
     }
 
     public boolean collides(Bot bot) {
         Rectangle objectBoundaries = boundaries();
-        Rectangle playerBoundaries = new Rectangle();
-        playerBoundaries.setX(bot.getX());
-        playerBoundaries.setY(bot.getY());
-        playerBoundaries.setHeight(bot.fitHeightProperty().get());
-        playerBoundaries.setWidth(bot.fitWidthProperty().get());
-        return objectBoundaries.getBoundsInLocal().intersects(playerBoundaries.getBoundsInLocal());
+        Rectangle botBoundaries = new Rectangle();
+        botBoundaries.setX(bot.getX());
+        botBoundaries.setY(bot.getY());
+        botBoundaries.setHeight(bot.fitHeightProperty().get() * 1.5);
+        botBoundaries.setWidth(bot.fitWidthProperty().get() * 1.5);
+        return objectBoundaries.getBoundsInLocal().intersects(botBoundaries.getBoundsInLocal());
     }
 
-    public static List<Object> addObjectsToGroup(Group root, Stage stage) {
+    public boolean collides(Bullet bullet) {
+        Rectangle objectBoundaries = boundaries();
+        Rectangle bulletBoundaries = new Rectangle();
+        bulletBoundaries.setX(bullet.getCenterX() - bullet.getRadius());
+        bulletBoundaries.setY(bullet.getCenterY() - bullet.getRadius());
+        bulletBoundaries.setHeight(bullet.getRadius() * 2);
+        bulletBoundaries.setWidth(bullet.getRadius() * 2);
+        return ((Path) Shape.intersect(bullet, objectBoundaries)).getElements().size() > 1;
+    }
+
+    public static List<Object> addObjectsToGroup(Group root, Stage stage, Battlefield map) {
         String line;
+        String objectCsv = setCsv(map);
         int row = 0;
         int column;
         String[] field;
@@ -86,17 +98,19 @@ public class Object extends ImageView {
         final int mapWidthInTiles = 40;
         final int mapHeightInTiles = 25;
         try {
-            BufferedReader reader = new BufferedReader(new FileReader("src/assets/map/objects/map2walls.csv"));
+            BufferedReader reader = new BufferedReader(new FileReader(objectCsv));
             while ((line = reader.readLine()) != null) {
-                //System.out.println(line);
                 column = 0;
                 field = line.split(",");
                 for (String character : field) {
-                    if (character.equals("0")) {
+                    if (character.equals("0") || character.equals("2")) {
                         Object tile = new Object(Object.BRICK_TEXTURE);
                         tile.setRow(row);
                         tile.setColumn(column);
-                        tile.setX(stage.widthProperty().get() / mapWidthInTiles * column);
+                        //tile.setX(stage.widthProperty().get() / mapWidthInTiles * column);
+                        tile.setFitWidth(stage.widthProperty().get() / mapWidthInTiles);
+                        tile.setFitHeight(stage.heightProperty().get() / mapHeightInTiles);
+                        tile.setX(column * mapWidthInTiles);
                         tile.setY(row * mapHeightInTiles);
                         root.getChildren().add(tile);
                         walls.add(tile);
@@ -104,8 +118,11 @@ public class Object extends ImageView {
                         Object tile = new Object(Object.WOOD_TEXTURE);
                         tile.setRow(row);
                         tile.setColumn(column);
-                        tile.setX(stage.widthProperty().get() / mapWidthInTiles * column);
+                        //tile.setX(stage.widthProperty().get() / mapWidthInTiles * column);
+                        tile.setX(column * mapWidthInTiles);
                         tile.setY(row * mapHeightInTiles);
+                        tile.setFitWidth(stage.widthProperty().get() / mapWidthInTiles);
+                        tile.setFitHeight(stage.heightProperty().get() / mapHeightInTiles);
                         root.getChildren().add(tile);
                         walls.add(tile);
                     }
@@ -117,5 +134,15 @@ public class Object extends ImageView {
             System.out.println("Error: add objects to group");
         }
         return walls;
+    }
+
+    private static String setCsv(Battlefield map) {
+        switch (map) {
+            case MAP1:
+                return "src/assets/map/objects/map1walls.csv";
+            case MAP2:
+                return "src/assets/map/objects/map2walls.csv";
+        }
+        return null;
     }
 }
