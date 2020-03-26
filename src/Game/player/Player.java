@@ -91,10 +91,10 @@ public class Player extends ImageView {
             walkingDownImage = new Image("assets/player/green/walkingDown.png");
         } else if (color.equals(playerColor.RED)) {
             image = new Image(RED_PLAYER_MAIN_IMAGE);
-            //walkingRightImage = new Image("assets/player/red/walkingRight.png");
-            //walkingLeftImage = new Image("assets/player/red/walkingLeft.png");
-            //walkingUpImage = new Image("assets/player/red/walkingUp.png");
-            //walkingDownImage = new Image("assets/player/red/walkingDown.png");
+            walkingRightImage = new Image("assets/player/red/walkingRight.png");
+            walkingLeftImage = new Image("assets/player/red/walkingLeft.png");
+            walkingUpImage = new Image("assets/player/red/walkingUp.png");
+            walkingDownImage = new Image("assets/player/red/walkingDown.png");
         } else {
             image = new Image(RED_PLAYER_MAIN_IMAGE);
         }
@@ -206,7 +206,7 @@ public class Player extends ImageView {
             this.setImage(walkingLeftImage);
             setDx(-step);
         }
-        //animation.play();
+        animation.play();
     };
 
     // Player movement keyReleased
@@ -220,7 +220,7 @@ public class Player extends ImageView {
         } else if (keyEvent.getCode().equals(KeyCode.A)) {
             setDx(0);
         }
-        //animation.pause();
+        animation.pause();
     };
 
     public void setDx(int dx) {
