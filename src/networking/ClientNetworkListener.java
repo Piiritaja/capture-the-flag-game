@@ -106,6 +106,7 @@ public class ClientNetworkListener extends Listener {
                 double playerXPosition = ((Packet005SendPlayerPosition) object).xPosition;
                 double playerYPosition = ((Packet005SendPlayerPosition) object).yPosition;
                 String id = ((Packet005SendPlayerPosition) object).id;
+                System.out.println("id " + id);
                 Platform.runLater(() -> this.serverClient.getMenu().getScreen().createNewPlayer(playerXPosition, playerYPosition, id));
                 System.out.println("Created player at:");
                 System.out.println(playerXPosition);
