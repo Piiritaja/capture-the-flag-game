@@ -12,18 +12,23 @@ import networking.packets.Packet004RequestPlayers;
 import networking.packets.Packet005SendPlayerPosition;
 import networking.packets.Packet006RequestBotsLocation;
 import networking.packets.Packet007SendBotsLocation;
+import networking.packets.Packet008SendPlayerID;
 
 import java.io.IOException;
 
 
 public class ServerClient {
     private Client client;
-    ClientNetworkListener clientNetworkListener;
-    Menu menu;
+    private ClientNetworkListener clientNetworkListener;
+    private Menu menu;
+
+    // Server ip address
+    private static final String SERVER_IP = "192.168.1.200";
 
     //Server ports
     private static final int TCP_PORT = 54555;
     private static final int UDP_PORT = 54777;
+
 
     /**
      * Creates the client and connects it to a server on localhost.
@@ -44,12 +49,30 @@ public class ServerClient {
         //Connect the client with a new thread
         new Thread(client).start();
         try {
-            client.connect(9999, "192.168.1.200", TCP_PORT, UDP_PORT);
+            client.connect(9999, SERVER_IP, TCP_PORT, UDP_PORT);
 
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(String.format("Unable to connect to the server at %s:%d", SERVER_IP, TCP_PORT));
+            System.out.println("Starting in offline mode...");
 
         }
+    }
+
+    /**
+     * @return menu assigned to this Server client.
+     */
+    public Menu getMenu() {
+        return this.menu;
+    }
+
+    /**
+     * Set menu.
+     * Usually called from the menu class when exiting screen and making a new menu.
+     *
+     * @param menu menu to assign to this Server client.
+     */
+    public void setMenu(Menu menu) {
+        this.menu = menu;
     }
 
 
@@ -85,6 +108,7 @@ public class ServerClient {
         kryo.register(Packet005SendPlayerPosition.class);
         kryo.register(Packet006RequestBotsLocation.class);
         kryo.register(Packet007SendBotsLocation.class);
+        kryo.register(Packet008SendPlayerID.class);
         kryo.register(java.util.Map.class);
         kryo.register(java.util.HashMap.class);
         kryo.register(Double[].class);

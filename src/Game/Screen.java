@@ -296,7 +296,10 @@ public class Screen extends Application {
     public void removePlayerWithId(String id) {
         for (Node node : root.getChildren()) {
             if (node instanceof Player) {
-                System.out.println(player.getId());
+                if (id.equals(node.getId())) {
+                    System.out.println("Removed player");
+                    root.getChildren().remove(node);
+                }
             }
         }
     }

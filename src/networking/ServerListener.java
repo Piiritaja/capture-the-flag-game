@@ -3,6 +3,7 @@ package networking;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
+import networking.packets.Packet000RequestAccess;
 import networking.packets.Packet001AllowAccess;
 import networking.packets.Packet002RequestConnections;
 import networking.packets.Packet003SendConnections;
@@ -66,37 +67,38 @@ public class ServerListener extends Listener {
      */
     @Override
     public void received(Connection connection, Object object) {
-        if (object instanceof Packet002RequestConnections) {
+
+        if (object instanceof Packet000RequestAccess) {
+            System.out.println("Received requestAccess packet");
+            Packet001AllowAccess access = new Packet001AllowAccess();
+            access.allow = true;
+            connection.sendTCP(access);
+        } else if (object instanceof Packet002RequestConnections) {
             System.out.println("Received requestedConnections packet");
             Packet003SendConnections sendConnections = new Packet003SendConnections();
             sendConnections.connections = this.gameServer.getNumberOfConnections();
             server.sendToAllTCP(sendConnections);
             System.out.println("Sent sendConnections packet to all clients");
 
-        }
-        else if (object instanceof Packet004RequestPlayers) {
+        } else if (object instanceof Packet004RequestPlayers) {
             System.out.println("Received requestPlayers");
             server.sendToAllExceptTCP(connection.getID(), object);
             System.out.println("Sent requestPlayers packet to all other clients");
-        }
-        else if (object instanceof Packet005SendPlayerPosition) {
+        } else if (object instanceof Packet005SendPlayerPosition) {
             System.out.println("Received sendPlayerPosition packet");
             server.sendToAllExceptTCP(connection.getID(), object);
             System.out.println("Sent sendPlayerPosition packet to all other clients");
-        }
-        else if (object instanceof Packet006RequestBotsLocation) {
+        } else if (object instanceof Packet006RequestBotsLocation) {
             System.out.println("Received requestBotsLocation packet");
             server.sendToAllExceptTCP(connection.getID(), object);
             System.out.println("Sent requestBotsLocation packet to all other clients");
-        }
-        else if (object instanceof Packet007SendBotsLocation) {
+        } else if (object instanceof Packet007SendBotsLocation) {
             System.out.println("Received sendBotsLocation packet");
             server.sendToAllExceptTCP(connection.getID(), object);
             System.out.println("Sent sendBotsLocation packet to all other clients");
-        }
-        else if (object instanceof Packet008SendPlayerID) {
+        } else if (object instanceof Packet008SendPlayerID) {
             System.out.println("Received sendPlayerID packet");
-            server.sendToAllExceptTCP(connection.getID(),object);
+            server.sendToAllExceptTCP(connection.getID(), object);
             System.out.println("Sent sendPlayerID packet to all other clients");
         }
 
