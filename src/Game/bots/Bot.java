@@ -8,6 +8,9 @@ import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 
+/**
+ * Bot class
+ */
 public class Bot extends ImageView {
 
     //Constants for player size
@@ -22,6 +25,16 @@ public class Bot extends ImageView {
 
     public int dx, dy, x, y, lives;
 
+    /**
+     * Initializes bot.
+     * Sets lives, size  and initial position.
+     *
+     * @param x     Initial x coordinate
+     * @param y     Initial y coordinate
+     * @param dx    Movement x change
+     * @param dy    Movement y change
+     * @param lives Health points of the bot
+     */
     public Bot(int x, int y, int dx, int dy, int lives) {
         this.setImage(BOT_STILL_IMAGE);
         this.fitWidthProperty().set(BOT_WIDTH);
@@ -35,11 +48,12 @@ public class Bot extends ImageView {
         this.lives = lives;
     }
 
-    public void tick() {
-        this.setX(this.x += dx);
-        this.setY(this.y += dy);
-    }
-
+    /**
+     * Creates invisible boundaries for the bot.
+     * Used for collision detection.
+     *
+     * @return Boundaries as a JavaFx Rectangle
+     */
     private Rectangle boundaries() {
         Rectangle objectBoundaries = new Rectangle();
         objectBoundaries.setX(this.getX() + 5 * BOT_WIDTH / 16);
@@ -49,6 +63,12 @@ public class Bot extends ImageView {
         return objectBoundaries;
     }
 
+    /**
+     * Checks collision with a player object.
+     *
+     * @param player Player to check the collision with
+     * @return If the bot collides with the player
+     */
     public boolean collides(Player player) {
         Rectangle objectBoundaries = boundaries();
         Rectangle playerBoundaries = new Rectangle();
@@ -59,6 +79,12 @@ public class Bot extends ImageView {
         return objectBoundaries.getBoundsInParent().intersects(playerBoundaries.getBoundsInParent());
     }
 
+    /**
+     * Checks collision with a bullet object.
+     *
+     * @param bullet bullet to check the collision with.
+     * @return if the bot collides with the bullet.
+     */
     public boolean collides(Bullet bullet) {
         Rectangle objectBoundaries = boundaries();
         Rectangle playerBoundaries = new Rectangle();
@@ -69,40 +95,59 @@ public class Bot extends ImageView {
         return ((Path) Shape.intersect(bullet, objectBoundaries)).getElements().size() > 1;
     }
 
-    public void setDx(int dx) {
-        this.dx = dx;
-    }
-
-    public void setDy(int dy) {
-        this.dy = dy;
-    }
-
+    /**
+     * Set the height of this object.
+     *
+     * @param botHeight The value that the height will be set to
+     */
     public void setBotHeight(double botHeight) {
         BOT_HEIGHT = botHeight;
         this.setFitHeight(BOT_HEIGHT);
     }
 
+    /**
+     * Set the width of this object.
+     *
+     * @param botWidth The value that the width will be set to
+     */
     public void setBotWidth(double botWidth) {
         BOT_WIDTH = botWidth;
         this.setFitWidth(BOT_WIDTH);
     }
 
+    /**
+     * @return The height of this bot
+     */
     public double getBotHeight() {
         return BOT_HEIGHT;
     }
 
+    /**
+     * @return The width of this bot
+     */
     public double getBotWidth() {
         return BOT_WIDTH;
     }
 
+    /**
+     * @return The health points of this bot.
+     */
     public int getBotLives() {
         return lives;
     }
 
+    /**
+     * Set the unique ID number for this bot object.
+     *
+     * @param id Value that is set as ID
+     */
     public void setBotId(int id) {
         this.botId = id;
     }
 
+    /**
+     * @return the id of this bot
+     */
     public int getBotId() {
         return botId;
     }
