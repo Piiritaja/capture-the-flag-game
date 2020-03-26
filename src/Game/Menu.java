@@ -15,6 +15,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import networking.ServerClient;
+import networking.packets.Packet000RequestAccess;
 import networking.packets.Packet006RequestBotsLocation;
 
 import java.io.FileInputStream;
@@ -28,8 +29,8 @@ public class Menu extends Application {
     private Screen screen;
     private int chosenMapIndex;
     private int currentConnections;
-    ServerClient serverClient;
-    Client client;
+    private ServerClient serverClient;
+    private Client client;
 
     // Constants for ctf image
     private static final int IMAGE_WIDTH = 600;
@@ -45,7 +46,7 @@ public class Menu extends Application {
     private static final String CHOSEN_OPACITY = "-fx-opacity: 100%";
 
 
-    private Text usersOnlineText = new Text(10, 50, "");
+    private Text usersOnlineText = new Text(10, 50, "Offline mode");
 
     /**
      * Constructor for Menu class.
@@ -55,12 +56,28 @@ public class Menu extends Application {
     public Menu() {
         this.serverClient = new ServerClient(this);
         this.client = this.serverClient.getClient();
-        this.screen = new Screen(this.client);
+        this.screen = new Screen(this.serverClient);
 
     }
 
+
     /**
-     * @return Screen screen assigned to the Menu object.
+     * Constructor for Menu class.
+     * Usually called from the Screen class, when connection with the server has already been established.
+     * Create new screen and assign it to this object.
+     * Assign the given client to this object.
+     * @param serverClient server client to assign to this class object.
+     */
+    public Menu(ServerClient serverClient) {
+        this.serverClient = serverClient;
+        this.client = serverClient.getClient();
+        this.screen = new Screen(this.serverClient);
+        this.serverClient.setMenu(this);
+        this.client.sendTCP(new Packet000RequestAccess());
+    }
+
+    /**
+     * @return screen assigned to the Menu object.
      */
     public Screen getScreen() {
         return this.screen;
@@ -101,7 +118,6 @@ public class Menu extends Application {
         button2.setOnAction(actionEvent -> exitScreen());
         button3.setOnAction(actionEvent -> toggleFullScreen());
 
-
         return new Scene(vbox);
     }
 
@@ -109,13 +125,11 @@ public class Menu extends Application {
      * Updates users online text field.
      */
     public void changeNumberOfConnectionsText() {
-        if (this.currentConnections <= 1) {
+        if (this.currentConnections == 1) {
             this.usersOnlineText.setText("No users online");
-        } else {
+        } else if (this.currentConnections != 0) {
             this.usersOnlineText.setText("Users online: " + (this.currentConnections - 1));
-
         }
-
     }
 
     /**
@@ -126,7 +140,6 @@ public class Menu extends Application {
     public void setNumberOfCurrentConnections(int connections) {
         this.currentConnections = connections;
         changeNumberOfConnectionsText();
-
 
     }
 

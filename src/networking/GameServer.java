@@ -12,6 +12,7 @@ import networking.packets.Packet004RequestPlayers;
 import networking.packets.Packet005SendPlayerPosition;
 import networking.packets.Packet006RequestBotsLocation;
 import networking.packets.Packet007SendBotsLocation;
+import networking.packets.Packet008SendPlayerID;
 
 import java.io.IOException;
 
@@ -46,7 +47,7 @@ public class GameServer {
     }
 
     /**
-     * Set's up server and initializes server listener
+     * Set up server and initializes server listener.
      */
     public GameServer() {
         this.server = new Server();
@@ -57,7 +58,7 @@ public class GameServer {
 
 
     /**
-     * Start server
+     * Start server, add listener and register packets.
      */
     public void setUpServer() {
         server.addListener(serverListener);
@@ -66,7 +67,6 @@ public class GameServer {
         try {
             server.start();
             server.bind(TCP_PORT, UDP_PORT);
-            System.out.println("Connected");
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -76,7 +76,7 @@ public class GameServer {
 
 
     /**
-     * Register packets for server listener
+     * Register packets for server listener.
      */
     public void registerPackets() {
         Kryo kryo = server.getKryo();
@@ -89,6 +89,7 @@ public class GameServer {
         kryo.register(Packet005SendPlayerPosition.class);
         kryo.register(Packet006RequestBotsLocation.class);
         kryo.register(Packet007SendBotsLocation.class);
+        kryo.register(Packet008SendPlayerID.class);
         kryo.register(java.util.Map.class);
         kryo.register(java.util.HashMap.class);
         kryo.register(Double[].class);

@@ -13,6 +13,8 @@ import com.esotericsoftware.kryonet.Client;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Group;
+import javafx.scene.Node;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -25,12 +27,15 @@ import javafx.stage.Stage;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import networking.ServerClient;
 import networking.packets.Packet004RequestPlayers;
 import networking.packets.Packet005SendPlayerPosition;
+import networking.packets.Packet008SendPlayerID;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class Screen extends Application {
     private Player player;
@@ -50,11 +55,13 @@ public class Screen extends Application {
     private static final int MAP_HEIGHT_IN_TILES = 25;
 
     private BotSpawner botSpawner;
+    private ServerClient serverclient;
     private Client client;
     private boolean inGame;
 
-    public Screen(Client client) {
-        this.client = client;
+    public Screen(ServerClient serverclient) {
+        this.serverclient = serverclient;
+        this.client = serverclient.getClient();
         this.root = new Group();
         this.inGame = false;
         mapLoad = new MapLoad();
@@ -157,9 +164,10 @@ public class Screen extends Application {
                 color.equals(Player.playerColor.GREEN) ? Player.playerColor.GREEN : Player.playerColor.RED
         );
         player.setRoot(root);
+        player.setId(UUID.randomUUID().toString());
     }
 
-    public void createNewPlayer(double x, double y) {
+    public void createNewPlayer(double x, double y, String id) {
         Player otherPlayer = new Player(
                 (int) x,
                 (int) y,
@@ -168,6 +176,7 @@ public class Screen extends Application {
                 color.equals(Player.playerColor.GREEN) ? Player.playerColor.RED : Player.playerColor.GREEN
         );
         otherPlayer.setRoot(root);
+        player.setId(id);
         root.getChildren().add(otherPlayer);
     }
 
@@ -188,6 +197,7 @@ public class Screen extends Application {
         boolean fullScreen = stage.isFullScreen();
         this.stage = stage;
 
+
         stage.getScene().setRoot(root);
 
         if (chosenMap == Battlefield.MAP1) {
@@ -205,6 +215,7 @@ public class Screen extends Application {
 
         // bases for collision detection
         List<Base> bases = mapLoad.getBases();
+
         if (botLocationsXY.isEmpty()) {
             botSpawner.spawnBots(4, stage, root, bases, mapLoad.getObjectsOnMap());
             botsOnMap = botSpawner.getBotsOnMap();
@@ -242,6 +253,7 @@ public class Screen extends Application {
         positionPacket.xPosition = player.getX();
         positionPacket.yPosition = player.getY();
         positionPacket.battlefield = getChosenMap();
+        positionPacket.id = player.getId();
         this.client.sendTCP(positionPacket);
 
         redFlag = mapLoad.getRedFlag();
@@ -263,12 +275,40 @@ public class Screen extends Application {
             }
         };
 
+        stage.getScene().setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ESCAPE) {
+                exitScreen();
+            }
+        });
+
         stage.setFullScreen(fullScreen);
         timer.start();
         stage.show();
         updateScale();
         mapLoad.updateScaleMap(stage);
     }
+
+    private void exitScreen() {
+        Packet008SendPlayerID sendPlayerID = new Packet008SendPlayerID();
+        sendPlayerID.playerID = player.getId();
+        this.client.sendTCP(sendPlayerID);
+        stage.close();
+        Menu menu = new Menu(serverclient);
+        menu.start(new Stage());
+
+    }
+
+    public void removePlayerWithId(String id) {
+        for (Node node : root.getChildren()) {
+            if (node instanceof Player) {
+                if (id.equals(node.getId())) {
+                    System.out.println("Removed player");
+                    root.getChildren().remove(node);
+                }
+            }
+        }
+    }
+
 
     private void updateScale() {
         final double initialStageWidth = stage.widthProperty().get();
