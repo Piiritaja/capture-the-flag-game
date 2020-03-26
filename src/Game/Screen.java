@@ -30,6 +30,7 @@ import java.util.HashMap;
 import networking.ServerClient;
 import networking.packets.Packet004RequestPlayers;
 import networking.packets.Packet005SendPlayerPosition;
+import networking.packets.Packet008SendPlayerID;
 
 import java.util.Iterator;
 import java.util.List;
@@ -286,7 +287,9 @@ public class Screen extends Application {
     }
 
     private void exitScreen() {
-        removePlayerWithId("123");
+        Packet008SendPlayerID sendPlayerID = new Packet008SendPlayerID();
+        sendPlayerID.playerID = player.getId();
+        this.client.sendTCP(sendPlayerID);
         stage.close();
         Menu menu = new Menu(serverclient);
         menu.start(new Stage());
