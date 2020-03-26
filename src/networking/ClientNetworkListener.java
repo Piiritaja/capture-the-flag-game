@@ -75,6 +75,7 @@ public class ClientNetworkListener extends Listener {
                 System.out.println("Connection allowed");
                 connection.sendTCP(new Packet002RequestConnections());
             }
+            System.out.println();
 
         } else if (object instanceof Packet003SendConnections) {
             System.out.println("Received sendConnections packet");
@@ -86,6 +87,7 @@ public class ClientNetworkListener extends Listener {
 
             }
             this.serverClient.getMenu().setNumberOfCurrentConnections(connections);
+            System.out.println();
         } else if (object instanceof Packet004RequestPlayers) {
             System.out.println("Received requestPlayers");
             if (serverClient.getMenu().getScreen().isInGame() && serverClient.getMenu().getScreen().getChosenMap() == ((Packet004RequestPlayers) object).battlefield) {
@@ -99,6 +101,7 @@ public class ClientNetworkListener extends Listener {
 
                 connection.sendTCP(sendPlayerPosition);
                 System.out.println("Sent sendPlayers");
+                System.out.println();
             }
 
         } else if (object instanceof Packet005SendPlayerPosition) {
@@ -111,7 +114,7 @@ public class ClientNetworkListener extends Listener {
                 System.out.println("Created player at:");
                 System.out.println(playerXPosition);
                 System.out.println(playerYPosition);
-                System.out.println("With ID: " + id);
+                System.out.println();
             }
 
         } else if (object instanceof Packet006RequestBotsLocation) {
@@ -123,6 +126,7 @@ public class ClientNetworkListener extends Listener {
                 sendBots.battlefield = ((Packet006RequestBotsLocation) object).battlefield;
                 connection.sendTCP(sendBots);
                 System.out.println("Sent sendBotsLocation packet");
+                System.out.println();
             }
 
         } else if (object instanceof Packet007SendBotsLocation) {
@@ -132,11 +136,13 @@ public class ClientNetworkListener extends Listener {
             if (((Packet007SendBotsLocation) object).battlefield == serverClient.getMenu().getScreen().getChosenMap()) {
                 serverClient.getMenu().getScreen().setBotLocationsXY(((Packet007SendBotsLocation) object).locations);
                 System.out.println("Set bots location");
+                System.out.println();
             }
 
         } else if (object instanceof Packet008SendPlayerID) {
             System.out.println("Received player id: " + ((Packet008SendPlayerID) object).playerID);
             this.serverClient.getMenu().getScreen().removePlayerWithId(((Packet008SendPlayerID) object).playerID);
+            System.out.println();
         }
 
     }
