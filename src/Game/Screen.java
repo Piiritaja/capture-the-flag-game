@@ -1,6 +1,5 @@
 package Game;
 
-import Game.bots.Bot;
 import Game.bots.BotSpawner;
 import Game.maps.Base;
 import Game.maps.Battlefield;
@@ -38,6 +37,9 @@ import java.util.Map;
 import java.util.UUID;
 
 public class Screen extends Application {
+
+    Bullet bullet = new Bullet(0, 0, 3, Color.GREEN);
+
     private Player player;
     private Group root;
     private MapLoad mapLoad;
@@ -115,9 +117,6 @@ public class Screen extends Application {
     private Flag greenFlag;
     private Flag redFlag;
 
-    //Shooting calculations
-    double halfLengthX;
-    double halfLengthY;
 
     public static int getMAP_WIDTH_IN_TILES() {
         return MAP_WIDTH_IN_TILES;
@@ -267,7 +266,7 @@ public class Screen extends Application {
                 player.tick(objectsOnMap, botsOnMap);
                 catchTheFlag();
                 scoreBoard();
-                bulletCollision();
+                bullet.bulletCollision(player, objectsOnMap, root, botSpawner);
                 player.setOnKeyPressed(player.pressed);
                 player.setOnKeyReleased(player.released);
                 root.setOnMouseClicked(player.shooting);
@@ -353,43 +352,12 @@ public class Screen extends Application {
     }
 
 
-    private void bulletCollision() {
-        Iterator<Bullet> bullets = player.bullets.iterator();
-        while (bullets.hasNext()) {
-            Bullet bullet = bullets.next();
-            for (Object object : objectsOnMap) {
-                if (object.collides(bullet)) {
-                    root.getChildren().remove(bullet);
-                    bullets.remove();
-                    if (bullets.hasNext()) {
-                        bullet = bullets.next();
-                    } else {
-                        break;
-                    }
-                }
-            }
-            for (int i = 0; i < botSpawner.botsOnMap.size(); i++) {
-                Bot bot = botSpawner.botsOnMap.get(i);
-                if (bot.collides(bullet)) {
-                    root.getChildren().remove(bullet);
-                    bullets.remove();
-                    bot.lives -= 1;
-                    if (bot.getBotLives() <= 0) {
-                        root.getChildren().remove(bot);
-                        botSpawner.botsOnMap.remove(bot);
-                        i--;
-                    }
-                }
-            }
-        }
-    }
-
     // Player can take flag and release it in base
     public void catchTheFlag() {
         if (player.getColor() == Player.playerColor.RED) {
             if (player.getBoundsInParent().intersects(redFlag.getBoundsInParent())) {
-                if (player.getX() > redBase.getRightX()) {
-                    redFlag.relocate(player.getX(), player.getY());
+                if (player.getX() > redBase.getRightX() - redBase.getRightX() / 5) {
+                    redFlag.relocate(player.getX() + 10, player.getY() + 10);
                 } else {
                     redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
                     redTeamScore += 1;
@@ -400,7 +368,7 @@ public class Screen extends Application {
         } else {
             if (player.getBoundsInParent().intersects(greenFlag.getBoundsInParent())) {
                 if (player.getX() < greenBase.getLeftX()) {
-                    greenFlag.relocate(player.getX(), player.getY());
+                    greenFlag.relocate(player.getX() + 10, player.getY() + 10);
                 } else {
                     greenFlag.relocate(greenBase.getRightX() - 50,
                             greenBase.getBottomY() / 2);

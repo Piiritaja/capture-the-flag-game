@@ -52,10 +52,10 @@ public class Bot extends ImageView {
     public boolean collides(Player player) {
         Rectangle objectBoundaries = boundaries();
         Rectangle playerBoundaries = new Rectangle();
-        playerBoundaries.setX(player.getX());
-        playerBoundaries.setY(player.getY());
-        playerBoundaries.setHeight(player.getHeight());
-        playerBoundaries.setWidth(player.getWidth());
+        playerBoundaries.setX(player.getX() + player.width / 4.0);
+        playerBoundaries.setY(player.getY() + player.height / 4.0);
+        playerBoundaries.setHeight(player.getHeight() - player.height / 2.0);
+        playerBoundaries.setWidth(player.getWidth() - player.width / 2.0);
         return objectBoundaries.getBoundsInParent().intersects(playerBoundaries.getBoundsInParent());
     }
 

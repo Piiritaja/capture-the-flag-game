@@ -16,8 +16,8 @@ import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import java.security.Key;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
@@ -27,15 +27,17 @@ import static java.lang.StrictMath.abs;
 public class Player extends ImageView {
 
     //Constants for player size
-    private static final int PLAYER_WIDTH = 34;
-    private static final int PLAYER_HEIGHT = 34;
+    private static final int PLAYER_WIDTH = 60;
+    private static final int PLAYER_HEIGHT = 60;
+    private static final int PLAYER_FRAME_WIDTH = 282;
+    private static final int PLAYER_FRAME_HEIGHT = 282;
     private static final int COLUMNS = 4;
     private static final int COUNT = 4;
     private static final int OFFSET_X = 0;
     private static final int OFFSET_Y = 0;
     //public ImageView imageView;
     Image image;
-    Animation animation;
+    SpriteAnimation animation;
 
 
     //Constants for player model graphics
@@ -80,10 +82,13 @@ public class Player extends ImageView {
         }
     }
 
-
     public Player(int x, int y, int dx, int dy, playerColor color) {
         if (color.equals(playerColor.GREEN)) {
             image = new Image(GREEN_PLAYER_MAIN_IMAGE);
+            walkingRightImage = new Image("assets/player/green/walkingRight.png");
+            walkingLeftImage = new Image("assets/player/green/walkingLeft.png");
+            walkingUpImage = new Image("assets/player/green/walkingUp.png");
+            walkingDownImage = new Image("assets/player/green/walkingDown.png");
         } else if (color.equals(playerColor.RED)) {
             image = new Image(RED_PLAYER_MAIN_IMAGE);
             //walkingRightImage = new Image("assets/player/red/walkingRight.png");
@@ -94,6 +99,8 @@ public class Player extends ImageView {
             image = new Image(RED_PLAYER_MAIN_IMAGE);
         }
         this.setImage(image);
+        this.width = PLAYER_WIDTH;
+        this.height = PLAYER_HEIGHT;
         this.setFitWidth(PLAYER_WIDTH);
         this.setFitHeight(PLAYER_HEIGHT);
         this.setX(x);
@@ -103,14 +110,14 @@ public class Player extends ImageView {
         this.dx = dx;
         this.dy = dy;
         this.color = color;
-        //this.setViewport(new Rectangle2D(OFFSET_X, OFFSET_Y, PLAYER_WIDTH, PLAYER_HEIGHT));
-/*        animation = new SpriteAnimation(
+        this.setViewport(new Rectangle2D(OFFSET_X, OFFSET_Y, PLAYER_FRAME_WIDTH, PLAYER_FRAME_HEIGHT));
+        animation = new SpriteAnimation(
                 this,
                 Duration.millis(700),
                 COUNT, COLUMNS,
                 OFFSET_X, OFFSET_Y,
-                PLAYER_WIDTH, PLAYER_HEIGHT
-        );*/
+                PLAYER_FRAME_WIDTH, PLAYER_FRAME_HEIGHT
+        );
     }
 
     public void tick(List<Object> objectsOnMap, List<Bot> botsOnMap) {
@@ -148,6 +155,7 @@ public class Player extends ImageView {
         if (Objects.equals(mouseEvent.getEventType(), MouseEvent.MOUSE_CLICKED)) {
             double allowedLengthX = abs(getX() - mouseX);
             double allowedLengthY = abs(getY() - mouseY);
+            animation.pause();
             if (getY() >= mouseY && mouseX >= getX() - allowedLengthY && mouseX <= getX() + allowedLengthY) {
                 this.setImage(walkingUpImage);
                 bullet = new Bullet((int) shootingUpX, (int) shootingUpY, 3, Color.YELLOW);
@@ -165,6 +173,7 @@ public class Player extends ImageView {
                 bullet = new Bullet((int) shootingLeftX, (int) shootingLeftY, 3, Color.YELLOW);
                 bullet.shoot(lineLeft, root, Math.min(500, shootingLeftX - mouseX), bullets);
             }
+            animation.play();
             root.getChildren().add(bullet);
             bullets.add(bullet);
         }
@@ -173,13 +182,13 @@ public class Player extends ImageView {
     // From where bullets come out
     public void getGunCoordinates() {
         shootingRightX = getX() + getWidth();
-        shootingRightY = getY() + getHeight();
-        shootingUpX = getX() + getWidth();
+        shootingRightY = getY() + getHeight() / 1.63;
+        shootingUpX = getX() + getWidth() / 1.63;
         shootingUpY = getY();
-        shootingDownX = getX();
+        shootingDownX = getX() + getWidth() - getWidth() / 1.63;
         shootingDownY = getY() + getHeight();
         shootingLeftX = getX();
-        shootingLeftY = getY();
+        shootingLeftY = getY() + getHeight() - getHeight() / 1.63;
     }
 
     // Player movement keyPressed
@@ -213,7 +222,6 @@ public class Player extends ImageView {
         }
         //animation.pause();
     };
-
 
     public void setDx(int dx) {
         this.dx = dx;
