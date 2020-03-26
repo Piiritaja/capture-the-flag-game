@@ -252,6 +252,7 @@ public class Screen extends Application {
         positionPacket.xPosition = player.getX();
         positionPacket.yPosition = player.getY();
         positionPacket.battlefield = getChosenMap();
+        positionPacket.id = player.getId();
         this.client.sendTCP(positionPacket);
 
         redFlag = mapLoad.getRedFlag();
