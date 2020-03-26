@@ -215,6 +215,7 @@ public class Screen extends Application {
 
         // bases for collision detection
         List<Base> bases = mapLoad.getBases();
+
         if (botLocationsXY.isEmpty()) {
             botSpawner.spawnBots(4, stage, root, bases, mapLoad.getObjectsOnMap());
             botsOnMap = botSpawner.getBotsOnMap();

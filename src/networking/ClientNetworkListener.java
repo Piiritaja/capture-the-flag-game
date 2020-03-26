@@ -95,6 +95,7 @@ public class ClientNetworkListener extends Listener {
                 sendPlayerPosition.yPosition = serverClient.getMenu().getScreen().getPlayer().getY();
                 sendPlayerPosition.battlefield = ((Packet004RequestPlayers) object).battlefield;
                 sendPlayerPosition.id = serverClient.getMenu().getScreen().getPlayer().getId();
+                System.out.println("Received id " + sendPlayerPosition.id);
 
                 connection.sendTCP(sendPlayerPosition);
                 System.out.println("Sent sendPlayers");
@@ -106,11 +107,11 @@ public class ClientNetworkListener extends Listener {
                 double playerXPosition = ((Packet005SendPlayerPosition) object).xPosition;
                 double playerYPosition = ((Packet005SendPlayerPosition) object).yPosition;
                 String id = ((Packet005SendPlayerPosition) object).id;
-                System.out.println("id " + id);
                 Platform.runLater(() -> this.serverClient.getMenu().getScreen().createNewPlayer(playerXPosition, playerYPosition, id));
                 System.out.println("Created player at:");
                 System.out.println(playerXPosition);
                 System.out.println(playerYPosition);
+                System.out.println("With ID: " + id);
             }
 
         } else if (object instanceof Packet006RequestBotsLocation) {
