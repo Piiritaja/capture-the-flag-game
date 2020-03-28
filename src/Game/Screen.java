@@ -226,7 +226,7 @@ public class Screen extends Application {
             for (Map.Entry<Integer, Double[]> entry : botLocationsXY.entrySet()) {
                 Double[] positions = entry.getValue();
                 int id = entry.getKey();
-                Bot bot = new Bot(positions[0].intValue(), positions[1].intValue(), 0, 0, 10);
+                Bot bot = new Bot(positions[0].intValue(), positions[1].intValue(), 10, stage);
                 System.out.println(String.format("Created bot at %d, %d", positions[0].intValue(), positions[1].intValue()));
                 bot.setBotId(id);
                 root.getChildren().add(bot);
@@ -285,7 +285,6 @@ public class Screen extends Application {
         timer.start();
         stage.show();
         updateScale();
-        mapLoad.updateScaleMap(stage);
     }
 
     private void exitScreen() {

@@ -114,6 +114,7 @@ public class MapLoad {
                 Flag.flagColor.GREEN);
         root.getChildren().add(redFlag);
         root.getChildren().add(greenFlag);
+        updateScaleMap(stage);
 
     }
 
