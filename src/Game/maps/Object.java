@@ -6,6 +6,7 @@ import Game.bots.Bot;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
@@ -110,8 +111,8 @@ public class Object extends ImageView {
         Rectangle botBoundaries = new Rectangle();
         botBoundaries.setX(bot.getX());
         botBoundaries.setY(bot.getY());
-        botBoundaries.setHeight(bot.fitHeightProperty().get() * 1.5);
-        botBoundaries.setWidth(bot.fitWidthProperty().get() * 1.5);
+        botBoundaries.setHeight(bot.getBotHeight() * 1.5);
+        botBoundaries.setWidth(bot.getBotWidth() * 1.5);
         return objectBoundaries.getBoundsInLocal().intersects(botBoundaries.getBoundsInLocal());
     }
 
@@ -166,7 +167,7 @@ public class Object extends ImageView {
                         tile.setY(row * mapHeightInTiles);
                         root.getChildren().add(tile);
                         walls.add(tile);
-                    } else if (character.equals("34")) {
+                    } else if (character.equals("34") || character.equals("1")) {
                         Object tile = new Object(Object.WOOD_TEXTURE);
                         tile.setRow(row);
                         tile.setColumn(column);

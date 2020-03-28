@@ -7,6 +7,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
+import javafx.stage.Stage;
 
 /**
  * Bot class
@@ -14,8 +15,8 @@ import javafx.scene.shape.Shape;
 public class Bot extends ImageView {
 
     //Constants for player size
-    private static double BOT_WIDTH = 80;
-    private static double BOT_HEIGHT = 80;
+    private double botWidth;
+    private double botHeight;
     private static final Image BOT_STILL_IMAGE = new Image("assets/bot/still.png");
     private static final Image BOT_WALK_IMAGE_1 = new Image("assets/bot/walk1.png");
     private static final Image BOT_WALK_IMAGE_2 = new Image("assets/bot/walk2.png");
@@ -31,16 +32,16 @@ public class Bot extends ImageView {
      *
      * @param x     Initial x coordinate
      * @param y     Initial y coordinate
-     * @param dx    Movement x change
-     * @param dy    Movement y change
      * @param lives Health points of the bot
      */
-    public Bot(int x, int y, int dx, int dy, int lives) {
+    public Bot(int x, int y, int lives, Stage stage) {
+        final int mapWidthInTiles = 40;
+        final int mapHeightInTiles = 25;
+        botWidth = stage.widthProperty().get() / mapWidthInTiles * 1.5;
+        botHeight = stage.heightProperty().get() / mapHeightInTiles * 1.5;
         this.setImage(BOT_STILL_IMAGE);
-        this.fitWidthProperty().set(BOT_WIDTH);
-        this.fitHeightProperty().set(BOT_HEIGHT);
-        this.dx = dx;
-        this.dy = dy;
+        this.fitWidthProperty().set(botWidth);
+        this.fitHeightProperty().set(botHeight);
         this.setX(x);
         this.setY(y);
         this.x = (int) this.getX();
@@ -56,10 +57,10 @@ public class Bot extends ImageView {
      */
     private Rectangle boundaries() {
         Rectangle objectBoundaries = new Rectangle();
-        objectBoundaries.setX(this.getX() + 5 * BOT_WIDTH / 16);
-        objectBoundaries.setY(this.getY() + 5 * BOT_WIDTH / 16);
-        objectBoundaries.setWidth(this.getFitWidth() - 5 * BOT_WIDTH / 8);
-        objectBoundaries.setHeight(this.getFitHeight() - 5 * BOT_WIDTH / 8);
+        objectBoundaries.setX(this.getX() + 5 * botWidth / 16);
+        objectBoundaries.setY(this.getY() + 5 * botWidth / 16);
+        objectBoundaries.setWidth(this.getFitWidth() - 5 * botWidth / 8);
+        objectBoundaries.setHeight(this.getFitHeight() - 5 * botWidth / 8);
         return objectBoundaries;
     }
 
@@ -101,8 +102,8 @@ public class Bot extends ImageView {
      * @param botHeight The value that the height will be set to
      */
     public void setBotHeight(double botHeight) {
-        BOT_HEIGHT = botHeight;
-        this.setFitHeight(BOT_HEIGHT);
+        this.botHeight = botHeight;
+        this.setFitHeight(botHeight);
     }
 
     /**
@@ -111,22 +112,22 @@ public class Bot extends ImageView {
      * @param botWidth The value that the width will be set to
      */
     public void setBotWidth(double botWidth) {
-        BOT_WIDTH = botWidth;
-        this.setFitWidth(BOT_WIDTH);
+        this.botWidth = botWidth;
+        this.setFitWidth(botWidth);
     }
 
     /**
      * @return The height of this bot
      */
     public double getBotHeight() {
-        return BOT_HEIGHT;
+        return botHeight;
     }
 
     /**
      * @return The width of this bot
      */
     public double getBotWidth() {
-        return BOT_WIDTH;
+        return botWidth;
     }
 
     /**
