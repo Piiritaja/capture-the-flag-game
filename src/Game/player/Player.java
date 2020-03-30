@@ -2,7 +2,6 @@ package Game.player;
 
 import Game.bots.Bot;
 import Game.maps.Object;
-import javafx.animation.Animation;
 import javafx.event.EventHandler;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
@@ -13,17 +12,16 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
-import javafx.stage.Stage;
 import javafx.util.Duration;
-
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import static java.lang.StrictMath.abs;
 
-
+/**
+ * Player class.
+ */
 public class Player extends ImageView {
 
     //Constants for player size
@@ -35,15 +33,13 @@ public class Player extends ImageView {
     private static final int COUNT = 4;
     private static final int OFFSET_X = 0;
     private static final int OFFSET_Y = 0;
-    //public ImageView imageView;
-    Image image;
     SpriteAnimation animation;
 
 
     //Constants for player model graphics
     private static final String RED_PLAYER_MAIN_IMAGE = "assets/player/red/still.png";
     private static final String GREEN_PLAYER_MAIN_IMAGE = "assets/player/green/still.png";
-    //private static final String RED_PLAYER_WALKING = "assets/player/red/walkingRight.png";
+    private Image image;
     private Image walkingRightImage;
     private Image walkingLeftImage;
     private Image walkingUpImage;
@@ -61,16 +57,17 @@ public class Player extends ImageView {
     double shootingLeftY;
 
 
-    Bullet bullet;
     public List<Bullet> bullets = new ArrayList<>();
     int step = 2;
-
     public int dx, dy, x, y, width, height;
     private playerColor color;
-
     private double playerLocationXInTiles;
     private double playerLocationYInTiles;
+    Bullet bullet;
 
+    /**
+     * Player`s possible colors.
+     */
     public enum playerColor {
         RED(Color.RED),
         GREEN(Color.GREEN);
@@ -82,6 +79,16 @@ public class Player extends ImageView {
         }
     }
 
+    /**
+     * Initializes player.
+     * Sets size, color, image depending of the color, initial position.
+     *
+     * @param x     Initial x coordinate
+     * @param y     Initial y coordinate
+     * @param dx    Movement x change
+     * @param dy    Movement y change
+     * @param color Player color
+     */
     public Player(int x, int y, int dx, int dy, playerColor color) {
         if (color.equals(playerColor.GREEN)) {
             image = new Image(GREEN_PLAYER_MAIN_IMAGE);
@@ -120,6 +127,13 @@ public class Player extends ImageView {
         );
     }
 
+    /**
+     * Player´s movement.
+     * Collision with objects on map and bot object.
+     *
+     * @param objectsOnMap Objects to check the collision with.
+     * @param botsOnMap Bots to check the collision with.
+     */
     public void tick(List<Object> objectsOnMap, List<Bot> botsOnMap) {
         double x = this.getX();
         double y = this.getY();
@@ -144,6 +158,11 @@ public class Player extends ImageView {
 
     }
 
+    /**
+     * Calculates which way to shoot(UP, DOWN, RIGHT or LEFT).
+     * If mouse is clicked, makes new bullet and adds it to the root and bullets list.
+     * Sets player image in the same direction with bullets.
+     */
     public EventHandler<MouseEvent> shooting = mouseEvent -> {
         getGunCoordinates();
         double mouseY = mouseEvent.getY();
@@ -179,7 +198,9 @@ public class Player extends ImageView {
         }
     };
 
-    // From where bullets come out
+    /**
+     * Calculates gun X and Y position to know where the bullets come out of.
+     */
     public void getGunCoordinates() {
         shootingRightX = getX() + getWidth();
         shootingRightY = getY() + getHeight() / 1.63;
@@ -191,7 +212,11 @@ public class Player extends ImageView {
         shootingLeftY = getY() + getHeight() - getHeight() / 1.63;
     }
 
-    // Player movement keyPressed
+    /**
+     * Set image depending which key is pressed.
+     * Set dy or dx some value to move player depending which key is pressed.
+     * Play animation after key is pressed.
+     */
     public EventHandler<KeyEvent> pressed = keyEvent -> {
         if (keyEvent.getCode().equals(KeyCode.W)) {
             this.setImage(walkingUpImage);
@@ -209,7 +234,10 @@ public class Player extends ImageView {
         animation.play();
     };
 
-    // Player movement keyReleased
+    /**
+     * Set Dy or Dx 0 depending of the key released.
+     * Pause animation after key is released.
+     */
     public EventHandler<KeyEvent> released = keyEvent -> {
         if (keyEvent.getCode().equals(KeyCode.W)) {
             setDy(0);
@@ -223,26 +251,50 @@ public class Player extends ImageView {
         animation.pause();
     };
 
+    /**
+     * Sets movement x change.
+     *
+     * @param dx Change of the movement.
+     */
     public void setDx(int dx) {
         this.dx = dx;
     }
 
+    /**
+     * Sets movement y change.
+     *
+     * @param dy Change of the movement.
+     */
     public void setDy(int dy) {
         this.dy = dy;
     }
 
+    /**
+     * @return The width of this player.
+     */
     public double getWidth() {
         return this.getFitWidth();
     }
 
+    /**
+     * @return The height of this player.
+     */
     public double getHeight() {
         return this.getFitHeight();
     }
 
+    /**
+     * @return The color of this player.
+     */
     public playerColor getColor() {
         return color;
     }
 
+    /**
+     * Set group for this player.
+     *
+     * @param root The group for this player.
+     */
     public void setRoot(Group root) {
         this.root = root;
     }

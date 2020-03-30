@@ -32,7 +32,6 @@ import networking.packets.Packet004RequestPlayers;
 import networking.packets.Packet005SendPlayerPosition;
 import networking.packets.Packet008SendPlayerID;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -359,8 +358,10 @@ public class Screen extends Application {
         }
     }
 
-
-    // Player can take flag and release it in base
+    /**
+     * Player can catch the enemy team`s flag if intersects with it and bring to his base.
+     * If enemy team`s flag is brought to own base then the next round starts.
+     */
     public void catchTheFlag() {
         if (player.getColor() == Player.playerColor.RED) {
             if (player.getBoundsInParent().intersects(redFlag.getBoundsInParent())) {
@@ -388,7 +389,9 @@ public class Screen extends Application {
         }
     }
 
-    // Scoreboard on screen
+    /**
+     * Makes scoreboard.
+     */
     public void scoreBoard() {
         Rectangle scoreBoard = new Rectangle(500, 40);
         scoreBoard.setFill(Color.LIGHTGRAY);
