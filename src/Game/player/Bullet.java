@@ -17,11 +17,23 @@ import javax.swing.text.html.ImageView;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Bullet class.
+ */
 public class Bullet extends Circle {
 
     int x, y, radius;
     Color color;
 
+    /**
+     * Initializes bullet.
+     * Sets radius, color and initial position.
+     *
+     * @param x         Initial x coordinate
+     * @param y         Initial y coordinate
+     * @param radius    Bullet radius
+     * @param color     Bullet color
+     */
     public Bullet(int x, int y, int radius, Color color) {
         super(x, y, radius);
         this.x = x;
@@ -31,8 +43,16 @@ public class Bullet extends Circle {
         this.setFill(color);
     }
 
-
-    // shooting bullets
+    /**
+     * Sets transition for bullet.
+     * Calculates distance.
+     * Plays bullet transition and removes bullet from root and bullets list.
+     *
+     * @param line      Bullet path.
+     * @param root      Root to add bullet.
+     * @param distance  How far bullet travels.
+     * @param bullets   List of bullets.
+     */
     public void shoot(Line line, Group root, double distance, List<Bullet> bullets) {
         PathTransition transition = new PathTransition();
         transition.setNode(this);
@@ -51,6 +71,16 @@ public class Bullet extends Circle {
         playTime.play();
     }
 
+    /**
+     * Detects collision between bullet and object on map or bullet and bot on map.
+     * Removes bullet from root and bullets list after collision.
+     * Removes one life from bot if the collision is detected.
+     *
+     * @param player        Player that shoots bullet.
+     * @param objectsOnMap  Objects that are displayed on map.
+     * @param root          Group from where to remove bullets.
+     * @param botSpawner    Calculates bots on map.
+     */
     public void bulletCollision(Player player, List<Object> objectsOnMap, Group root, BotSpawner botSpawner) {
         Iterator<Bullet> bullets = player.bullets.iterator();
         while (bullets.hasNext()) {
