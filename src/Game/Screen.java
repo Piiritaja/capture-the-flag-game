@@ -263,7 +263,7 @@ public class Screen extends Application {
                 player.tick(objectsOnMap, botsOnMap);
                 catchTheFlag();
                 scoreBoard();
-                bullet.bulletCollision(player, objectsOnMap, root, botSpawner);
+                bullet.bulletCollision(player, objectsOnMap, root, botSpawner, client);
                 player.setOnKeyPressed(player.pressed);
                 player.setOnKeyReleased(player.released);
                 root.setOnMouseClicked(player.shooting);
@@ -281,6 +281,15 @@ public class Screen extends Application {
         timer.start();
         stage.show();
         updateScale();
+    }
+
+    public void updateBotLives(int botId, int botLives) {
+        for (Bot bot : botsOnMap) {
+            if (bot.getBotId() == botId) {
+                bot.lives = botLives;
+                System.out.println("new bot lives: " + bot.lives);
+            }
+        }
     }
 
     private void exitScreen() {

@@ -12,6 +12,7 @@ import networking.packets.Packet005SendPlayerPosition;
 import networking.packets.Packet006RequestBotsLocation;
 import networking.packets.Packet007SendBotsLocation;
 import networking.packets.Packet008SendPlayerID;
+import networking.packets.Packet009BotHit;
 
 public class ClientNetworkListener extends Listener {
     private ServerClient serverClient;
@@ -143,6 +144,9 @@ public class ClientNetworkListener extends Listener {
             System.out.println("Received player id: " + ((Packet008SendPlayerID) object).playerID);
             this.serverClient.getMenu().getScreen().removePlayerWithId(((Packet008SendPlayerID) object).playerID);
             System.out.println();
+        } else if (object instanceof Packet009BotHit) {
+            System.out.println("Received BotHit packet: " + ((Packet009BotHit) object).botId);
+            serverClient.getMenu().getScreen().updateBotLives(((Packet009BotHit) object).botId, ((Packet009BotHit) object).lives);
         }
 
     }

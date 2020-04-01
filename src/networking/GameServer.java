@@ -13,6 +13,7 @@ import networking.packets.Packet005SendPlayerPosition;
 import networking.packets.Packet006RequestBotsLocation;
 import networking.packets.Packet007SendBotsLocation;
 import networking.packets.Packet008SendPlayerID;
+import networking.packets.Packet009BotHit;
 
 import java.io.IOException;
 
@@ -90,6 +91,7 @@ public class GameServer {
         kryo.register(Packet006RequestBotsLocation.class);
         kryo.register(Packet007SendBotsLocation.class);
         kryo.register(Packet008SendPlayerID.class);
+        kryo.register(Packet009BotHit.class);
         kryo.register(java.util.Map.class);
         kryo.register(java.util.HashMap.class);
         kryo.register(Double[].class);
