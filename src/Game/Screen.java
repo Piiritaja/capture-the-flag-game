@@ -284,19 +284,16 @@ public class Screen extends Application {
     }
 
     public void updateBotLives(int botId, int botLives) {
-        Bot botToRemove = null;
-        for (Bot bot : botsOnMap) {
+        for (int i = 0; i < botsOnMap.size(); i++) {
+            Bot bot = botsOnMap.get(i);
             if (bot.getBotId() == botId) {
                 bot.lives = botLives;
                 System.out.println("new bot lives: " + bot.lives);
                 if (bot.lives == 0) {
-                    botToRemove = bot;
                     botSpawner.botsOnMap.remove(bot);
+                    root.getChildren().remove(bot);
                 }
             }
-        }
-        if (botToRemove != null) {
-            root.getChildren().remove(botToRemove);
         }
     }
 
