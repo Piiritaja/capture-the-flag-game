@@ -225,11 +225,8 @@ public class Screen extends Application {
             for (Map.Entry<Integer, Double[]> entry : botLocationsXY.entrySet()) {
                 Double[] positions = entry.getValue();
                 int id = entry.getKey();
-                Bot bot = new Bot(positions[0].intValue(), positions[1].intValue(), 10, stage);
-                System.out.println(String.format("Created bot at %d, %d", positions[0].intValue(), positions[1].intValue()));
-                bot.setBotId(id);
-                root.getChildren().add(bot);
-                botsOnMap.add(bot);
+                botSpawner.spawnBotsWithIdAndLocation(id, 4, positions[0].intValue(), positions[1].intValue(), stage, root, bases, mapLoad.getObjectsOnMap());
+                botsOnMap = botSpawner.getBotsOnMap();
             }
         }
 
