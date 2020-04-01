@@ -146,7 +146,8 @@ public class ClientNetworkListener extends Listener {
             System.out.println();
         } else if (object instanceof Packet009BotHit) {
             System.out.println("Received BotHit packet: " + ((Packet009BotHit) object).botId);
-            serverClient.getMenu().getScreen().updateBotLives(((Packet009BotHit) object).botId, ((Packet009BotHit) object).lives);
+            Platform.runLater(() -> serverClient.getMenu().getScreen().updateBotLives(((Packet009BotHit) object).botId, ((Packet009BotHit) object).lives));
+
         }
 
     }
