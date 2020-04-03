@@ -51,7 +51,7 @@ public class Screen extends Application {
     private List<Bot> botsOnMap;
     private Map<Integer, Double[]> botLocations = new HashMap<>();
     private Map<Integer, Double[]> botLocationsXY = new HashMap<>();
-    private List<Player> opponents = new ArrayList<>();
+    private List<Player> players = new ArrayList<>();
     int step = 2;
 
 
@@ -167,6 +167,7 @@ public class Screen extends Application {
         );
         player.setRoot(root);
         player.setId(UUID.randomUUID().toString());
+        players.add(player);
     }
 
     public void createOpponent(double x, double y, String id) {
@@ -180,7 +181,7 @@ public class Screen extends Application {
         otherPlayer.setRoot(root);
         otherPlayer.setId(id);
         root.getChildren().add(otherPlayer);
-        opponents.add(otherPlayer);
+        players.add(otherPlayer);
     }
 
     public void setMap(int mapIndex) {
@@ -194,7 +195,7 @@ public class Screen extends Application {
     }
 
     public void movePlayerUp(String playerId) {
-        for (Player opponent : opponents) {
+        for (Player opponent : players) {
             if (opponent.getId().equals(playerId)) {
                 System.out.println("opponent");
                 opponent.setDy(-step);
@@ -257,7 +258,7 @@ public class Screen extends Application {
         player.setPlayerLocationYInTiles(stage.heightProperty().get() / player.getY());
 
         root.getChildren().add(player);
-        //createOpponent(stage.widthProperty().get() - 100, stage.heightProperty().get() - 500, "2");
+        createOpponent(stage.widthProperty().get() - 100, stage.heightProperty().get() - 500, "2");
 
         // notify other players of your position
         Packet005SendPlayerPosition positionPacket = new Packet005SendPlayerPosition();
@@ -275,19 +276,16 @@ public class Screen extends Application {
         timer = new AnimationTimer() {
             @Override
             public void handle(long l) {
-                for (Player opponent : opponents) {
-                    opponent.tick(objectsOnMap, botsOnMap);
-                    bullet.bulletCollision(opponent, objectsOnMap, root, botSpawner, client);
-                    opponent.setFocusTraversable(true);
+                for (Player p : players) {
+                    p.tick(objectsOnMap, botsOnMap);
+                    bullet.bulletCollision(p, objectsOnMap, root, botSpawner, client);
+                    p.setFocusTraversable(true);
                 }
-                player.tick(objectsOnMap, botsOnMap);
                 catchTheFlag();
                 scoreBoard();
-                bullet.bulletCollision(player, objectsOnMap, root, botSpawner, client);
                 player.setOnKeyPressed(player.pressed);
                 player.setOnKeyReleased(player.released);
                 root.setOnMouseClicked(player.shooting);
-                player.setFocusTraversable(true);
             }
         };
 
