@@ -27,7 +27,7 @@ public class BotSpawner {
     /**
      * Spawns bots according to given inputs.
      *
-     * @param limit       limit of bots to be added
+     * @param limit        limit of bots to be added
      * @param stage        JavaFx stage that the bots are added to
      * @param group        JavaFx group that the bots are added to
      * @param bases        Bases that the bot can't be spawned into
@@ -68,6 +68,18 @@ public class BotSpawner {
         }
     }
 
+    public void spawnBotsWithIdAndLocation(int botId, int limit, int xPosition, int yPosition, Stage stage, Group group, List<Base> base, List<Object> objectsOnMap) {
+        for (int i = 0; i < limit; i++) {
+            Bot bot = new Bot(xPosition, yPosition, 10, stage);
+            group.getChildren().add(bot);
+            botsOnMap.add(bot);
+            botLocations.put(xPosition, yPosition);
+            bot.setBotId(botId);
+            break;
+
+        }
+    }
+
     /**
      * @param locationX X coordinate of the bot
      * @param locationY Y coordinate of the bot
@@ -101,6 +113,7 @@ public class BotSpawner {
      * Generates bot locations according to the amount of bots already added to map.
      * Map divided into four sections, bots are added to each section one after another.
      * Maximum and minimum coordinates within the section are offset, to avoid bots spawning too close to each other.
+     *
      * @param stageMaxX Maximum X coordinate for bot spawning
      * @param stageMaxY Maximum Y coordinate for bot spawning
      * @return Integer[] with the X (array[0]) and Y (array[1]) coordinates

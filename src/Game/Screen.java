@@ -51,6 +51,9 @@ public class Screen extends Application {
     private List<Bot> botsOnMap;
     private Map<Integer, Double[]> botLocations = new HashMap<>();
     private Map<Integer, Double[]> botLocationsXY = new HashMap<>();
+    private List<Player> players = new ArrayList<>();
+    int step = 2;
+
 
     // map size constants
     private static final int MAP_WIDTH_IN_TILES = 40;
@@ -164,9 +167,10 @@ public class Screen extends Application {
         );
         player.setRoot(root);
         player.setId(UUID.randomUUID().toString());
+        players.add(player);
     }
 
-    public void createNewPlayer(double x, double y, String id) {
+    public void createOpponent(double x, double y, String id) {
         Player otherPlayer = new Player(
                 (int) x,
                 (int) y,
@@ -175,8 +179,9 @@ public class Screen extends Application {
                 color.equals(Player.playerColor.GREEN) ? Player.playerColor.RED : Player.playerColor.GREEN
         );
         otherPlayer.setRoot(root);
-        player.setId(id);
+        otherPlayer.setId(id);
         root.getChildren().add(otherPlayer);
+        players.add(otherPlayer);
     }
 
     public void setMap(int mapIndex) {
@@ -187,6 +192,16 @@ public class Screen extends Application {
             chosenMap = Battlefield.MAP2;
         }
 
+    }
+
+    public void movePlayerUp(String playerId) {
+        for (Player opponent : players) {
+            if (opponent.getId().equals(playerId)) {
+                System.out.println("opponent");
+                opponent.setDy(-step);
+                
+            }
+        }
     }
 
 
@@ -225,11 +240,8 @@ public class Screen extends Application {
             for (Map.Entry<Integer, Double[]> entry : botLocationsXY.entrySet()) {
                 Double[] positions = entry.getValue();
                 int id = entry.getKey();
-                Bot bot = new Bot(positions[0].intValue(), positions[1].intValue(), 10, stage);
-                System.out.println(String.format("Created bot at %d, %d", positions[0].intValue(), positions[1].intValue()));
-                bot.setBotId(id);
-                root.getChildren().add(bot);
-                botsOnMap.add(bot);
+                botSpawner.spawnBotsWithIdAndLocation(id, 4, positions[0].intValue(), positions[1].intValue(), stage, root, bases, mapLoad.getObjectsOnMap());
+                botsOnMap = botSpawner.getBotsOnMap();
             }
         }
 
@@ -246,6 +258,7 @@ public class Screen extends Application {
         player.setPlayerLocationYInTiles(stage.heightProperty().get() / player.getY());
 
         root.getChildren().add(player);
+        createOpponent(stage.widthProperty().get() - 100, stage.heightProperty().get() - 500, "2");
 
         // notify other players of your position
         Packet005SendPlayerPosition positionPacket = new Packet005SendPlayerPosition();
@@ -263,14 +276,16 @@ public class Screen extends Application {
         timer = new AnimationTimer() {
             @Override
             public void handle(long l) {
-                player.tick(objectsOnMap, botsOnMap);
+                for (Player p : players) {
+                    p.tick(objectsOnMap, botsOnMap);
+                    bullet.bulletCollision(p, objectsOnMap, root, botSpawner, client);
+                    p.setFocusTraversable(true);
+                }
                 catchTheFlag();
                 scoreBoard();
-                bullet.bulletCollision(player, objectsOnMap, root, botSpawner);
                 player.setOnKeyPressed(player.pressed);
                 player.setOnKeyReleased(player.released);
                 root.setOnMouseClicked(player.shooting);
-                player.setFocusTraversable(true);
             }
         };
 
@@ -284,6 +299,20 @@ public class Screen extends Application {
         timer.start();
         stage.show();
         updateScale();
+    }
+
+    public void updateBotLives(int botId, int botLives) {
+        for (int i = 0; i < botsOnMap.size(); i++) {
+            Bot bot = botsOnMap.get(i);
+            if (bot.getBotId() == botId) {
+                bot.lives = botLives;
+                System.out.println("new bot lives: " + bot.lives);
+                if (bot.lives == 0) {
+                    botSpawner.botsOnMap.remove(bot);
+                    root.getChildren().remove(bot);
+                }
+            }
+        }
     }
 
     private void exitScreen() {
