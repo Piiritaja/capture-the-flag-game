@@ -156,7 +156,7 @@ public class Object extends ImageView {
                 column = 0;
                 field = line.split(",");
                 for (String character : field) {
-                    if (character.equals("0") || character.equals("2")) {
+                    if (character.equals("1")) {
                         Object tile = new Object(Object.BRICK_TEXTURE);
                         tile.setRow(row);
                         tile.setColumn(column);
@@ -167,7 +167,7 @@ public class Object extends ImageView {
                         tile.setY(row * mapHeightInTiles);
                         root.getChildren().add(tile);
                         walls.add(tile);
-                    } else if (character.equals("34") || character.equals("1")) {
+                    } else if (character.equals("2")) {
                         Object tile = new Object(Object.WOOD_TEXTURE);
                         tile.setRow(row);
                         tile.setColumn(column);

@@ -12,6 +12,7 @@ import networking.packets.Packet005SendPlayerPosition;
 import networking.packets.Packet006RequestBotsLocation;
 import networking.packets.Packet007SendBotsLocation;
 import networking.packets.Packet008SendPlayerID;
+import networking.packets.Packet009BotHit;
 
 public class ServerListener extends Listener {
     private Server server;
@@ -100,6 +101,10 @@ public class ServerListener extends Listener {
             System.out.println("Received sendPlayerID packet");
             server.sendToAllExceptTCP(connection.getID(), object);
             System.out.println("Sent sendPlayerID packet to all other clients");
+        } else if (object instanceof Packet009BotHit) {
+            System.out.println("Received botHit packet");
+            System.out.println("Bot id is: " + ((Packet009BotHit) object).botId);
+            server.sendToAllExceptTCP(connection.getID(), object);
         }
 
     }
