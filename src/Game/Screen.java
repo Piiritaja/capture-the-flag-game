@@ -569,48 +569,51 @@ public class Screen extends Application {
      * If enemy team`s flag is brought to own base then the next round starts.
      */
     public void catchTheFlag() {
-        if (player.getColor() == Player.playerColor.RED) {
-            if (player.getBoundsInParent().intersects(redFlag.getBoundsInParent())) {
-                if (player.getX() > redBase.getRightX() - redBase.getRightX() / 5) {
-                    redFlag.relocate(player.getX() + 10, player.getY() + 10);
-                } else {
-                    redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
-                    redTeamScore += 1;
-                    root.getChildren().remove(stack);
-                    scoreBoard();
-                    timer.stop();
-                    Timeline playtime = new Timeline(
-                            new KeyFrame(Duration.seconds(0), event -> player.x = 40),
-                            new KeyFrame(Duration.seconds(0), event -> player.y = 40),
-                            new KeyFrame(Duration.seconds(0), event -> redFlag.relocate(greenBase.getRightX() - 50,
-                                    greenBase.getBottomY() / 2 - redFlag.getHeight())),
-                            new KeyFrame(Duration.seconds(0.5), event -> timer.start())
-                    );
-                    playtime.play();
+        for (Player p: players){
+            if (p.getColor() == Player.playerColor.RED) {
+                if (p.getBoundsInParent().intersects(redFlag.getBoundsInParent())) {
+                    if (p.getX() > redBase.getRightX() - redBase.getRightX() / 5) {
+                        redFlag.relocate(p.getX() + 10, p.getY() + 10);
+                    } else {
+                        redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
+                        redTeamScore += 1;
+                        root.getChildren().remove(stack);
+                        scoreBoard();
+                        timer.stop();
+                        Timeline playtime = new Timeline(
+                                new KeyFrame(Duration.seconds(0), event -> p.x = 40),
+                                new KeyFrame(Duration.seconds(0), event -> p.y = 40),
+                                new KeyFrame(Duration.seconds(0), event -> redFlag.relocate(greenBase.getRightX() - 50,
+                                        greenBase.getBottomY() / 2 - redFlag.getHeight())),
+                                new KeyFrame(Duration.seconds(0.5), event -> timer.start())
+                        );
+                        playtime.play();
+                    }
                 }
-            }
-        } else {
-            if (player.getBoundsInParent().intersects(greenFlag.getBoundsInParent())) {
-                if (player.getX() < greenBase.getLeftX()) {
-                    greenFlag.relocate(player.getX() + 10, player.getY() + 10);
-                } else {
-                    greenFlag.relocate(greenBase.getRightX() - 50,
-                            greenBase.getBottomY() / 2);
-                    greenTeamScore += 1;
-                    root.getChildren().remove(stack);
-                    scoreBoard();
-                    timer.stop();
-                    Timeline playtime = new Timeline(
-                            new KeyFrame(Duration.seconds(0), event -> player.x = (int) stage.widthProperty().get() - 100),
-                            new KeyFrame(Duration.seconds(0), event -> player.y = (int) stage.heightProperty().get() - 500),
-                            new KeyFrame(Duration.seconds(0), event -> greenFlag.relocate(redBase.getLeftX() + 50,
-                                    redBase.getBottomY() / 2)),
-                            new KeyFrame(Duration.seconds(0.5), event -> timer.start())
-                    );
-                    playtime.play();
+            } else {
+                if (p.getBoundsInParent().intersects(greenFlag.getBoundsInParent())) {
+                    if (p.getX() < greenBase.getLeftX()) {
+                        greenFlag.relocate(p.getX() + 10, p.getY() + 10);
+                    } else {
+                        greenFlag.relocate(greenBase.getRightX() - 50,
+                                greenBase.getBottomY() / 2);
+                        greenTeamScore += 1;
+                        root.getChildren().remove(stack);
+                        scoreBoard();
+                        timer.stop();
+                        Timeline playtime = new Timeline(
+                                new KeyFrame(Duration.seconds(0), event -> p.x = (int) stage.widthProperty().get() - 100),
+                                new KeyFrame(Duration.seconds(0), event -> p.y = (int) stage.heightProperty().get() - 500),
+                                new KeyFrame(Duration.seconds(0), event -> greenFlag.relocate(redBase.getLeftX() + 50,
+                                        redBase.getBottomY() / 2)),
+                                new KeyFrame(Duration.seconds(0.5), event -> timer.start())
+                        );
+                        playtime.play();
+                    }
                 }
             }
         }
+
     }
 
     /**
