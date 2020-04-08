@@ -1,8 +1,10 @@
 package Game.player;
 
+import Game.Screen;
 import Game.bots.Bot;
 import Game.bots.BotSpawner;
 import Game.maps.Object;
+import com.esotericsoftware.kryonet.Server;
 import com.esotericsoftware.kryonet.Client;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -13,6 +15,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.util.Duration;
+import networking.ServerClient;
 import networking.packets.Packet009BotHit;
 
 import javax.swing.text.html.ImageView;
@@ -116,7 +119,22 @@ public class Bullet extends Circle {
                     }
                 }
             }
+            if (bullet.color == Color.BLUE) {
+                if (player.collides(bullet)) {
+                    root.getChildren().remove(bullet);
+                    bullets.remove();
+                    player.lives -= 1;
+                    if (player.lives <= 0) {
+                        player.x = 0;
+                        player.y = 0;
+                        root.getChildren().remove(player);
+                    }
+                }
+            }
         }
+    }
+    public Color getColor() {
+        return this.color;
     }
 
 }

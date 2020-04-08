@@ -11,6 +11,8 @@ import Game.player.Flag;
 import Game.player.Player;
 import com.esotericsoftware.kryonet.Client;
 import javafx.animation.AnimationTimer;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -27,10 +29,12 @@ import javafx.stage.Stage;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import javafx.util.Duration;
 import networking.ServerClient;
 import networking.packets.Packet004RequestPlayers;
 import networking.packets.Packet005SendPlayerPosition;
 import networking.packets.Packet008SendPlayerID;
+import org.w3c.dom.css.Counter;
 
 import java.util.List;
 import java.util.Map;
@@ -51,9 +55,9 @@ public class Screen extends Application {
     private List<Bot> botsOnMap;
     private Map<Integer, Double[]> botLocations = new HashMap<>();
     private Map<Integer, Double[]> botLocationsXY = new HashMap<>();
+    private StackPane stack;
     private List<Player> players = new ArrayList<>();
     int step = 2;
-
 
     // map size constants
     private static final int MAP_WIDTH_IN_TILES = 40;
@@ -86,6 +90,10 @@ public class Screen extends Application {
 
     public Player getPlayer() {
         return this.player;
+    }
+
+    public Group getRoot() {
+        return this.root;
     }
 
     public Map<Integer, Double[]> getBotLocationsXY() {
@@ -158,7 +166,7 @@ public class Screen extends Application {
     }
 
     public void createPlayer() {
-        this.player = new Player(
+        player = new Player(
                 playerXStartingPosition,
                 playerYStartingPosition,
                 0,
@@ -204,13 +212,11 @@ public class Screen extends Application {
         }
     }
 
-
     @Override
     public void start(Stage stage) {
         inGame = true;
         boolean fullScreen = stage.isFullScreen();
         this.stage = stage;
-
 
         stage.getScene().setRoot(root);
 
@@ -257,6 +263,7 @@ public class Screen extends Application {
         player.setPlayerLocationXInTiles(stage.widthProperty().get() / player.getX());
         player.setPlayerLocationYInTiles(stage.heightProperty().get() / player.getY());
 
+
         root.getChildren().add(player);
         createOpponent(stage.widthProperty().get() - 100, stage.heightProperty().get() - 500, "2");
 
@@ -271,7 +278,7 @@ public class Screen extends Application {
         redFlag = mapLoad.getRedFlag();
         greenFlag = mapLoad.getGreenFlag();
         objectsOnMap = mapLoad.getObjectsOnMap();
-
+        scoreBoard();
 
         timer = new AnimationTimer() {
             @Override
@@ -282,7 +289,12 @@ public class Screen extends Application {
                     p.setFocusTraversable(true);
                 }
                 catchTheFlag();
-                scoreBoard();
+
+                for (Bot bot : botsOnMap) {
+                    bot.botShooting(player, root);
+                }
+                bullet.bulletCollision(player, objectsOnMap, root, botSpawner);
+
                 player.setOnKeyPressed(player.pressed);
                 player.setOnKeyReleased(player.released);
                 root.setOnMouseClicked(player.shooting);
@@ -398,8 +410,17 @@ public class Screen extends Application {
                 } else {
                     redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
                     redTeamScore += 1;
+                    root.getChildren().remove(stack);
+                    scoreBoard();
                     timer.stop();
-                    start(stage);
+                    Timeline playtime = new Timeline(
+                            new KeyFrame(Duration.seconds(0), event -> player.x = 40),
+                            new KeyFrame(Duration.seconds(0), event -> player.y = 40),
+                            new KeyFrame(Duration.seconds(0), event -> redFlag.relocate(greenBase.getRightX() - 50,
+                                    greenBase.getBottomY() / 2 - redFlag.getHeight())),
+                            new KeyFrame(Duration.seconds(0.5), event -> timer.start())
+                    );
+                    playtime.play();
                 }
             }
         } else {
@@ -410,8 +431,17 @@ public class Screen extends Application {
                     greenFlag.relocate(greenBase.getRightX() - 50,
                             greenBase.getBottomY() / 2);
                     greenTeamScore += 1;
+                    root.getChildren().remove(stack);
+                    scoreBoard();
                     timer.stop();
-                    start(stage);
+                    Timeline playtime = new Timeline(
+                            new KeyFrame(Duration.seconds(0), event -> player.x = (int) stage.widthProperty().get() - 100),
+                            new KeyFrame(Duration.seconds(0), event -> player.y = (int) stage.heightProperty().get() - 500),
+                            new KeyFrame(Duration.seconds(0), event -> greenFlag.relocate(redBase.getLeftX() + 50,
+                                    redBase.getBottomY() / 2)),
+                            new KeyFrame(Duration.seconds(0.5), event -> timer.start())
+                    );
+                    playtime.play();
                 }
             }
         }
@@ -429,7 +459,7 @@ public class Screen extends Application {
         redTeam.setFont(Font.font("Arial", FontWeight.EXTRA_BOLD, 30));
         greenTeam.setFill(Color.GREEN);
         greenTeam.setFont(Font.font("Arial", FontWeight.EXTRA_BOLD, 30));
-        StackPane stack = new StackPane();
+        stack = new StackPane();
         GridPane scores = new GridPane();
         stack.setLayoutX(stage.widthProperty().get() / 2 - (scoreBoard.getWidth() / 2));
         scores.setHgap(40);

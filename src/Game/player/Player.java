@@ -13,6 +13,9 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Path;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
 import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +67,7 @@ public class Player extends ImageView {
     private playerColor color;
     private double playerLocationXInTiles;
     private double playerLocationYInTiles;
+    public int lives;
     Bullet bullet;
 
     /**
@@ -118,6 +122,7 @@ public class Player extends ImageView {
         this.dx = dx;
         this.dy = dy;
         this.color = color;
+        this.lives = 10;
         this.setViewport(new Rectangle2D(OFFSET_X, OFFSET_Y, PLAYER_FRAME_WIDTH, PLAYER_FRAME_HEIGHT));
         animation = new SpriteAnimation(
                 this,
@@ -300,6 +305,10 @@ public class Player extends ImageView {
         this.root = root;
     }
 
+    public int getLives() {
+        return this.lives;
+    }
+
     public void setPlayerLocationXInTiles(double x) {
         this.playerLocationXInTiles = x;
     }
@@ -314,5 +323,24 @@ public class Player extends ImageView {
 
     public double getPlayerLocationYInTiles() {
         return playerLocationYInTiles;
+    }
+
+    private Rectangle boundaries() {
+        Rectangle playerBoundaries = new Rectangle();
+        playerBoundaries.setX(getX() + width / 4.0);
+        playerBoundaries.setY(getY() + height / 4.0);
+        playerBoundaries.setHeight(getHeight() - height / 2.0);
+        playerBoundaries.setWidth(getWidth() - width / 2.0);
+        return playerBoundaries;
+    }
+
+    public boolean collides(Bullet bullet) {
+        Rectangle playerBoundaries = boundaries();
+        Rectangle bulletBoundaries = new Rectangle();
+        bulletBoundaries.setX(bullet.getCenterX() - bullet.getRadius());
+        bulletBoundaries.setY(bullet.getCenterY() - bullet.getRadius());
+        bulletBoundaries.setHeight(bullet.getRadius() * 2);
+        bulletBoundaries.setWidth(bullet.getRadius() * 2);
+        return ((Path) Shape.intersect(bullet, playerBoundaries)).getElements().size() > 1;
     }
 }
