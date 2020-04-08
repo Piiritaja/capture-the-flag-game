@@ -2,6 +2,7 @@ package Game.player;
 
 import Game.bots.Bot;
 import Game.maps.Object;
+import com.esotericsoftware.kryonet.Client;
 import javafx.event.EventHandler;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
@@ -10,13 +11,15 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Background;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 import javafx.util.Duration;
+import networking.packets.Packet010PlayerMovement;
+import networking.packets.Packet011PlayerMovementStop;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -70,6 +73,8 @@ public class Player extends ImageView {
     public int lives;
     Bullet bullet;
 
+    private Client client;
+
     /**
      * Player`s possible colors.
      */
@@ -94,7 +99,8 @@ public class Player extends ImageView {
      * @param dy    Movement y change
      * @param color Player color
      */
-    public Player(int x, int y, int dx, int dy, playerColor color) {
+    public Player(int x, int y, int dx, int dy, playerColor color, Client client) {
+        this.client = client;
         if (color.equals(playerColor.GREEN)) {
             image = new Image(GREEN_PLAYER_MAIN_IMAGE);
             walkingRightImage = new Image("assets/player/green/walkingRight.png");
@@ -138,7 +144,7 @@ public class Player extends ImageView {
      * Collision with objects on map and bot object.
      *
      * @param objectsOnMap Objects to check the collision with.
-     * @param botsOnMap Bots to check the collision with.
+     * @param botsOnMap    Bots to check the collision with.
      */
     public void tick(List<Object> objectsOnMap, List<Bot> botsOnMap) {
         double x = this.getX();
@@ -218,26 +224,76 @@ public class Player extends ImageView {
         shootingLeftY = getY() + getHeight() - getHeight() / 1.63;
     }
 
+    public void moveUp() {
+        System.out.println("Moving up");
+        this.setImage(walkingUpImage);
+        setDy(-step);
+        animation.play();
+
+    }
+
+    public void moveDown() {
+        System.out.println("Moving down");
+        this.setImage(walkingDownImage);
+        setDy(step);
+        animation.play();
+
+    }
+
+    public void moveRight() {
+        System.out.println("Moving right");
+        this.setImage(walkingRightImage);
+        setDx(step);
+        animation.play();
+
+    }
+
+    public void moveLeft() {
+        System.out.println("Moving left");
+        this.setImage(walkingLeftImage);
+        setDx(-step);
+        animation.play();
+
+    }
+
+    public void stopMovementY() {
+        System.out.println("Stopped movement Y");
+        setDy(0);
+        animation.pause();
+    }
+
+    public void stopPlayerMovementX() {
+        System.out.println("Stopped movement X");
+        setDx(0);
+        animation.pause();
+    }
+
+
     /**
      * Set image depending which key is pressed.
      * Set dy or dx some value to move player depending which key is pressed.
      * Play animation after key is pressed.
      */
     public EventHandler<KeyEvent> pressed = keyEvent -> {
+        Packet010PlayerMovement movement = new Packet010PlayerMovement();
+        movement.playerId = this.getId();
         if (keyEvent.getCode().equals(KeyCode.W)) {
-            this.setImage(walkingUpImage);
-            setDy(-step);
+            movement.direction = 1;
+            client.sendUDP(movement);
+            moveUp();
         } else if (keyEvent.getCode().equals(KeyCode.S)) {
-            this.setImage(walkingDownImage);
-            setDy(step);
+            movement.direction = 2;
+            client.sendUDP(movement);
+            moveDown();
         } else if (keyEvent.getCode().equals(KeyCode.D)) {
-            this.setImage(walkingRightImage);
-            setDx(step);
+            movement.direction = 3;
+            client.sendUDP(movement);
+            moveRight();
         } else if (keyEvent.getCode().equals(KeyCode.A)) {
-            this.setImage(walkingLeftImage);
-            setDx(-step);
+            movement.direction = 4;
+            client.sendUDP(movement);
+            moveLeft();
         }
-        animation.play();
     };
 
     /**
@@ -245,16 +301,17 @@ public class Player extends ImageView {
      * Pause animation after key is released.
      */
     public EventHandler<KeyEvent> released = keyEvent -> {
-        if (keyEvent.getCode().equals(KeyCode.W)) {
-            setDy(0);
-        } else if (keyEvent.getCode().equals(KeyCode.S)) {
-            setDy(0);
-        } else if (keyEvent.getCode().equals(KeyCode.D)) {
-            setDx(0);
-        } else if (keyEvent.getCode().equals(KeyCode.A)) {
-            setDx(0);
+        Packet011PlayerMovementStop packet = new Packet011PlayerMovementStop();
+        packet.playerID = this.getId();
+        if (keyEvent.getCode().equals(KeyCode.W) || keyEvent.getCode().equals(KeyCode.S)) {
+            packet.direction = 'y';
+            client.sendUDP(packet);
+            stopMovementY();
+        } else if (keyEvent.getCode().equals(KeyCode.D) || keyEvent.getCode().equals(KeyCode.A)) {
+            packet.direction = 'x';
+            client.sendUDP(packet);
+            stopPlayerMovementX();
         }
-        animation.pause();
     };
 
     /**
@@ -323,6 +380,10 @@ public class Player extends ImageView {
 
     public double getPlayerLocationYInTiles() {
         return playerLocationYInTiles;
+    }
+
+    public void setLives(int lives) {
+        this.lives = lives;
     }
 
     private Rectangle boundaries() {
