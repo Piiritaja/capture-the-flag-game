@@ -41,6 +41,7 @@ import networking.packets.Packet012UpdatePlayerPosition;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 
 public class Screen extends Application {
@@ -191,18 +192,20 @@ public class Screen extends Application {
     }
 
     public void setPlayerXStartingPosition(Stage stage) {
+        Random positionPicker = new Random();
         if (color.equals(Player.playerColor.GREEN)) {
-            this.playerXStartingPosition = (int) stage.widthProperty().get() - 100;
+            this.playerXStartingPosition = Math.max((int) greenBase.getLeftX() + 40, (positionPicker.nextInt((int) greenBase.getRightX() - 40)));
         } else if (color.equals(Player.playerColor.RED)) {
-            this.playerXStartingPosition = 40;
+            this.playerXStartingPosition = Math.min((int) redBase.getRightX() - 40, (positionPicker.nextInt((int) redBase.getLeftX() + 40)));
         }
     }
 
     public void setPlayerYStartingPosition(Stage stage) {
+        Random positionPicker = new Random();
         if (color.equals(Player.playerColor.GREEN)) {
-            this.playerYStartingPosition = (int) stage.heightProperty().get() - 500;
+            this.playerYStartingPosition = Math.max((int)greenBase.getTopY() + 40, (positionPicker.nextInt((int) greenBase.getBottomY()-40)));
         } else if (color.equals(Player.playerColor.RED)) {
-            this.playerYStartingPosition = 40;
+            this.playerYStartingPosition = Math.max((int)redBase.getTopY() + 40, (positionPicker.nextInt((int) redBase.getBottomY()-40)));
         }
     }
 
@@ -569,7 +572,7 @@ public class Screen extends Application {
      * If enemy team`s flag is brought to own base then the next round starts.
      */
     public void catchTheFlag() {
-        for (Player p: players){
+        for (Player p : players) {
             if (p.getColor() == Player.playerColor.RED) {
                 if (p.getBoundsInParent().intersects(redFlag.getBoundsInParent())) {
                     if (p.getX() > redBase.getRightX() - redBase.getRightX() / 5) {
