@@ -21,8 +21,8 @@ import javafx.util.Duration;
 import networking.ServerClient;
 import networking.packets.Packet009BotHit;
 import org.w3c.dom.css.Rect;
+import networking.packets.Packet013PlayerHit;
 
-import javax.swing.text.html.ImageView;
 import java.util.Iterator;
 import java.util.List;
 
@@ -116,7 +116,7 @@ public class Bullet extends Circle {
                     Packet009BotHit botHit = new Packet009BotHit();
                     botHit.lives = bot.lives;
                     botHit.botId = bot.getBotId();
-                    client.sendTCP(botHit);
+                    client.sendUDP(botHit);
                     if (bot.getBotLives() <= 0) {
                         root.getChildren().remove(bot);
                         botSpawner.botsOnMap.remove(bot);
@@ -124,16 +124,20 @@ public class Bullet extends Circle {
                     }
                 }
             }
-            for (Player player2 : players) {
-                if (bullet.getColor() != player2.getColorTypeColor()) {
-                    if (player2.collides(bullet)) {
+            for (Player p : players) {
+                if (bullet.getColor() != p.getColorTypeColor()) {
+                    if (p.collides(bullet)) {
+                        Packet013PlayerHit playerHit = new Packet013PlayerHit();
+                        playerHit.playerID = p.getId();
+                        playerHit.playerLives = p.lives - 1;
+                        client.sendUDP(playerHit);
                         root.getChildren().remove(bullet);
                         bullets.remove();
-                        player2.lives -= 1;
-                        if (player2.lives <= 0) {
-                            player2.x = 0;
-                            player2.y = 0;
-                            root.getChildren().remove(player2);
+                        p.lives -= 1;
+                        if (p.lives <= 0) {
+                            p.x = 0;
+                            p.y = 0;
+                            root.getChildren().remove(p);
                         }
                     }
                 }
@@ -148,3 +152,4 @@ public class Bullet extends Circle {
         return this.color;
     }
 }
+

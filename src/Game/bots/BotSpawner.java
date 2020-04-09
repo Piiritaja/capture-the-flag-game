@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 public class BotSpawner {
 
@@ -69,15 +68,11 @@ public class BotSpawner {
     }
 
     public void spawnBotsWithIdAndLocation(int botId, int limit, int xPosition, int yPosition, Stage stage, Group group, List<Base> base, List<Object> objectsOnMap) {
-        for (int i = 0; i < limit; i++) {
-            Bot bot = new Bot(xPosition, yPosition, 10, stage);
-            group.getChildren().add(bot);
-            botsOnMap.add(bot);
-            botLocations.put(xPosition, yPosition);
-            bot.setBotId(botId);
-            break;
-
-        }
+        Bot bot = new Bot((xPosition),(yPosition), 10, stage);
+        group.getChildren().add(bot);
+        botsOnMap.add(bot);
+        botLocations.put(xPosition, yPosition);
+        bot.setBotId(botId);
     }
 
     /**
