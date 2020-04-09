@@ -6,10 +6,12 @@ import Game.maps.Base;
 import Game.maps.Battlefield;
 import Game.maps.MapLoad;
 import Game.maps.Object;
+import Game.player.AiPlayer;
 import Game.player.Bullet;
 import Game.player.Flag;
 import Game.player.Player;
 import com.esotericsoftware.kryonet.Client;
+import javafx.animation.Animation;
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -39,6 +41,7 @@ import networking.packets.Packet005SendPlayerPosition;
 import networking.packets.Packet008SendPlayerID;
 import networking.packets.Packet012UpdatePlayerPosition;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -61,6 +64,8 @@ public class Screen extends Application {
     private Map<Integer, Double[]> botLocationsXY = new HashMap<>();
     private StackPane stack;
     private List<Player> players = new ArrayList<>();
+    private List<AiPlayer> aiPlayers = new ArrayList<>();
+    int step = 2;
 
     // map size constants
     private static final int MAP_WIDTH_IN_TILES = 40;
@@ -203,9 +208,9 @@ public class Screen extends Application {
     public void setPlayerYStartingPosition(Stage stage) {
         Random positionPicker = new Random();
         if (color.equals(Player.playerColor.GREEN)) {
-            this.playerYStartingPosition = Math.max((int)greenBase.getTopY() + 40, (positionPicker.nextInt((int) greenBase.getBottomY()-40)));
+            this.playerYStartingPosition = Math.max((int) greenBase.getTopY() + 40, (positionPicker.nextInt((int) greenBase.getBottomY() - 40)));
         } else if (color.equals(Player.playerColor.RED)) {
-            this.playerYStartingPosition = Math.max((int)redBase.getTopY() + 40, (positionPicker.nextInt((int) redBase.getBottomY()-40)));
+            this.playerYStartingPosition = Math.max((int) redBase.getTopY() + 40, (positionPicker.nextInt((int) redBase.getBottomY() - 40)));
         }
     }
 
@@ -316,6 +321,37 @@ public class Screen extends Application {
         }
     }
 
+    public void createAi(Player.playerColor color) {
+        double startX;
+        double startY;
+        Base base;
+        Flag flag;
+        if (color.equals(Player.playerColor.GREEN)) {
+            base = greenBase;
+            flag = mapLoad.getGreenFlag();
+        } else {
+            base = redBase;
+            flag = mapLoad.getRedFlag();
+        }
+
+        double rangeX = ((base.getRightX() - base.getLeftX()) + 1);
+        double rangeY = ((base.getBottomY() - base.getTopY()) + 1);
+        startX = (Math.random() * rangeX) + base.getLeftX();
+        startY = (Math.random() * rangeY) + base.getTopY();
+        AiPlayer ai = new AiPlayer(
+                (int) startX,
+                (int) startY,
+                0,
+                0,
+                color,
+                flag,
+                root,
+                base
+        );
+        root.getChildren().add(ai);
+        aiPlayers.add(ai);
+    }
+
     @Override
     public void start(Stage stage) {
         inGame = true;
@@ -349,6 +385,7 @@ public class Screen extends Application {
 
 
         root.getChildren().add(player);
+        createPlayer(stage.widthProperty().get() - 100, stage.heightProperty().get() - 500, "2");
 
         // notify other players of your position
         Packet005SendPlayerPosition positionPacket = new Packet005SendPlayerPosition();
@@ -379,10 +416,13 @@ public class Screen extends Application {
             @Override
             public void handle(long l) {
                 for (Player p : players) {
+                    p.tick(objectsOnMap, botsOnMap);
                     bullet.bulletCollision(p, objectsOnMap, root, botSpawner, client);
                     p.setFocusTraversable(true);
                 }
-                player.tick(objectsOnMap, botsOnMap);
+                for (AiPlayer ai : aiPlayers) {
+                    ai.tick(objectsOnMap, botsOnMap, stage);
+                }
                 catchTheFlag();
 
                 for (Bot bot : botsOnMap) {
@@ -412,6 +452,8 @@ public class Screen extends Application {
         // save bot locations
         getBotLocationsOnMap();
         updateScale();
+        createAi(Player.playerColor.GREEN);
+        createAi(Player.playerColor.RED);
 
 
     }

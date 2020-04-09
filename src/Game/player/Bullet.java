@@ -19,7 +19,6 @@ import networking.ServerClient;
 import networking.packets.Packet009BotHit;
 import networking.packets.Packet013PlayerHit;
 
-import javax.swing.text.html.ImageView;
 import java.util.Iterator;
 import java.util.List;
 
