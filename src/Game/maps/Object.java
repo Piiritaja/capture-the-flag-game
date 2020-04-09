@@ -1,5 +1,7 @@
 package Game.maps;
 
+import Game.Screen;
+import Game.player.AiPlayer;
 import Game.player.Bullet;
 import Game.player.Player;
 import Game.bots.Bot;
@@ -7,6 +9,7 @@ import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
@@ -31,6 +34,9 @@ public class Object extends ImageView {
     private int column = 1;
     public static final String WOOD_TEXTURE = "assets/map/objects/wooden.png";
     public static final String BRICK_TEXTURE = "assets/map/objects/brick2.png";
+    public static Battlefield mapType;
+    public static int mapWidthInTiles = Screen.getMAP_WIDTH_IN_TILES();
+    public static int mapHeightInTiles = Screen.getMAP_HEIGHT_IN_TILES();
 
     public Object(String texture) {
         this.setFitWidth(width);
@@ -101,6 +107,17 @@ public class Object extends ImageView {
     }
 
     /**
+     * Checks if this object collides with a player.
+     *
+     * @param aiCircle AiPlayer boundaries to be checked collision with.
+     * @return true of false - according to if the two objects collide or not.
+     */
+    public boolean collides(Circle aiCircle) {
+        Rectangle objectBoundaries = boundaries();
+        return objectBoundaries.getBoundsInLocal().intersects(aiCircle.getBoundsInLocal());
+    }
+
+    /**
      * Checks if this object collides with a bot.
      *
      * @param bot Bot object to be checked collision with.
@@ -142,14 +159,13 @@ public class Object extends ImageView {
      * @return List of objects added to the map
      */
     public static List<Object> addObjectsToGroup(Group root, Stage stage, Battlefield map) {
+        mapType = map;
         String line;
         String objectCsv = setCsv(map);
         int row = 0;
         int column;
         String[] field;
         List<Object> walls = new ArrayList<>();
-        final int mapWidthInTiles = 40;
-        final int mapHeightInTiles = 25;
         try {
             BufferedReader reader = new BufferedReader(new FileReader(objectCsv));
             while ((line = reader.readLine()) != null) {
@@ -204,5 +220,28 @@ public class Object extends ImageView {
                 return "src/assets/map/objects/map2walls.csv";
         }
         return null;
+    }
+
+    /**
+     * Exports object placement sheet.
+     * @return Placement of objects on map
+     */
+    public static String[][] getObjectPlacements() {
+        String csv = setCsv(mapType);
+        String line;
+        String[] field;
+        String[][] placement = new String[mapHeightInTiles][];
+        int row = 0;
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(csv));
+            while ((line = reader.readLine()) != null) {
+                field = line.split(",");
+                placement[row] = field;
+                row++;
+            }
+        } catch (IOException e) {
+            System.out.println("Error: add objects to group");
+        }
+        return placement;
     }
 }
