@@ -198,25 +198,6 @@ public class Screen extends Application {
         }
     }
 
-    /*
-    public void setPlayerXStartingPosition(Stage stage) {
-        Random positionPicker = new Random();
-        if (color.equals(Player.playerColor.GREEN)) {
-            this.playerXStartingPosition = Math.max((int) greenBase.getLeftX() + 40, (positionPicker.nextInt((int) greenBase.getRightX() - 40)));
-        } else if (color.equals(Player.playerColor.RED)) {
-            this.playerXStartingPosition = Math.min((int) redBase.getRightX() - 40, (positionPicker.nextInt((int) redBase.getLeftX() + 40)));
-        }
-    }
-
-    public void setPlayerYStartingPosition(Stage stage) {
-        Random positionPicker = new Random();
-        if (color.equals(Player.playerColor.GREEN)) {
-            this.playerYStartingPosition = Math.max((int) greenBase.getTopY() + 40, (positionPicker.nextInt((int) greenBase.getBottomY() - 40)));
-        } else if (color.equals(Player.playerColor.RED)) {
-            this.playerYStartingPosition = Math.max((int) redBase.getTopY() + 40, (positionPicker.nextInt((int) redBase.getBottomY() - 40)));
-        }
-    }*/
-
     /**
      * Creates a player.
      * Only used for creating the client's player!
@@ -230,8 +211,8 @@ public class Screen extends Application {
                 color.equals(Player.playerColor.GREEN) ? Player.playerColor.GREEN : Player.playerColor.RED,
                 client
         );
-        player.setPlayerXStartingPosition(stage);
-        player.setPlayerYStartingPosition(stage);
+        player.setPlayerXStartingPosition(greenBase, redBase);
+        player.setPlayerYStartingPosition(greenBase, redBase);
         player.setRoot(root);
         player.setId(serverclient.getID());
         players.add(player);
@@ -254,8 +235,8 @@ public class Screen extends Application {
                 color.equals(Player.playerColor.GREEN) ? Player.playerColor.RED : Player.playerColor.GREEN,
                 client
         );
-        otherPlayer.setPlayerYStartingPosition(stage);
-        otherPlayer.setPlayerXStartingPosition(stage);
+        otherPlayer.setPlayerYStartingPosition(greenBase, redBase);
+        otherPlayer.setPlayerXStartingPosition(greenBase, redBase);
         otherPlayer.setPlayerLocationXInTiles(stage.widthProperty().get() / otherPlayer.getX());
         otherPlayer.setPlayerLocationYInTiles(stage.heightProperty().get() / otherPlayer.getY());
         otherPlayer.setRoot(root);
@@ -379,8 +360,8 @@ public class Screen extends Application {
         // both bases
         greenBase = mapLoad.getBaseByColor(Base.baseColor.GREEN);
         redBase = mapLoad.getBaseByColor(Base.baseColor.RED);
-        bases = mapload.getBases();
-        
+        bases = mapLoad.getBases();
+
         createPlayer();
 
         player.setPlayerLocationXInTiles(stage.widthProperty().get() / player.getX());
@@ -612,30 +593,30 @@ public class Screen extends Application {
      * If enemy team`s flag is brought to own base then the next round starts.
      */
     public void catchTheFlag() {
-        for (Player p : players) {
-        if (player.getColor() == Player.playerColor.RED) {
-            if (player.getBoundsInParent().intersects(redFlag.getBoundsInParent())) {
-                if (player.getX() > redBase.getRightX() - redBase.getRightX() / 5) {
-                    redFlag.relocate(player.getX() + 10, player.getY() + 10);
-                } else {
-                    redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
-                    redTeamScore += 1;
-                    newRound();
+        for (Player player : players) {
+            if (player.getColor() == Player.playerColor.RED) {
+                if (player.getBoundsInParent().intersects(redFlag.getBoundsInParent())) {
+                    if (player.getX() > redBase.getRightX() - redBase.getRightX() / 5) {
+                        redFlag.relocate(player.getX() + 10, player.getY() + 10);
+                    } else {
+                        redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
+                        redTeamScore += 1;
+                        newRound();
+                    }
                 }
-            }
-        } else {
-            if (player.getBoundsInParent().intersects(greenFlag.getBoundsInParent())) {
-                if (player.getX() < greenBase.getLeftX()) {
-                    greenFlag.relocate(player.getX() + 10, player.getY() + 10);
-                } else {
-                    greenFlag.relocate(greenBase.getRightX() - 50,
-                            greenBase.getBottomY() / 2);
-                    greenTeamScore += 1;
-                    newRound();
+            } else {
+                if (player.getBoundsInParent().intersects(greenFlag.getBoundsInParent())) {
+                    if (player.getX() < greenBase.getLeftX()) {
+                        greenFlag.relocate(player.getX() + 10, player.getY() + 10);
+                    } else {
+                        greenFlag.relocate(greenBase.getRightX() - 50,
+                                greenBase.getBottomY() / 2);
+                        greenTeamScore += 1;
+                        newRound();
+                    }
                 }
             }
         }
-    }
     }
 
     /**
@@ -648,8 +629,8 @@ public class Screen extends Application {
         timer.stop();
         for (Player player : players) {
             Timeline playtime = new Timeline(
-                    new KeyFrame(Duration.seconds(0), event -> player.setPlayerXStartingPosition(stage)),
-                    new KeyFrame(Duration.seconds(0), event -> player.setPlayerYStartingPosition(stage)),
+                    new KeyFrame(Duration.seconds(0), event -> player.setPlayerXStartingPosition(greenBase, redBase)),
+                    new KeyFrame(Duration.seconds(0), event -> player.setPlayerYStartingPosition(greenBase, redBase)),
                     new KeyFrame(Duration.seconds(0), event -> player.setLives(10)),
                     new KeyFrame(Duration.seconds(0), event -> greenFlag.relocate(redBase.getLeftX() +
                             50,redBase.getBottomY() / 2)),

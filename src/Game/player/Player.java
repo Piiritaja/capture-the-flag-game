@@ -1,6 +1,7 @@
 package Game.player;
 
 import Game.bots.Bot;
+import Game.maps.Base;
 import Game.maps.Object;
 import com.esotericsoftware.kryonet.Client;
 import javafx.event.EventHandler;
@@ -24,6 +25,7 @@ import networking.packets.Packet011PlayerMovementStop;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 
 import static java.lang.StrictMath.abs;
 
@@ -376,10 +378,6 @@ public class Player extends ImageView {
         return this.lives;
     }
 
-    public void setLives(int lives) {
-        this.lives = lives;
-    }
-
     public void setPlayerLocationXInTiles(double x) {
         this.playerLocationXInTiles = x;
     }
@@ -432,26 +430,34 @@ public class Player extends ImageView {
     /**
      * Sets player x coordinate when game or new round starts.
      *
-     * @param stage main stage
+     * @param greenBase base where to put green players
+     * @param redBase base where to put red players
      */
-    public void setPlayerXStartingPosition(Stage stage) {
+    public void setPlayerXStartingPosition(Base greenBase, Base redBase) {
+        Random positionPicker = new Random();
         if (color.equals(Player.playerColor.GREEN)) {
-            this.x = (int) stage.widthProperty().get() - 100;
+            this.x = Math.max((int) greenBase.getLeftX() + 40, (positionPicker.nextInt((int)
+                    greenBase.getRightX() - 40)));
         } else if (color.equals(Player.playerColor.RED)) {
-            this.x = 100;
+            this.x = Math.min((int) redBase.getRightX() - 40, (positionPicker.nextInt((int)
+                    redBase.getLeftX() + 40)));
         }
     }
 
     /**
      * Sets player y coordinate when game or new round starts.
      *
-     * @param stage main stage
+     * @param greenBase base where to put green players
+     * @param redBase base where to put red players
      */
-    public void setPlayerYStartingPosition(Stage stage) {
+    public void setPlayerYStartingPosition(Base greenBase, Base redBase) {
+        Random positionPicker = new Random();
         if (color.equals(Player.playerColor.GREEN)) {
-            this.y = (int) stage.heightProperty().get() / 2;
+            this.y = Math.max((int) greenBase.getTopY() + 40, (positionPicker.nextInt((int)
+                    greenBase.getBottomY() - 40)));
         } else if (color.equals(Player.playerColor.RED)) {
-            this.y = (int) stage.heightProperty().get() / 2;
+            this.y = Math.max((int) redBase.getTopY() + 40, (positionPicker.nextInt((int)
+                    redBase.getBottomY() - 40)));
         }
     }
 
