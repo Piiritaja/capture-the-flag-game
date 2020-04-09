@@ -16,6 +16,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 import networking.packets.Packet010PlayerMovement;
 import networking.packets.Packet011PlayerMovementStop;
@@ -146,7 +147,7 @@ public class Player extends ImageView {
      * @param objectsOnMap Objects to check the collision with.
      * @param botsOnMap    Bots to check the collision with.
      */
-    public void tick(List<Object> objectsOnMap, List<Bot> botsOnMap) {
+    public void tick(List<Object> objectsOnMap, List<Bot> botsOnMap, List<Player> players) {
         double x = this.getX();
         double y = this.getY();
         this.setX(this.x += dx);
@@ -167,7 +168,16 @@ public class Player extends ImageView {
                 this.setY(this.y -= dy);
             }
         }
-
+        for (Player player : players) {
+            if (player != this) {
+                if (player.collides(this)) {
+                    this.setX(x);
+                    this.setY(y);
+                    this.setX(this.x -= dx);
+                    this.setY(this.y -= dy);
+                }
+            }
+        }
     }
 
     /**
@@ -189,19 +199,19 @@ public class Player extends ImageView {
             animation.pause();
             if (getY() >= mouseY && mouseX >= getX() - allowedLengthY && mouseX <= getX() + allowedLengthY) {
                 this.setImage(walkingUpImage);
-                bullet = new Bullet((int) shootingUpX, (int) shootingUpY, 3, Color.YELLOW);
+                bullet = new Bullet((int) shootingUpX, (int) shootingUpY, 3, getColorTypeColor());
                 bullet.shoot(lineUp, root, Math.min(500, shootingUpY - mouseY), bullets);
             } else if (getY() < mouseY && mouseX >= getX() - allowedLengthY && mouseX <= getX() + allowedLengthY) {
                 this.setImage(walkingDownImage);
-                bullet = new Bullet((int) shootingDownX, (int) shootingDownY, 3, Color.YELLOW);
+                bullet = new Bullet((int) shootingDownX, (int) shootingDownY, 3, getColorTypeColor());
                 bullet.shoot(lineDown, root, Math.min(500, mouseY - shootingDownY), bullets);
             } else if (getX() < mouseX && mouseY >= getY() - allowedLengthX && mouseY <= getY() + allowedLengthX) {
                 this.setImage(walkingRightImage);
-                bullet = new Bullet((int) shootingRightX, (int) shootingRightY, 3, Color.YELLOW);
+                bullet = new Bullet((int) shootingRightX, (int) shootingRightY, 3, getColorTypeColor());
                 bullet.shoot(lineRight, root, Math.min(500, mouseX - shootingRightX), bullets);
             } else if (getX() >= mouseX && mouseY >= getY() - allowedLengthX && mouseY <= getY() + allowedLengthX) {
                 this.setImage(walkingLeftImage);
-                bullet = new Bullet((int) shootingLeftX, (int) shootingLeftY, 3, Color.YELLOW);
+                bullet = new Bullet((int) shootingLeftX, (int) shootingLeftY, 3, getColorTypeColor());
                 bullet.shoot(lineLeft, root, Math.min(500, shootingLeftX - mouseX), bullets);
             }
             animation.play();
@@ -366,6 +376,10 @@ public class Player extends ImageView {
         return this.lives;
     }
 
+    public void setLives(int lives) {
+        this.lives = lives;
+    }
+
     public void setPlayerLocationXInTiles(double x) {
         this.playerLocationXInTiles = x;
     }
@@ -403,5 +417,53 @@ public class Player extends ImageView {
         bulletBoundaries.setHeight(bullet.getRadius() * 2);
         bulletBoundaries.setWidth(bullet.getRadius() * 2);
         return ((Path) Shape.intersect(bullet, playerBoundaries)).getElements().size() > 1;
+    }
+
+    public boolean collides(Player player) {
+        Rectangle objectBoundaries = boundaries();
+        Rectangle playerBoundaries = new Rectangle();
+        playerBoundaries.setX(player.getX());
+        playerBoundaries.setY(player.getY() + player.height / 4.0);
+        playerBoundaries.setHeight(player.getHeight() - player.height / 2.0);
+        playerBoundaries.setWidth(player.getWidth());
+        return objectBoundaries.getBoundsInParent().intersects(playerBoundaries.getBoundsInParent());
+    }
+
+    /**
+     * Sets player x coordinate when game or new round starts.
+     *
+     * @param stage main stage
+     */
+    public void setPlayerXStartingPosition(Stage stage) {
+        if (color.equals(Player.playerColor.GREEN)) {
+            this.x = (int) stage.widthProperty().get() - 100;
+        } else if (color.equals(Player.playerColor.RED)) {
+            this.x = 100;
+        }
+    }
+
+    /**
+     * Sets player y coordinate when game or new round starts.
+     *
+     * @param stage main stage
+     */
+    public void setPlayerYStartingPosition(Stage stage) {
+        if (color.equals(Player.playerColor.GREEN)) {
+            this.y = (int) stage.heightProperty().get() / 2;
+        } else if (color.equals(Player.playerColor.RED)) {
+            this.y = (int) stage.heightProperty().get() / 2;
+        }
+    }
+
+    /**
+     * Returns player color in Color type.
+     * @return Color
+     */
+    public Color getColorTypeColor() {
+        if (color == playerColor.RED) {
+            return Color.RED;
+        } else {
+            return Color.GREEN;
+        }
     }
 }

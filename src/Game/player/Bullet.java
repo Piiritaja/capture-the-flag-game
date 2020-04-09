@@ -14,9 +14,13 @@ import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Path;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
 import javafx.util.Duration;
 import networking.ServerClient;
 import networking.packets.Packet009BotHit;
+import org.w3c.dom.css.Rect;
 import networking.packets.Packet013PlayerHit;
 
 import java.util.Iterator;
@@ -87,7 +91,8 @@ public class Bullet extends Circle {
      * @param botSpawner   Calculates bots on map.
      * @param client       Client that shoots the bullet.
      */
-    public void bulletCollision(Player player, List<Object> objectsOnMap, Group root, BotSpawner botSpawner, Client client) {
+    public void bulletCollision(List<Player> players, List<Object> objectsOnMap, Group root, BotSpawner botSpawner,
+                                Client client, Player player) {
         Iterator<Bullet> bullets = player.bullets.iterator();
         while (bullets.hasNext()) {
             Bullet bullet = bullets.next();
@@ -119,28 +124,32 @@ public class Bullet extends Circle {
                     }
                 }
             }
-            if (bullet.color == Color.BLUE) {
-                if (player.collides(bullet)) {
-                    Packet013PlayerHit playerHit = new Packet013PlayerHit();
-                    playerHit.playerID = player.getId();
-                    playerHit.playerLives = player.lives - 1;
-                    client.sendUDP(playerHit);
-                    root.getChildren().remove(bullet);
-                    bullets.remove();
-                    player.lives -= 1;
-                    if (player.lives <= 0) {
-                        player.x = 0;
-                        player.y = 0;
-                        root.getChildren().remove(player);
+            for (Player p : players) {
+                if (bullet.getColor() != p.getColorTypeColor()) {
+                    if (p.collides(bullet)) {
+                        Packet013PlayerHit playerHit = new Packet013PlayerHit();
+                        playerHit.playerID = p.getId();
+                        playerHit.playerLives = p.lives - 1;
+                        client.sendUDP(playerHit);
+                        root.getChildren().remove(bullet);
+                        bullets.remove();
+                        p.lives -= 1;
+                        if (p.lives <= 0) {
+                            p.x = 0;
+                            p.y = 0;
+                            root.getChildren().remove(p);
+                        }
                     }
                 }
             }
         }
     }
 
+    /**
+     * @return the color of this bullet.
+     */
     public Color getColor() {
         return this.color;
     }
-
 }
 
