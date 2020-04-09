@@ -11,12 +11,10 @@ import Game.player.Bullet;
 import Game.player.Flag;
 import Game.player.Player;
 import com.esotericsoftware.kryonet.Client;
-import javafx.animation.Animation;
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
@@ -31,7 +29,6 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -42,10 +39,8 @@ import networking.packets.Packet005SendPlayerPosition;
 import networking.packets.Packet008SendPlayerID;
 import networking.packets.Packet012UpdatePlayerPosition;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 
 public class Screen extends Application {
@@ -369,7 +364,6 @@ public class Screen extends Application {
 
 
         root.getChildren().add(player);
-        createPlayer(stage.widthProperty().get() - 100, stage.heightProperty().get() - 500, "2");
 
         // notify other players of your position
         Packet005SendPlayerPosition positionPacket = new Packet005SendPlayerPosition();
@@ -384,15 +378,12 @@ public class Screen extends Application {
         objectsOnMap = mapLoad.getObjectsOnMap();
         scoreBoard();
 
-        Timeline packetTimer = new Timeline(new KeyFrame(Duration.millis(50), new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                Packet012UpdatePlayerPosition updatePlayerPosition = new Packet012UpdatePlayerPosition();
-                updatePlayerPosition.id = player.getId();
-                updatePlayerPosition.positionY = (player.getY() / stage.heightProperty().get());
-                updatePlayerPosition.positionX = (player.getX() / stage.widthProperty().get());
-                client.sendUDP(updatePlayerPosition);
-            }
+        Timeline packetTimer = new Timeline(new KeyFrame(Duration.millis(50), event -> {
+            Packet012UpdatePlayerPosition updatePlayerPosition = new Packet012UpdatePlayerPosition();
+            updatePlayerPosition.id = player.getId();
+            updatePlayerPosition.positionY = (player.getY() / stage.heightProperty().get());
+            updatePlayerPosition.positionX = (player.getX() / stage.widthProperty().get());
+            client.sendUDP(updatePlayerPosition);
         }));
         packetTimer.setCycleCount(Timeline.INDEFINITE);
         packetTimer.play();
@@ -633,9 +624,9 @@ public class Screen extends Application {
                     new KeyFrame(Duration.seconds(0), event -> player.setPlayerYStartingPosition(greenBase, redBase)),
                     new KeyFrame(Duration.seconds(0), event -> player.setLives(10)),
                     new KeyFrame(Duration.seconds(0), event -> greenFlag.relocate(redBase.getLeftX() +
-                            50,redBase.getBottomY() / 2)),
+                            50, redBase.getBottomY() / 2)),
                     new KeyFrame(Duration.seconds(0), event -> redFlag.relocate(greenBase.getRightX() -
-                            50,greenBase.getBottomY() / 2 - redFlag.getHeight())),
+                            50, greenBase.getBottomY() / 2 - redFlag.getHeight())),
                     new KeyFrame(Duration.seconds(0), event -> botSpawner.spawnBots(4 - botsOnMap.size(),
                             stage, root, bases, mapLoad.getObjectsOnMap())),
                     new KeyFrame(Duration.seconds(0.5), event -> root.getChildren().remove(player)),
