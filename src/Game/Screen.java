@@ -26,6 +26,7 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -58,6 +59,7 @@ public class Screen extends Application {
     private StackPane stack;
     private List<Player> players = new ArrayList<>();
     int step = 2;
+    List<Base> bases;
 
     // map size constants
     private static final int MAP_WIDTH_IN_TILES = 40;
@@ -149,22 +151,6 @@ public class Screen extends Application {
         }
     }
 
-    public void setPlayerXStartingPosition(Stage stage) {
-        if (color.equals(Player.playerColor.GREEN)) {
-            this.playerXStartingPosition = (int) stage.widthProperty().get() - 100;
-        } else if (color.equals(Player.playerColor.RED)) {
-            this.playerXStartingPosition = 40;
-        }
-    }
-
-    public void setPlayerYStartingPosition(Stage stage) {
-        if (color.equals(Player.playerColor.GREEN)) {
-            this.playerYStartingPosition = (int) stage.heightProperty().get() - 500;
-        } else if (color.equals(Player.playerColor.RED)) {
-            this.playerYStartingPosition = 40;
-        }
-    }
-
     public void createPlayer() {
         player = new Player(
                 playerXStartingPosition,
@@ -173,6 +159,8 @@ public class Screen extends Application {
                 0,
                 color.equals(Player.playerColor.GREEN) ? Player.playerColor.GREEN : Player.playerColor.RED
         );
+        player.setPlayerXStartingPosition(stage);
+        player.setPlayerYStartingPosition(stage);
         player.setRoot(root);
         player.setId(UUID.randomUUID().toString());
         players.add(player);
@@ -186,6 +174,8 @@ public class Screen extends Application {
                 0,
                 color.equals(Player.playerColor.GREEN) ? Player.playerColor.RED : Player.playerColor.GREEN
         );
+        otherPlayer.setPlayerYStartingPosition(stage);
+        otherPlayer.setPlayerXStartingPosition(stage);
         otherPlayer.setRoot(root);
         otherPlayer.setId(id);
         root.getChildren().add(otherPlayer);
@@ -234,7 +224,7 @@ public class Screen extends Application {
         redBase = mapLoad.getBaseByColor(Base.baseColor.RED);
 
         // bases for collision detection
-        List<Base> bases = mapLoad.getBases();
+        bases = mapLoad.getBases();
 
         if (botLocationsXY.isEmpty()) {
             botSpawner.spawnBots(4, stage, root, bases, mapLoad.getObjectsOnMap());
@@ -253,10 +243,6 @@ public class Screen extends Application {
 
         // save bot locations
         getBotLocationsOnMap();
-
-        setPlayerYStartingPosition(stage);
-        setPlayerXStartingPosition(stage);
-
 
         createPlayer();
 
@@ -284,17 +270,14 @@ public class Screen extends Application {
             @Override
             public void handle(long l) {
                 for (Player p : players) {
-                    p.tick(objectsOnMap, botsOnMap);
-                    bullet.bulletCollision(p, objectsOnMap, root, botSpawner, client);
+                    p.tick(objectsOnMap, botsOnMap, players);
+                    bullet.bulletCollision(players, objectsOnMap, root, botSpawner, client, p);
+                    for (Bot bot : botsOnMap) {
+                        bot.botShooting(p, root);
+                    }
                     p.setFocusTraversable(true);
                 }
                 catchTheFlag();
-
-                for (Bot bot : botsOnMap) {
-                    bot.botShooting(player, root);
-                }
-                bullet.bulletCollision(player, objectsOnMap, root, botSpawner);
-
                 player.setOnKeyPressed(player.pressed);
                 player.setOnKeyReleased(player.released);
                 root.setOnMouseClicked(player.shooting);
@@ -410,17 +393,7 @@ public class Screen extends Application {
                 } else {
                     redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
                     redTeamScore += 1;
-                    root.getChildren().remove(stack);
-                    scoreBoard();
-                    timer.stop();
-                    Timeline playtime = new Timeline(
-                            new KeyFrame(Duration.seconds(0), event -> player.x = 40),
-                            new KeyFrame(Duration.seconds(0), event -> player.y = 40),
-                            new KeyFrame(Duration.seconds(0), event -> redFlag.relocate(greenBase.getRightX() - 50,
-                                    greenBase.getBottomY() / 2 - redFlag.getHeight())),
-                            new KeyFrame(Duration.seconds(0.5), event -> timer.start())
-                    );
-                    playtime.play();
+                    newRound();
                 }
             }
         } else {
@@ -431,19 +404,36 @@ public class Screen extends Application {
                     greenFlag.relocate(greenBase.getRightX() - 50,
                             greenBase.getBottomY() / 2);
                     greenTeamScore += 1;
-                    root.getChildren().remove(stack);
-                    scoreBoard();
-                    timer.stop();
-                    Timeline playtime = new Timeline(
-                            new KeyFrame(Duration.seconds(0), event -> player.x = (int) stage.widthProperty().get() - 100),
-                            new KeyFrame(Duration.seconds(0), event -> player.y = (int) stage.heightProperty().get() - 500),
-                            new KeyFrame(Duration.seconds(0), event -> greenFlag.relocate(redBase.getLeftX() + 50,
-                                    redBase.getBottomY() / 2)),
-                            new KeyFrame(Duration.seconds(0.5), event -> timer.start())
-                    );
-                    playtime.play();
+                    newRound();
                 }
             }
+        }
+    }
+
+    /**
+     * Starts new round.
+     * Sets new score, sets all players, bots and flags to starting position.
+     */
+    public void newRound() {
+        root.getChildren().remove(stack);
+        scoreBoard();
+        timer.stop();
+        for (Player player : players) {
+            Timeline playtime = new Timeline(
+                    new KeyFrame(Duration.seconds(0), event -> player.setPlayerXStartingPosition(stage)),
+                    new KeyFrame(Duration.seconds(0), event -> player.setPlayerYStartingPosition(stage)),
+                    new KeyFrame(Duration.seconds(0), event -> player.setLives(10)),
+                    new KeyFrame(Duration.seconds(0), event -> greenFlag.relocate(redBase.getLeftX() +
+                            50,redBase.getBottomY() / 2)),
+                    new KeyFrame(Duration.seconds(0), event -> redFlag.relocate(greenBase.getRightX() -
+                            50,greenBase.getBottomY() / 2 - redFlag.getHeight())),
+                    new KeyFrame(Duration.seconds(0), event -> botSpawner.spawnBots(4 - botsOnMap.size(),
+                            stage, root, bases, mapLoad.getObjectsOnMap())),
+                    new KeyFrame(Duration.seconds(0.5), event -> root.getChildren().remove(player)),
+                    new KeyFrame(Duration.seconds(0.5), event -> root.getChildren().add(player)),
+                    new KeyFrame(Duration.seconds(0.5), event -> timer.start())
+            );
+            playtime.play();
         }
     }
 
