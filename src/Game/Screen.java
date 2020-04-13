@@ -6,12 +6,19 @@ import Game.maps.Base;
 import Game.maps.Battlefield;
 import Game.maps.MapLoad;
 import Game.maps.Object;
+import Game.player.AiPlayer;
 import Game.player.Bullet;
 import Game.player.Flag;
 import Game.player.Player;
 import com.esotericsoftware.kryonet.Client;
+import javafx.animation.Animation;
 import javafx.animation.AnimationTimer;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
@@ -24,18 +31,22 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import javafx.util.Duration;
 import networking.ServerClient;
 import networking.packets.Packet004RequestPlayers;
 import networking.packets.Packet005SendPlayerPosition;
 import networking.packets.Packet008SendPlayerID;
+import networking.packets.Packet012UpdatePlayerPosition;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Random;
+
 
 public class Screen extends Application {
 
@@ -52,6 +63,11 @@ public class Screen extends Application {
     private List<Bot> botsOnMap;
     private Map<Integer, Double[]> botLocations = new HashMap<>();
     private Map<Integer, Double[]> botLocationsXY = new HashMap<>();
+    private StackPane stack;
+    private List<Player> players = new ArrayList<>();
+    private List<AiPlayer> aiPlayers = new ArrayList<>();
+    int step = 2;
+    List<Base> bases;
 
     // map size constants
     private static final int MAP_WIDTH_IN_TILES = 40;
@@ -61,6 +77,10 @@ public class Screen extends Application {
     private ServerClient serverclient;
     private Client client;
     private boolean inGame;
+
+    public Stage getStage() {
+        return stage;
+    }
 
     public Screen(ServerClient serverclient) {
         this.serverclient = serverclient;
@@ -74,29 +94,68 @@ public class Screen extends Application {
 
     }
 
+    public Map<Integer, Double[]> getBotLocations() {
+        return botLocations;
+    }
+
+    public void setBotLocations(Map<Integer, Double[]> botLocations) {
+        this.botLocations = botLocations;
+    }
+
+    /**
+     * Returns true if the player is in the game. Usually called by the server.
+     *
+     * @return boolean inGame.
+     */
     public boolean isInGame() {
         return this.inGame;
     }
 
+    /**
+     * Returns the chosen map as enum. Usually called by the server.
+     *
+     * @return chosenMap.
+     */
     public Battlefield getChosenMap() {
         return chosenMap;
     }
 
+    /**
+     * Getter method for Player.
+     *
+     * @return Player.
+     */
     public Player getPlayer() {
         return this.player;
     }
 
+    public Group getRoot() {
+        return this.root;
+    }
+
+
+    /**
+     * Returns bot locations in format (ID, (Xlocation,Ylocation)).
+     * Usually called by the server.
+     *
+     * @return botLocationsXY.
+     */
     public Map<Integer, Double[]> getBotLocationsXY() {
         for (Bot bot : botsOnMap) {
             Double[] xy = new Double[2];
-            xy[0] = bot.getX();
-            xy[1] = bot.getY();
+            xy[0] = bot.getX() / stage.widthProperty().get();
+            xy[1] = bot.getY() / stage.heightProperty().get();
             botLocationsXY.put(bot.getBotId(), xy);
 
         }
         return this.botLocationsXY;
     }
 
+    /**
+     * Setter method for botLocations.
+     *
+     * @param botLocations where to save the locations.
+     */
     public void setBotLocationsXY(Map<Integer, Double[]> botLocations) {
         this.botLocationsXY = botLocations;
     }
@@ -139,47 +198,61 @@ public class Screen extends Application {
         }
     }
 
-    public void setPlayerXStartingPosition(Stage stage) {
-        if (color.equals(Player.playerColor.GREEN)) {
-            this.playerXStartingPosition = (int) stage.widthProperty().get() - 100;
-        } else if (color.equals(Player.playerColor.RED)) {
-            this.playerXStartingPosition = 40;
-        }
-    }
-
-    public void setPlayerYStartingPosition(Stage stage) {
-        if (color.equals(Player.playerColor.GREEN)) {
-            this.playerYStartingPosition = (int) stage.heightProperty().get() - 500;
-        } else if (color.equals(Player.playerColor.RED)) {
-            this.playerYStartingPosition = 40;
-        }
-    }
-
+    /**
+     * Creates a player.
+     * Only used for creating the client's player!
+     */
     public void createPlayer() {
-        this.player = new Player(
+        player = new Player(
                 playerXStartingPosition,
                 playerYStartingPosition,
                 0,
                 0,
-                color.equals(Player.playerColor.GREEN) ? Player.playerColor.GREEN : Player.playerColor.RED
+                color.equals(Player.playerColor.GREEN) ? Player.playerColor.GREEN : Player.playerColor.RED,
+                client
         );
+        player.setPlayerXStartingPosition(greenBase, redBase);
+        player.setPlayerYStartingPosition(greenBase, redBase);
         player.setRoot(root);
-        player.setId(UUID.randomUUID().toString());
+        player.setId(serverclient.getID());
+        players.add(player);
+        System.out.println("Created player with id: " + player.getId());
     }
 
-    public void createNewPlayer(double x, double y, String id) {
+    /**
+     * Creates a player.
+     *
+     * @param x  player starting position on x axis
+     * @param y  player starting position on y axis
+     * @param id player id.
+     */
+    public void createPlayer(double x, double y, String id) {
         Player otherPlayer = new Player(
                 (int) x,
                 (int) y,
                 0,
                 0,
-                color.equals(Player.playerColor.GREEN) ? Player.playerColor.RED : Player.playerColor.GREEN
+                color.equals(Player.playerColor.GREEN) ? Player.playerColor.RED : Player.playerColor.GREEN,
+                client
         );
+        otherPlayer.setPlayerYStartingPosition(greenBase, redBase);
+        otherPlayer.setPlayerXStartingPosition(greenBase, redBase);
+        otherPlayer.setPlayerLocationXInTiles(stage.widthProperty().get() / otherPlayer.getX());
+        otherPlayer.setPlayerLocationYInTiles(stage.heightProperty().get() / otherPlayer.getY());
         otherPlayer.setRoot(root);
-        player.setId(id);
+        otherPlayer.setId(id);
         root.getChildren().add(otherPlayer);
+        players.add(otherPlayer);
+        System.out.println("Created opponent with id: " + otherPlayer.getId());
+        updateScale();
     }
 
+    /**
+     * Set the value of chosenMap.
+     * Usually called from the menu class.
+     *
+     * @param mapIndex
+     */
     public void setMap(int mapIndex) {
 
         if (mapIndex == 0) {
@@ -190,13 +263,88 @@ public class Screen extends Application {
 
     }
 
+    /**
+     * Moves the player on x or y axis.
+     * Usually called by the server.
+     *
+     * @param id        player id.
+     * @param direction direction to move to.
+     */
+    public void movePlayerWithId(String id, byte direction) {
+        for (Player p : players) {
+            if (p.getId().equals(id)) {
+                switch (direction) {
+                    case 1:
+                        p.moveUp();
+                        break;
+                    case 2:
+                        p.moveDown();
+                        break;
+                    case 3:
+                        p.moveRight();
+                        break;
+                    case 4:
+                        p.moveLeft();
+                        break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Stops the player.
+     *
+     * @param id        id of the player to stop.
+     * @param direction direction to stop (on x or y axis)
+     */
+    public void stopPlayerWithId(String id, char direction) {
+        for (Player p : players) {
+            if (p.getId().equals(id)) {
+                if (direction == 'y') {
+                    p.stopMovementY();
+                } else {
+                    p.stopPlayerMovementX();
+                }
+            }
+        }
+    }
+
+    public void createAi(Player.playerColor color) {
+        double startX;
+        double startY;
+        Base base;
+        Flag flag;
+        if (color.equals(Player.playerColor.GREEN)) {
+            base = greenBase;
+            flag = mapLoad.getGreenFlag();
+        } else {
+            base = redBase;
+            flag = mapLoad.getRedFlag();
+        }
+
+        double rangeX = ((base.getRightX() - base.getLeftX()) + 1);
+        double rangeY = ((base.getBottomY() - base.getTopY()) + 1);
+        startX = (Math.random() * rangeX) + base.getLeftX();
+        startY = (Math.random() * rangeY) + base.getTopY();
+        AiPlayer ai = new AiPlayer(
+                (int) startX,
+                (int) startY,
+                0,
+                0,
+                color,
+                flag,
+                root,
+                base
+        );
+        root.getChildren().add(ai);
+        aiPlayers.add(ai);
+    }
 
     @Override
     public void start(Stage stage) {
         inGame = true;
         boolean fullScreen = stage.isFullScreen();
         this.stage = stage;
-
 
         stage.getScene().setRoot(root);
 
@@ -212,41 +360,16 @@ public class Screen extends Application {
         // both bases
         greenBase = mapLoad.getBaseByColor(Base.baseColor.GREEN);
         redBase = mapLoad.getBaseByColor(Base.baseColor.RED);
-
-        // bases for collision detection
-        List<Base> bases = mapLoad.getBases();
-
-        if (botLocationsXY.isEmpty()) {
-            botSpawner.spawnBots(4, stage, root, bases, mapLoad.getObjectsOnMap());
-            botsOnMap = botSpawner.getBotsOnMap();
-        } else {
-            Packet004RequestPlayers requestPlayers = new Packet004RequestPlayers();
-            requestPlayers.battlefield = getChosenMap();
-            client.sendTCP(requestPlayers);
-            for (Map.Entry<Integer, Double[]> entry : botLocationsXY.entrySet()) {
-                Double[] positions = entry.getValue();
-                int id = entry.getKey();
-                Bot bot = new Bot(positions[0].intValue(), positions[1].intValue(), 0, 0, 10);
-                System.out.println(String.format("Created bot at %d, %d", positions[0].intValue(), positions[1].intValue()));
-                bot.setBotId(id);
-                root.getChildren().add(bot);
-                botsOnMap.add(bot);
-            }
-        }
-
-        // save bot locations
-        getBotLocationsOnMap();
-
-        setPlayerYStartingPosition(stage);
-        setPlayerXStartingPosition(stage);
-
+        bases = mapLoad.getBases();
 
         createPlayer();
 
         player.setPlayerLocationXInTiles(stage.widthProperty().get() / player.getX());
         player.setPlayerLocationYInTiles(stage.heightProperty().get() / player.getY());
 
+
         root.getChildren().add(player);
+        createPlayer(stage.widthProperty().get() - 100, stage.heightProperty().get() - 500, "2");
 
         // notify other players of your position
         Packet005SendPlayerPosition positionPacket = new Packet005SendPlayerPosition();
@@ -259,19 +382,38 @@ public class Screen extends Application {
         redFlag = mapLoad.getRedFlag();
         greenFlag = mapLoad.getGreenFlag();
         objectsOnMap = mapLoad.getObjectsOnMap();
+        scoreBoard();
 
-
+        Timeline packetTimer = new Timeline(new KeyFrame(Duration.millis(50), new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                Packet012UpdatePlayerPosition updatePlayerPosition = new Packet012UpdatePlayerPosition();
+                updatePlayerPosition.id = player.getId();
+                updatePlayerPosition.positionY = (player.getY() / stage.heightProperty().get());
+                updatePlayerPosition.positionX = (player.getX() / stage.widthProperty().get());
+                client.sendUDP(updatePlayerPosition);
+            }
+        }));
+        packetTimer.setCycleCount(Timeline.INDEFINITE);
+        packetTimer.play();
         timer = new AnimationTimer() {
             @Override
             public void handle(long l) {
-                player.tick(objectsOnMap, botsOnMap);
+                for (Player p : players) {
+                    p.tick(objectsOnMap, botsOnMap, players);
+                    bullet.bulletCollision(players, objectsOnMap, root, botSpawner, client, p);
+                    for (Bot bot : botsOnMap) {
+                        bot.botShooting(p, root);
+                    }
+                    p.setFocusTraversable(true);
+                }
+                for (AiPlayer ai : aiPlayers) {
+                    ai.tick(objectsOnMap, botsOnMap, stage);
+                }
                 catchTheFlag();
-                scoreBoard();
-                bullet.bulletCollision(player, objectsOnMap, root, botSpawner);
                 player.setOnKeyPressed(player.pressed);
                 player.setOnKeyReleased(player.released);
                 root.setOnMouseClicked(player.shooting);
-                player.setFocusTraversable(true);
             }
         };
 
@@ -284,10 +426,67 @@ public class Screen extends Application {
         stage.setFullScreen(fullScreen);
         timer.start();
         stage.show();
+        requestNodesFromOtherClients();
+
+        // save bot locations
+        getBotLocationsOnMap();
         updateScale();
-        mapLoad.updateScaleMap(stage);
+        createAi(Player.playerColor.GREEN);
+        createAi(Player.playerColor.RED);
+
+
     }
 
+    public void updatePlayerLives(String id, int lives) {
+        for (Player p : players) {
+            if (p.getId().equals(id)) {
+                p.setLives(lives);
+            }
+        }
+    }
+
+    public void requestNodesFromOtherClients() {
+        List<Base> bases = mapLoad.getBases();
+        if (botLocationsXY.isEmpty()) {
+            botSpawner.spawnBots(4, stage, root, bases, mapLoad.getObjectsOnMap());
+            botsOnMap = botSpawner.getBotsOnMap();
+        } else {
+            Packet004RequestPlayers requestPlayers = new Packet004RequestPlayers();
+            requestPlayers.battlefield = getChosenMap();
+            client.sendTCP(requestPlayers);
+            for (Map.Entry<Integer, Double[]> entry : botLocationsXY.entrySet()) {
+                Double[] positions = entry.getValue();
+                int id = entry.getKey();
+                botSpawner.spawnBotsWithIdAndLocation(id, 4, (int) (positions[0] * stage.widthProperty().get()), (int) (positions[1] * stage.heightProperty().get()), stage, root, bases, mapLoad.getObjectsOnMap());
+                botsOnMap = botSpawner.getBotsOnMap();
+            }
+        }
+    }
+
+    /**
+     * Method to update bot lives.
+     * Usually called from the server.
+     *
+     * @param botId    botID who's lives are to be updated.
+     * @param botLives How many bot lives to assign to the bot.
+     */
+    public void updateBotLives(int botId, int botLives) {
+        for (int i = 0; i < botsOnMap.size(); i++) {
+            Bot bot = botsOnMap.get(i);
+            if (bot.getBotId() == botId) {
+                bot.lives = botLives;
+                System.out.println("new bot lives: " + bot.lives);
+                if (bot.lives == 0) {
+                    botSpawner.botsOnMap.remove(bot);
+                    root.getChildren().remove(bot);
+                }
+            }
+        }
+    }
+
+    /**
+     * Method to exit the screen.
+     */
     private void exitScreen() {
         Packet008SendPlayerID sendPlayerID = new Packet008SendPlayerID();
         sendPlayerID.playerID = player.getId();
@@ -298,6 +497,29 @@ public class Screen extends Application {
 
     }
 
+    /**
+     * Updates a player's position.
+     *
+     * @param id        id of the player who's position is to be updated.
+     * @param positionX new position value on the x axis.
+     * @param positionY new position value on the y axis.
+     */
+    public void updatePlayerPosition(String id, int positionX, int positionY) {
+        for (Player p : players) {
+            if (p.getId().equals(id)) {
+                p.setX(positionX);
+                p.setY(positionY);
+                System.out.println(String.format("Updated player position to (%d,%d)", positionX, positionY));
+                System.out.println(String.format("Player position now (%d,%d)", (int) p.getX(), (int) p.getY()));
+            }
+        }
+    }
+
+    /**
+     * Removes the player with a given id.
+     *
+     * @param id ID of the player to remove.
+     */
     public void removePlayerWithId(String id) {
         for (Node node : root.getChildren()) {
             if (node instanceof Player) {
@@ -309,13 +531,20 @@ public class Screen extends Application {
         }
     }
 
-
+    /**
+     * Update the scaling of objects on map.
+     * Used for player and bots.
+     * Sets the size and location according to the JavaFx Stage of this class (main game window).
+     */
     private void updateScale() {
         final double initialStageWidth = stage.widthProperty().get();
         final double initialStageHeight = stage.heightProperty().get();
         //player init
-        player.setFitWidth(initialStageWidth / MAP_WIDTH_IN_TILES * 1.5);
-        player.setFitHeight(initialStageHeight / MAP_HEIGHT_IN_TILES * 1.5);
+        for (Player p : players) {
+            p.setFitWidth(initialStageWidth / MAP_WIDTH_IN_TILES * 1.5);
+            p.setFitHeight(initialStageHeight / MAP_HEIGHT_IN_TILES * 1.5);
+        }
+
         //bot init
         for (Bot bot : botsOnMap) {
             bot.setBotWidth(initialStageWidth / MAP_WIDTH_IN_TILES * 2);
@@ -325,7 +554,9 @@ public class Screen extends Application {
         }
 
         stage.widthProperty().addListener((observableValue, oldWidth, newWidth) -> {
-            player.setFitWidth((double) newWidth / MAP_WIDTH_IN_TILES * 1.5);
+            for (Player p : players) {
+                p.setFitWidth((double) newWidth / MAP_WIDTH_IN_TILES * 1.5);
+            }
             for (Bot bot : botsOnMap) {
                 bot.setBotWidth((double) newWidth / MAP_WIDTH_IN_TILES * 2);
                 bot.setX((double) newWidth / botLocations.get(bot.getBotId())[0]);
@@ -333,7 +564,9 @@ public class Screen extends Application {
         });
 
         stage.heightProperty().addListener((observableValue, oldHeight, newHeight) -> {
-            player.setFitHeight((double) newHeight / MAP_HEIGHT_IN_TILES * 1.5);
+            for (Player p : players) {
+                p.setFitHeight((double) newHeight / MAP_HEIGHT_IN_TILES * 1.5);
+            }
             for (Bot bot : botsOnMap) {
                 bot.setBotHeight((double) newHeight / MAP_HEIGHT_IN_TILES * 2);
                 bot.setY((double) newHeight / botLocations.get(bot.getBotId())[1]);
@@ -341,6 +574,9 @@ public class Screen extends Application {
         });
     }
 
+    /**
+     * Adds bot locations according to the windows size to botLocations variable.
+     */
     private void getBotLocationsOnMap() {
         double initialStageWidth = stage.widthProperty().get();
         double initialStageHeight = stage.heightProperty().get();
@@ -352,36 +588,67 @@ public class Screen extends Application {
         }
     }
 
-
-    // Player can take flag and release it in base
+    /**
+     * Player can catch the enemy team`s flag if intersects with it and bring to his base.
+     * If enemy team`s flag is brought to own base then the next round starts.
+     */
     public void catchTheFlag() {
-        if (player.getColor() == Player.playerColor.RED) {
-            if (player.getBoundsInParent().intersects(redFlag.getBoundsInParent())) {
-                if (player.getX() > redBase.getRightX() - redBase.getRightX() / 5) {
-                    redFlag.relocate(player.getX() + 10, player.getY() + 10);
-                } else {
-                    redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
-                    redTeamScore += 1;
-                    timer.stop();
-                    start(stage);
+        for (Player player : players) {
+            if (player.getColor() == Player.playerColor.RED) {
+                if (player.getBoundsInParent().intersects(redFlag.getBoundsInParent())) {
+                    if (player.getX() > redBase.getRightX() - redBase.getRightX() / 5) {
+                        redFlag.relocate(player.getX() + 10, player.getY() + 10);
+                    } else {
+                        redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
+                        redTeamScore += 1;
+                        newRound();
+                    }
                 }
-            }
-        } else {
-            if (player.getBoundsInParent().intersects(greenFlag.getBoundsInParent())) {
-                if (player.getX() < greenBase.getLeftX()) {
-                    greenFlag.relocate(player.getX() + 10, player.getY() + 10);
-                } else {
-                    greenFlag.relocate(greenBase.getRightX() - 50,
-                            greenBase.getBottomY() / 2);
-                    greenTeamScore += 1;
-                    timer.stop();
-                    start(stage);
+            } else {
+                if (player.getBoundsInParent().intersects(greenFlag.getBoundsInParent())) {
+                    if (player.getX() < greenBase.getLeftX()) {
+                        greenFlag.relocate(player.getX() + 10, player.getY() + 10);
+                    } else {
+                        greenFlag.relocate(greenBase.getRightX() - 50,
+                                greenBase.getBottomY() / 2);
+                        greenTeamScore += 1;
+                        newRound();
+                    }
                 }
             }
         }
     }
 
-    // Scoreboard on screen
+    /**
+     * Starts new round.
+     * Sets new score, sets all players, bots and flags to starting position.
+     */
+    public void newRound() {
+        root.getChildren().remove(stack);
+        scoreBoard();
+        timer.stop();
+        for (Player player : players) {
+            Timeline playtime = new Timeline(
+                    new KeyFrame(Duration.seconds(0), event -> player.setPlayerXStartingPosition(greenBase, redBase)),
+                    new KeyFrame(Duration.seconds(0), event -> player.setPlayerYStartingPosition(greenBase, redBase)),
+                    new KeyFrame(Duration.seconds(0), event -> player.setLives(10)),
+                    new KeyFrame(Duration.seconds(0), event -> greenFlag.relocate(redBase.getLeftX() +
+                            50,redBase.getBottomY() / 2)),
+                    new KeyFrame(Duration.seconds(0), event -> redFlag.relocate(greenBase.getRightX() -
+                            50,greenBase.getBottomY() / 2 - redFlag.getHeight())),
+                    new KeyFrame(Duration.seconds(0), event -> botSpawner.spawnBots(4 - botsOnMap.size(),
+                            stage, root, bases, mapLoad.getObjectsOnMap())),
+                    new KeyFrame(Duration.seconds(0.5), event -> root.getChildren().remove(player)),
+                    new KeyFrame(Duration.seconds(0.5), event -> root.getChildren().add(player)),
+                    new KeyFrame(Duration.seconds(0.5), event -> timer.start())
+            );
+            playtime.play();
+        }
+    }
+
+    /**
+     * Makes scoreboard.
+     */
     public void scoreBoard() {
         Rectangle scoreBoard = new Rectangle(500, 40);
         scoreBoard.setFill(Color.LIGHTGRAY);
@@ -391,7 +658,7 @@ public class Screen extends Application {
         redTeam.setFont(Font.font("Arial", FontWeight.EXTRA_BOLD, 30));
         greenTeam.setFill(Color.GREEN);
         greenTeam.setFont(Font.font("Arial", FontWeight.EXTRA_BOLD, 30));
-        StackPane stack = new StackPane();
+        stack = new StackPane();
         GridPane scores = new GridPane();
         stack.setLayoutX(stage.widthProperty().get() / 2 - (scoreBoard.getWidth() / 2));
         scores.setHgap(40);

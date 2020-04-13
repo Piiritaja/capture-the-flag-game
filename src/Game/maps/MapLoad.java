@@ -8,7 +8,12 @@ import javafx.stage.Stage;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Loader class for map loading.
+ * Adds objects, floor/background, flags, and bases to the game window.
+ * Map has a ratio of 40:25.
+ * 40 tiles in width and 25 tiles in height.
+ */
 public class MapLoad {
 
     public List<Base> bases = new ArrayList<>();
@@ -28,10 +33,23 @@ public class MapLoad {
     private double baseWidthInTiles;
     private MapLayer floor;
 
+
+    /**
+     * @return List of objects that are displayed on map
+     */
     public List<Object> getObjectsOnMap() {
         return objectsOnMap;
     }
 
+
+    /**
+     * Loads objects, background flags and bases according to the
+     * variables set by other methods(loadmap1, loadmap2 etc).
+     * Adds the created nodes to Group root.
+     *
+     * @param root:  JavaFx Group that is used in the main window
+     * @param stage: JavaFx Stage that is used in the main window
+     */
     private void loadMap(Group root, Stage stage) {
         floor = new MapLayer(floorImagePath);
         // floor.png is 1280x800
@@ -96,10 +114,16 @@ public class MapLoad {
                 Flag.flagColor.GREEN);
         root.getChildren().add(redFlag);
         root.getChildren().add(greenFlag);
+        updateScaleMap(stage);
 
     }
 
-
+    /**
+     * Sets variables for map2 and calls method loadMap to load the map.
+     *
+     * @param root: JavaFx Group root that is used in the main window.
+     * @param stage JavaFx Stage that is used in the main window.
+     */
     public void loadMap2(Group root, Stage stage) {
         floorImagePath = "assets/map/2teams/map2/floor.png";
         // floor.png is 1280x800
@@ -108,6 +132,25 @@ public class MapLoad {
 
     }
 
+    /**
+     * Sets variables for map1 and calls method loadMap to load the map.
+     *
+     * @param root: JavaFx Group root that is used in the main window.
+     * @param stage JavaFx Stage that is used in the main window.
+     */
+    public void loadMap1(Group root, Stage stage) {
+        floorImagePath = "assets/map/2teams/map1/floor.png";
+        mapToLoad = Battlefield.MAP1;
+        loadMap(root, stage);
+    }
+
+
+    /**
+     * Method for scaling nodes that are created by loading the map in loadMap().
+     * Scaling is done according to the Stage size.
+     *
+     * @param stage: Main JavaFx Stage that is used to scale nodes.
+     */
     public void updateScaleMap(Stage stage) {
         // initialize
         final double initialWidth = stage.widthProperty().get();
@@ -221,14 +264,10 @@ public class MapLoad {
         });
     }
 
-
-    public void loadMap1(Group root, Stage stage) {
-        floorImagePath = "assets/map/2teams/map1/floor.png";
-        mapToLoad = Battlefield.MAP1;
-        loadMap(root, stage);
-    }
-
-
+    /**
+     * @param color: Color request to get the matching color base.
+     * @return Base with the requested color.
+     */
     public Base getBaseByColor(Base.baseColor color) {
         for (Base base : bases) {
             if (base.getBaseColor() == color) {
@@ -238,14 +277,23 @@ public class MapLoad {
         return null;
     }
 
+    /**
+     * @return List of all the bases that are present on the map.
+     */
     public List<Base> getBases() {
         return this.bases;
     }
 
+    /**
+     * @return Red Flag object that is displayed on the map.
+     */
     public Flag getRedFlag() {
         return redFlag;
     }
 
+    /**
+     * @return Green Flag object that is displayed on the map.
+     */
     public Flag getGreenFlag() {
         return greenFlag;
     }

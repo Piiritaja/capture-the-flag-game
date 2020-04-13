@@ -1,11 +1,15 @@
 package Game.maps;
 
+import Game.Screen;
+import Game.player.AiPlayer;
 import Game.player.Bullet;
 import Game.player.Player;
 import Game.bots.Bot;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
@@ -17,6 +21,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Objects that are displayed on the map.
+ * Has collision detector.
+ * Map consists of 25 rows and 40 columns of object slots.
+ */
 public class Object extends ImageView {
 
     private int width = 32;
@@ -25,6 +34,9 @@ public class Object extends ImageView {
     private int column = 1;
     public static final String WOOD_TEXTURE = "assets/map/objects/wooden.png";
     public static final String BRICK_TEXTURE = "assets/map/objects/brick2.png";
+    public static Battlefield mapType;
+    public static int mapWidthInTiles = Screen.getMAP_WIDTH_IN_TILES();
+    public static int mapHeightInTiles = Screen.getMAP_HEIGHT_IN_TILES();
 
     public Object(String texture) {
         this.setFitWidth(width);
@@ -32,23 +44,43 @@ public class Object extends ImageView {
         this.setImage(new Image(texture));
     }
 
+    /**
+     * Set objects row on the map (25 rows x 40 columns).
+     *
+     * @param row: Row to set the object to.
+     */
     public void setRow(int row) {
         this.row = row;
     }
 
+    /**
+     * Set objects column on the map (25 rows x 40 columns).
+     *
+     * @param column: Row to set the object to.
+     */
     public void setColumn(int column) {
         this.column = column;
     }
 
+    /**
+     * @return The row that the object is on.
+     */
     public int getRow() {
         return row;
     }
 
+    /**
+     * @return the column that the object is on.
+     */
     public int getColumn() {
         return column;
     }
 
-
+    /**
+     * Creates invisible boundaries for the object to be used in collision detection.
+     *
+     * @return Rectangle: The rectangle is used for collision detection.
+     */
     private Rectangle boundaries() {
         Rectangle objectBoundaries = new Rectangle();
         objectBoundaries.setX(this.getX());
@@ -58,6 +90,12 @@ public class Object extends ImageView {
         return objectBoundaries;
     }
 
+    /**
+     * Checks if this object collides with a player.
+     *
+     * @param player Player object to be checked collision with.
+     * @return true of false - according to if the two objects collide or not.
+     */
     public boolean collides(Player player) {
         Rectangle objectBoundaries = boundaries();
         Rectangle playerBoundaries = new Rectangle();
@@ -68,16 +106,39 @@ public class Object extends ImageView {
         return objectBoundaries.getBoundsInLocal().intersects(playerBoundaries.getBoundsInLocal());
     }
 
+    /**
+     * Checks if this object collides with a player.
+     *
+     * @param aiCircle AiPlayer boundaries to be checked collision with.
+     * @return true of false - according to if the two objects collide or not.
+     */
+    public boolean collides(Circle aiCircle) {
+        Rectangle objectBoundaries = boundaries();
+        return objectBoundaries.getBoundsInLocal().intersects(aiCircle.getBoundsInLocal());
+    }
+
+    /**
+     * Checks if this object collides with a bot.
+     *
+     * @param bot Bot object to be checked collision with.
+     * @return true of false - according to if the two objects collide or not.
+     */
     public boolean collides(Bot bot) {
         Rectangle objectBoundaries = boundaries();
         Rectangle botBoundaries = new Rectangle();
         botBoundaries.setX(bot.getX());
         botBoundaries.setY(bot.getY());
-        botBoundaries.setHeight(bot.fitHeightProperty().get() * 1.5);
-        botBoundaries.setWidth(bot.fitWidthProperty().get() * 1.5);
+        botBoundaries.setHeight(bot.getBotHeight() * 1.5);
+        botBoundaries.setWidth(bot.getBotWidth() * 1.5);
         return objectBoundaries.getBoundsInLocal().intersects(botBoundaries.getBoundsInLocal());
     }
 
+    /**
+     * Checks if this object collides with a bullet.
+     *
+     * @param bullet Bot object to be checked collision with.
+     * @return true of false - according to if the two objects collide or not.
+     */
     public boolean collides(Bullet bullet) {
         Rectangle objectBoundaries = boundaries();
         Rectangle bulletBoundaries = new Rectangle();
@@ -88,22 +149,30 @@ public class Object extends ImageView {
         return ((Path) Shape.intersect(bullet, objectBoundaries)).getElements().size() > 1;
     }
 
+    /**
+     * Adds objects to the map.
+     * Object locations are described in .csv files.
+     *
+     * @param root  Game Window stage root that the objects are in.
+     * @param stage Game Window stage
+     * @param map   Objects are loaded according to the chosen map
+     * @return List of objects added to the map
+     */
     public static List<Object> addObjectsToGroup(Group root, Stage stage, Battlefield map) {
+        mapType = map;
         String line;
         String objectCsv = setCsv(map);
         int row = 0;
         int column;
         String[] field;
         List<Object> walls = new ArrayList<>();
-        final int mapWidthInTiles = 40;
-        final int mapHeightInTiles = 25;
         try {
             BufferedReader reader = new BufferedReader(new FileReader(objectCsv));
             while ((line = reader.readLine()) != null) {
                 column = 0;
                 field = line.split(",");
                 for (String character : field) {
-                    if (character.equals("0") || character.equals("2")) {
+                    if (character.equals("1")) {
                         Object tile = new Object(Object.BRICK_TEXTURE);
                         tile.setRow(row);
                         tile.setColumn(column);
@@ -114,7 +183,7 @@ public class Object extends ImageView {
                         tile.setY(row * mapHeightInTiles);
                         root.getChildren().add(tile);
                         walls.add(tile);
-                    } else if (character.equals("34")) {
+                    } else if (character.equals("2")) {
                         Object tile = new Object(Object.WOOD_TEXTURE);
                         tile.setRow(row);
                         tile.setColumn(column);
@@ -136,6 +205,13 @@ public class Object extends ImageView {
         return walls;
     }
 
+
+    /**
+     * Method used to set the correct .csv file for object loading.
+     *
+     * @param map Map which the objects are loaded onto
+     * @return Path to the correct .csv file
+     */
     private static String setCsv(Battlefield map) {
         switch (map) {
             case MAP1:
@@ -144,5 +220,28 @@ public class Object extends ImageView {
                 return "src/assets/map/objects/map2walls.csv";
         }
         return null;
+    }
+
+    /**
+     * Exports object placement sheet.
+     * @return Placement of objects on map
+     */
+    public static String[][] getObjectPlacements() {
+        String csv = setCsv(mapType);
+        String line;
+        String[] field;
+        String[][] placement = new String[mapHeightInTiles][];
+        int row = 0;
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(csv));
+            while ((line = reader.readLine()) != null) {
+                field = line.split(",");
+                placement[row] = field;
+                row++;
+            }
+        } catch (IOException e) {
+            System.out.println("Error: add objects to group");
+        }
+        return placement;
     }
 }

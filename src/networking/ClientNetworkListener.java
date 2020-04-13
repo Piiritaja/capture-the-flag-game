@@ -12,6 +12,11 @@ import networking.packets.Packet005SendPlayerPosition;
 import networking.packets.Packet006RequestBotsLocation;
 import networking.packets.Packet007SendBotsLocation;
 import networking.packets.Packet008SendPlayerID;
+import networking.packets.Packet009BotHit;
+import networking.packets.Packet010PlayerMovement;
+import networking.packets.Packet011PlayerMovementStop;
+import networking.packets.Packet012UpdatePlayerPosition;
+import networking.packets.Packet013PlayerHit;
 
 public class ClientNetworkListener extends Listener {
     private ServerClient serverClient;
@@ -71,8 +76,9 @@ public class ClientNetworkListener extends Listener {
                 System.out.println("Disconnecting...");
                 connection.close();
             } else {
-
                 System.out.println("Connection allowed");
+                serverClient.setID(((Packet001AllowAccess) object).id);
+                System.out.println("Your id: " + serverClient.getID());
                 connection.sendTCP(new Packet002RequestConnections());
             }
             System.out.println();
@@ -110,7 +116,7 @@ public class ClientNetworkListener extends Listener {
                 double playerXPosition = ((Packet005SendPlayerPosition) object).xPosition;
                 double playerYPosition = ((Packet005SendPlayerPosition) object).yPosition;
                 String id = ((Packet005SendPlayerPosition) object).id;
-                Platform.runLater(() -> this.serverClient.getMenu().getScreen().createNewPlayer(playerXPosition, playerYPosition, id));
+                Platform.runLater(() -> this.serverClient.getMenu().getScreen().createPlayer(playerXPosition, playerYPosition, id));
                 System.out.println("Created player at:");
                 System.out.println(playerXPosition);
                 System.out.println(playerYPosition);
@@ -143,6 +149,27 @@ public class ClientNetworkListener extends Listener {
             System.out.println("Received player id: " + ((Packet008SendPlayerID) object).playerID);
             this.serverClient.getMenu().getScreen().removePlayerWithId(((Packet008SendPlayerID) object).playerID);
             System.out.println();
+        } else if (object instanceof Packet009BotHit) {
+            System.out.println("Received BotHit packet: " + ((Packet009BotHit) object).botId);
+            Platform.runLater(() -> serverClient.getMenu().getScreen().updateBotLives(((Packet009BotHit) object).botId, ((Packet009BotHit) object).lives));
+
+        } else if (object instanceof Packet010PlayerMovement) {
+            System.out.println("Received playerMovement packet");
+            Platform.runLater(() -> serverClient.getMenu().getScreen().movePlayerWithId(((Packet010PlayerMovement) object).playerId, ((Packet010PlayerMovement) object).direction));
+            System.out.println("Moved player with id: " + ((Packet010PlayerMovement) object).playerId);
+        } else if (object instanceof Packet011PlayerMovementStop) {
+            System.out.println("Received playerMovementStop packet");
+            Platform.runLater(() -> serverClient.getMenu().getScreen().stopPlayerWithId(((Packet011PlayerMovementStop) object).playerID, ((Packet011PlayerMovementStop) object).direction));
+            System.out.println("Stopped player with id: " + ((Packet011PlayerMovementStop) object).playerID);
+        } else if (object instanceof Packet012UpdatePlayerPosition) {
+            System.out.println("Received updatePlayerPosition packet");
+            Platform.runLater(() -> serverClient.getMenu().getScreen().updatePlayerPosition(
+                    ((Packet012UpdatePlayerPosition) object).id,
+                    (int) (((Packet012UpdatePlayerPosition) object).positionX * serverClient.getMenu().getScreen().getStage().widthProperty().get()),
+                    (int) (((Packet012UpdatePlayerPosition) object).positionY * serverClient.getMenu().getScreen().getStage().heightProperty().get())));
+        } else if (object instanceof Packet013PlayerHit) {
+            System.out.println("Received PlayerHit packet");
+            Platform.runLater(() -> serverClient.getMenu().getScreen().updatePlayerLives(((Packet013PlayerHit) object).playerID, ((Packet013PlayerHit) object).playerLives));
         }
 
     }

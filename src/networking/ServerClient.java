@@ -13,6 +13,11 @@ import networking.packets.Packet005SendPlayerPosition;
 import networking.packets.Packet006RequestBotsLocation;
 import networking.packets.Packet007SendBotsLocation;
 import networking.packets.Packet008SendPlayerID;
+import networking.packets.Packet009BotHit;
+import networking.packets.Packet010PlayerMovement;
+import networking.packets.Packet011PlayerMovementStop;
+import networking.packets.Packet012UpdatePlayerPosition;
+import networking.packets.Packet013PlayerHit;
 
 import java.io.IOException;
 
@@ -21,6 +26,7 @@ public class ServerClient {
     private Client client;
     private ClientNetworkListener clientNetworkListener;
     private Menu menu;
+    private String id;
 
     // Server ip address
     private static final String SERVER_IP = "192.168.1.200";
@@ -93,6 +99,14 @@ public class ServerClient {
         return this.client;
     }
 
+    public void setID(String id) {
+        this.id = id;
+    }
+
+    public String getID() {
+        return this.id;
+    }
+
 
     /**
      * Register packets for client listener.
@@ -109,12 +123,16 @@ public class ServerClient {
         kryo.register(Packet006RequestBotsLocation.class);
         kryo.register(Packet007SendBotsLocation.class);
         kryo.register(Packet008SendPlayerID.class);
+        kryo.register(Packet009BotHit.class);
+        kryo.register(Packet010PlayerMovement.class);
+        kryo.register(Packet011PlayerMovementStop.class);
+        kryo.register(Packet012UpdatePlayerPosition.class);
+        kryo.register(Packet013PlayerHit.class);
         kryo.register(java.util.Map.class);
         kryo.register(java.util.HashMap.class);
         kryo.register(Double[].class);
         kryo.register(Integer.class);
         kryo.register(Battlefield.class);
-
 
     }
 }

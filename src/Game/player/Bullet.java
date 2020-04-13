@@ -1,8 +1,11 @@
 package Game.player;
 
+import Game.Screen;
 import Game.bots.Bot;
 import Game.bots.BotSpawner;
 import Game.maps.Object;
+import com.esotericsoftware.kryonet.Server;
+import com.esotericsoftware.kryonet.Client;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.PathTransition;
@@ -11,17 +14,35 @@ import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Path;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
 import javafx.util.Duration;
+import networking.ServerClient;
+import networking.packets.Packet009BotHit;
+import org.w3c.dom.css.Rect;
+import networking.packets.Packet013PlayerHit;
 
-import javax.swing.text.html.ImageView;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Bullet class.
+ */
 public class Bullet extends Circle {
 
     int x, y, radius;
     Color color;
 
+    /**
+     * Initializes bullet.
+     * Sets radius, color and initial position.
+     *
+     * @param x      Initial x coordinate
+     * @param y      Initial y coordinate
+     * @param radius Bullet radius
+     * @param color  Bullet color
+     */
     public Bullet(int x, int y, int radius, Color color) {
         super(x, y, radius);
         this.x = x;
@@ -31,8 +52,16 @@ public class Bullet extends Circle {
         this.setFill(color);
     }
 
-
-    // shooting bullets
+    /**
+     * Sets transition for bullet.
+     * Calculates distance.
+     * Plays bullet transition and removes bullet from root and bullets list.
+     *
+     * @param line     Bullet path.
+     * @param root     Root to add bullet.
+     * @param distance How far bullet travels.
+     * @param bullets  List of bullets.
+     */
     public void shoot(Line line, Group root, double distance, List<Bullet> bullets) {
         PathTransition transition = new PathTransition();
         transition.setNode(this);
@@ -51,7 +80,19 @@ public class Bullet extends Circle {
         playTime.play();
     }
 
-    public void bulletCollision(Player player, List<Object> objectsOnMap, Group root, BotSpawner botSpawner) {
+    /**
+     * Detects collision between bullet and object on map or bullet and bot on map.
+     * Removes bullet from root and bullets list after collision.
+     * Removes one life from bot if the collision is detected.
+     *
+     * @param player       Player that shoots bullet.
+     * @param objectsOnMap Objects that are displayed on map.
+     * @param root         Group from where to remove bullets.
+     * @param botSpawner   Calculates bots on map.
+     * @param client       Client that shoots the bullet.
+     */
+    public void bulletCollision(List<Player> players, List<Object> objectsOnMap, Group root, BotSpawner botSpawner,
+                                Client client, Player player) {
         Iterator<Bullet> bullets = player.bullets.iterator();
         while (bullets.hasNext()) {
             Bullet bullet = bullets.next();
@@ -72,6 +113,10 @@ public class Bullet extends Circle {
                     root.getChildren().remove(bullet);
                     bullets.remove();
                     bot.lives -= 1;
+                    Packet009BotHit botHit = new Packet009BotHit();
+                    botHit.lives = bot.lives;
+                    botHit.botId = bot.getBotId();
+                    client.sendUDP(botHit);
                     if (bot.getBotLives() <= 0) {
                         root.getChildren().remove(bot);
                         botSpawner.botsOnMap.remove(bot);
@@ -79,7 +124,32 @@ public class Bullet extends Circle {
                     }
                 }
             }
+            for (Player p : players) {
+                if (bullet.getColor() != p.getColorTypeColor()) {
+                    if (p.collides(bullet)) {
+                        Packet013PlayerHit playerHit = new Packet013PlayerHit();
+                        playerHit.playerID = p.getId();
+                        playerHit.playerLives = p.lives - 1;
+                        client.sendUDP(playerHit);
+                        root.getChildren().remove(bullet);
+                        bullets.remove();
+                        p.lives -= 1;
+                        if (p.lives <= 0) {
+                            p.x = 0;
+                            p.y = 0;
+                            root.getChildren().remove(p);
+                        }
+                    }
+                }
+            }
         }
     }
 
+    /**
+     * @return the color of this bullet.
+     */
+    public Color getColor() {
+        return this.color;
+    }
 }
+
