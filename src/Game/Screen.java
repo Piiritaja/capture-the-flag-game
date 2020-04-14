@@ -390,13 +390,13 @@ public class Screen extends Application {
             @Override
             public void handle(long l) {
                 for (Player p : players) {
-                    p.tick(objectsOnMap, botsOnMap, players);
                     bullet.bulletCollision(players, objectsOnMap, root, botSpawner, client, p);
                     for (Bot bot : botsOnMap) {
                         bot.botShooting(p, root);
                     }
                     p.setFocusTraversable(true);
                 }
+                player.tick(objectsOnMap, botsOnMap, players);
                 for (AiPlayer ai : aiPlayers) {
                     ai.tick(objectsOnMap, botsOnMap, stage);
                 }
