@@ -366,8 +366,8 @@ public class Screen extends Application {
         // notify other players of your position
         Packet005SendPlayerPosition positionPacket = new Packet005SendPlayerPosition();
         System.out.println(player.getY());
-        positionPacket.xPosition = player.getX() / stage.widthProperty().get();
-        positionPacket.yPosition = player.getY() / stage.widthProperty().get();
+        positionPacket.xPosition = player.getX();
+        positionPacket.yPosition = player.getY();
         positionPacket.battlefield = getChosenMap();
         positionPacket.id = player.getId();
         this.client.sendTCP(positionPacket);
