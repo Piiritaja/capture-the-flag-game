@@ -235,8 +235,6 @@ public class Screen extends Application {
                 color.equals(Player.playerColor.GREEN) ? Player.playerColor.RED : Player.playerColor.GREEN,
                 client
         );
-        otherPlayer.setPlayerYStartingPosition(greenBase, redBase);
-        otherPlayer.setPlayerXStartingPosition(greenBase, redBase);
         otherPlayer.setPlayerLocationXInTiles(stage.widthProperty().get() / otherPlayer.getX());
         otherPlayer.setPlayerLocationYInTiles(stage.heightProperty().get() / otherPlayer.getY());
         otherPlayer.setRoot(root);
@@ -382,6 +380,8 @@ public class Screen extends Application {
         greenFlag = mapLoad.getGreenFlag();
         objectsOnMap = mapLoad.getObjectsOnMap();
         scoreBoard();
+        requestNodesFromOtherClients();
+
 
         Timeline packetTimer = new Timeline(new KeyFrame(Duration.millis(50), new EventHandler<ActionEvent>() {
             @Override
@@ -425,7 +425,6 @@ public class Screen extends Application {
         stage.setFullScreen(fullScreen);
         timer.start();
         stage.show();
-        requestNodesFromOtherClients();
 
         // save bot locations
         getBotLocationsOnMap();
