@@ -355,6 +355,9 @@ public class Screen extends Application {
         redBase = mapLoad.getBaseByColor(Base.baseColor.RED);
         bases = mapLoad.getBases();
 
+        requestNodesFromOtherClients();
+
+
         createPlayer();
 
         player.setPlayerLocationXInTiles(stage.widthProperty().get() / player.getX());
@@ -372,6 +375,7 @@ public class Screen extends Application {
         positionPacket.id = player.getId();
         this.client.sendTCP(positionPacket);
 
+
         redFlag = mapLoad.getRedFlag();
         greenFlag = mapLoad.getGreenFlag();
         objectsOnMap = mapLoad.getObjectsOnMap();
@@ -384,6 +388,7 @@ public class Screen extends Application {
             updatePlayerPosition.positionX = (player.getX() / stage.widthProperty().get());
             client.sendUDP(updatePlayerPosition);
         }));
+
         packetTimer.setCycleCount(Timeline.INDEFINITE);
         packetTimer.play();
         timer = new AnimationTimer() {
@@ -416,7 +421,6 @@ public class Screen extends Application {
         stage.setFullScreen(fullScreen);
         timer.start();
         stage.show();
-        requestNodesFromOtherClients();
 
         // save bot locations
         getBotLocationsOnMap();
