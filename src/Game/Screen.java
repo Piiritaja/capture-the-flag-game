@@ -11,10 +11,14 @@ import Game.player.Bullet;
 import Game.player.Flag;
 import Game.player.Player;
 import com.esotericsoftware.kryonet.Client;
+import javafx.animation.Animation;
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
@@ -27,6 +31,7 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -37,8 +42,10 @@ import networking.packets.Packet005SendPlayerPosition;
 import networking.packets.Packet008SendPlayerID;
 import networking.packets.Packet012UpdatePlayerPosition;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 
 public class Screen extends Application {
@@ -228,6 +235,8 @@ public class Screen extends Application {
                 color.equals(Player.playerColor.GREEN) ? Player.playerColor.RED : Player.playerColor.GREEN,
                 client
         );
+        otherPlayer.setPlayerYStartingPosition(greenBase, redBase);
+        otherPlayer.setPlayerXStartingPosition(greenBase, redBase);
         otherPlayer.setPlayerLocationXInTiles(stage.widthProperty().get() / otherPlayer.getX());
         otherPlayer.setPlayerLocationYInTiles(stage.heightProperty().get() / otherPlayer.getY());
         otherPlayer.setRoot(root);
@@ -363,27 +372,27 @@ public class Screen extends Application {
 
         // notify other players of your position
         Packet005SendPlayerPosition positionPacket = new Packet005SendPlayerPosition();
-        System.out.println(player.getY());
         positionPacket.xPosition = player.getX();
         positionPacket.yPosition = player.getY();
         positionPacket.battlefield = getChosenMap();
         positionPacket.id = player.getId();
         this.client.sendTCP(positionPacket);
 
-
         redFlag = mapLoad.getRedFlag();
         greenFlag = mapLoad.getGreenFlag();
         objectsOnMap = mapLoad.getObjectsOnMap();
         scoreBoard();
 
-        Timeline packetTimer = new Timeline(new KeyFrame(Duration.millis(50), event -> {
-            Packet012UpdatePlayerPosition updatePlayerPosition = new Packet012UpdatePlayerPosition();
-            updatePlayerPosition.id = player.getId();
-            updatePlayerPosition.positionY = (player.getY() / stage.heightProperty().get());
-            updatePlayerPosition.positionX = (player.getX() / stage.widthProperty().get());
-            client.sendUDP(updatePlayerPosition);
+        Timeline packetTimer = new Timeline(new KeyFrame(Duration.millis(50), new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                Packet012UpdatePlayerPosition updatePlayerPosition = new Packet012UpdatePlayerPosition();
+                updatePlayerPosition.id = player.getId();
+                updatePlayerPosition.positionY = (player.getY() / stage.heightProperty().get());
+                updatePlayerPosition.positionX = (player.getX() / stage.widthProperty().get());
+                client.sendUDP(updatePlayerPosition);
+            }
         }));
-
         packetTimer.setCycleCount(Timeline.INDEFINITE);
         packetTimer.play();
         timer = new AnimationTimer() {
@@ -423,8 +432,6 @@ public class Screen extends Application {
         updateScale();
         createAi(Player.playerColor.GREEN);
         createAi(Player.playerColor.RED);
-        System.out.println(player.getX());
-        System.out.println(player.getY());
 
 
     }
@@ -501,8 +508,8 @@ public class Screen extends Application {
             if (p.getId().equals(id)) {
                 p.setX(positionX);
                 p.setY(positionY);
-                //System.out.println(String.format("Updated player position to (%d,%d)", positionX, positionY));
-                //System.out.println(String.format("Player position now (%d,%d)", (int) p.getX(), (int) p.getY()));
+                System.out.println(String.format("Updated player position to (%d,%d)", positionX, positionY));
+                System.out.println(String.format("Player position now (%d,%d)", (int) p.getX(), (int) p.getY()));
             }
         }
     }
@@ -661,3 +668,4 @@ public class Screen extends Application {
         root.getChildren().add(stack);
     }
 }
+
