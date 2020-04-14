@@ -423,6 +423,8 @@ public class Screen extends Application {
         updateScale();
         createAi(Player.playerColor.GREEN);
         createAi(Player.playerColor.RED);
+        System.out.println(player.getX());
+        System.out.println(player.getY());
 
 
     }
@@ -499,8 +501,8 @@ public class Screen extends Application {
             if (p.getId().equals(id)) {
                 p.setX(positionX);
                 p.setY(positionY);
-                System.out.println(String.format("Updated player position to (%d,%d)", positionX, positionY));
-                System.out.println(String.format("Player position now (%d,%d)", (int) p.getX(), (int) p.getY()));
+                //System.out.println(String.format("Updated player position to (%d,%d)", positionX, positionY));
+                //System.out.println(String.format("Player position now (%d,%d)", (int) p.getX(), (int) p.getY()));
             }
         }
     }
