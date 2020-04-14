@@ -162,6 +162,7 @@ public class ClientNetworkListener extends Listener {
             Platform.runLater(() -> serverClient.getMenu().getScreen().stopPlayerWithId(((Packet011PlayerMovementStop) object).playerID, ((Packet011PlayerMovementStop) object).direction));
             System.out.println("Stopped player with id: " + ((Packet011PlayerMovementStop) object).playerID);
         } else if (object instanceof Packet012UpdatePlayerPosition) {
+            System.out.println("Received updatePlayerPosition packet");
             Platform.runLater(() -> serverClient.getMenu().getScreen().updatePlayerPosition(
                     ((Packet012UpdatePlayerPosition) object).id,
                     (int) (((Packet012UpdatePlayerPosition) object).positionX * serverClient.getMenu().getScreen().getStage().widthProperty().get()),
