@@ -113,8 +113,8 @@ public class ClientNetworkListener extends Listener {
         } else if (object instanceof Packet005SendPlayerPosition) {
             System.out.println("Received sendPlayerPosition packet");
             if (this.serverClient.getMenu().getScreen().isInGame() && ((Packet005SendPlayerPosition) object).battlefield == this.serverClient.getMenu().getScreen().getChosenMap()) {
-                double playerXPosition = ((Packet005SendPlayerPosition) object).xPosition;
-                double playerYPosition = ((Packet005SendPlayerPosition) object).yPosition;
+                double playerXPosition = ((Packet005SendPlayerPosition) object).xPosition * serverClient.getMenu().getScreen().getStage().widthProperty().get();
+                double playerYPosition = ((Packet005SendPlayerPosition) object).yPosition * serverClient.getMenu().getScreen().getStage().heightProperty().get();
                 String id = ((Packet005SendPlayerPosition) object).id;
                 Platform.runLater(() -> this.serverClient.getMenu().getScreen().createPlayer(playerXPosition, playerYPosition, id));
                 System.out.println("Created player at:");
