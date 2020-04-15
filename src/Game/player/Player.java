@@ -427,42 +427,54 @@ public class Player extends ImageView {
         return objectBoundaries.getBoundsInParent().intersects(playerBoundaries.getBoundsInParent());
     }
 
+
+    public static double calcPlayerXStartingPosition(Base greenBase, Base redBase, playerColor color) {
+        Random positionPicker = new Random();
+        if (color.equals(Player.playerColor.GREEN)) {
+            return Math.max((int) greenBase.getLeftX() + 40, (positionPicker.nextInt((int)
+                    greenBase.getRightX() - 40)));
+        } else if (color.equals(Player.playerColor.RED)) {
+            return Math.min((int) redBase.getRightX() - 40, (positionPicker.nextInt((int)
+                    redBase.getLeftX() + 40)));
+        }
+        return 90;
+    }
+
     /**
      * Sets player x coordinate when game or new round starts.
      *
      * @param greenBase base where to put green players
-     * @param redBase base where to put red players
+     * @param redBase   base where to put red players
      */
     public void setPlayerXStartingPosition(Base greenBase, Base redBase) {
-        Random positionPicker = new Random();
-        if (color.equals(Player.playerColor.GREEN)) {
-            this.x = Math.max((int) greenBase.getLeftX() + 40, (positionPicker.nextInt((int)
-                    greenBase.getRightX() - 40)));
-        } else if (color.equals(Player.playerColor.RED)) {
-            this.x = Math.min((int) redBase.getRightX() - 40, (positionPicker.nextInt((int)
-                    redBase.getLeftX() + 40)));
-        }
+        this.setX(calcPlayerXStartingPosition(greenBase, redBase, color));
     }
 
     /**
      * Sets player y coordinate when game or new round starts.
      *
      * @param greenBase base where to put green players
-     * @param redBase base where to put red players
+     * @param redBase   base where to put red players
      */
     public void setPlayerYStartingPosition(Base greenBase, Base redBase) {
+        this.setY(calcPlayerYStartingPosition(greenBase, redBase, color));
+    }
+
+    public static double calcPlayerYStartingPosition(Base greenBase, Base redBase, playerColor color) {
         Random positionPicker = new Random();
         if (color.equals(Player.playerColor.GREEN)) {
-            this.y = Math.max((int) greenBase.getTopY() + 40, (positionPicker.nextInt((int)
+            return Math.max((int) greenBase.getTopY() + 40, (positionPicker.nextInt((int)
                     greenBase.getBottomY() - 40)));
         } else if (color.equals(Player.playerColor.RED)) {
-            this.y = Math.max((int) redBase.getTopY() + 40, (positionPicker.nextInt((int)
+            return Math.max((int) redBase.getTopY() + 40, (positionPicker.nextInt((int)
                     redBase.getBottomY() - 40)));
         }
+        return 90;
     }
 
     /**
      * Returns player color in Color type.
+     *
      * @return Color
      */
     public Color getColorTypeColor() {

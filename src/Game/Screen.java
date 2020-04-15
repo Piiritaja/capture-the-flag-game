@@ -204,15 +204,13 @@ public class Screen extends Application {
      */
     public void createPlayer() {
         player = new Player(
-                playerXStartingPosition,
-                playerYStartingPosition,
+                (int) Player.calcPlayerXStartingPosition(greenBase,redBase,color),
+                (int) Player.calcPlayerYStartingPosition(greenBase,redBase,color),
                 0,
                 0,
                 color.equals(Player.playerColor.GREEN) ? Player.playerColor.GREEN : Player.playerColor.RED,
                 client
         );
-        player.setPlayerXStartingPosition(greenBase, redBase);
-        player.setPlayerYStartingPosition(greenBase, redBase);
         player.setRoot(root);
         player.setId(serverclient.getID());
         players.add(player);
