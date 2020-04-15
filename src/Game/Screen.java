@@ -403,6 +403,7 @@ public class Screen extends Application {
                     }
                     p.setFocusTraversable(true);
                 }
+                //Only this player can tick!
                 player.tick(objectsOnMap, botsOnMap, players);
                 for (AiPlayer ai : aiPlayers) {
                     ai.tick(objectsOnMap, botsOnMap, stage);
