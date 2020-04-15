@@ -204,15 +204,13 @@ public class Screen extends Application {
      */
     public void createPlayer() {
         player = new Player(
-                playerXStartingPosition,
-                playerYStartingPosition,
+                (int) Player.calcPlayerXStartingPosition(greenBase,redBase,color),
+                (int) Player.calcPlayerYStartingPosition(greenBase,redBase,color),
                 0,
                 0,
                 color.equals(Player.playerColor.GREEN) ? Player.playerColor.GREEN : Player.playerColor.RED,
                 client
         );
-        player.setPlayerXStartingPosition(greenBase, redBase);
-        player.setPlayerYStartingPosition(greenBase, redBase);
         player.setRoot(root);
         player.setId(serverclient.getID());
         players.add(player);
@@ -235,8 +233,6 @@ public class Screen extends Application {
                 color.equals(Player.playerColor.GREEN) ? Player.playerColor.RED : Player.playerColor.GREEN,
                 client
         );
-        otherPlayer.setPlayerYStartingPosition(greenBase, redBase);
-        otherPlayer.setPlayerXStartingPosition(greenBase, redBase);
         otherPlayer.setPlayerLocationXInTiles(stage.widthProperty().get() / otherPlayer.getX());
         otherPlayer.setPlayerLocationYInTiles(stage.heightProperty().get() / otherPlayer.getY());
         otherPlayer.setRoot(root);
@@ -369,7 +365,6 @@ public class Screen extends Application {
 
 
         root.getChildren().add(player);
-        createPlayer(stage.widthProperty().get() - 100, stage.heightProperty().get() - 500, "2");
 
         // notify other players of your position
         Packet005SendPlayerPosition positionPacket = new Packet005SendPlayerPosition();
@@ -383,6 +378,8 @@ public class Screen extends Application {
         greenFlag = mapLoad.getGreenFlag();
         objectsOnMap = mapLoad.getObjectsOnMap();
         scoreBoard();
+        requestNodesFromOtherClients();
+
 
         Timeline packetTimer = new Timeline(new KeyFrame(Duration.millis(50), new EventHandler<ActionEvent>() {
             @Override
@@ -400,13 +397,14 @@ public class Screen extends Application {
             @Override
             public void handle(long l) {
                 for (Player p : players) {
-                    p.tick(objectsOnMap, botsOnMap, players);
                     bullet.bulletCollision(players, objectsOnMap, root, botSpawner, client, p);
                     for (Bot bot : botsOnMap) {
                         bot.botShooting(p, root);
                     }
                     p.setFocusTraversable(true);
                 }
+                //Only this player can tick!
+                player.tick(objectsOnMap, botsOnMap, players);
                 for (AiPlayer ai : aiPlayers) {
                     ai.tick(objectsOnMap, botsOnMap, stage);
                 }
@@ -426,7 +424,6 @@ public class Screen extends Application {
         stage.setFullScreen(fullScreen);
         timer.start();
         stage.show();
-        requestNodesFromOtherClients();
 
         // save bot locations
         getBotLocationsOnMap();
@@ -633,9 +630,9 @@ public class Screen extends Application {
                     new KeyFrame(Duration.seconds(0), event -> player.setPlayerYStartingPosition(greenBase, redBase)),
                     new KeyFrame(Duration.seconds(0), event -> player.setLives(10)),
                     new KeyFrame(Duration.seconds(0), event -> greenFlag.relocate(redBase.getLeftX() +
-                            50,redBase.getBottomY() / 2)),
+                            50, redBase.getBottomY() / 2)),
                     new KeyFrame(Duration.seconds(0), event -> redFlag.relocate(greenBase.getRightX() -
-                            50,greenBase.getBottomY() / 2 - redFlag.getHeight())),
+                            50, greenBase.getBottomY() / 2 - redFlag.getHeight())),
                     new KeyFrame(Duration.seconds(0), event -> botSpawner.spawnBots(4 - botsOnMap.size(),
                             stage, root, bases, mapLoad.getObjectsOnMap())),
                     new KeyFrame(Duration.seconds(0.5), event -> root.getChildren().remove(player)),
@@ -669,3 +666,4 @@ public class Screen extends Application {
         root.getChildren().add(stack);
     }
 }
+
