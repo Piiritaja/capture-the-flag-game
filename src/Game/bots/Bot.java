@@ -1,6 +1,7 @@
 package Game.bots;
 
 import Game.player.Bullet;
+import Game.player.GamePlayer;
 import Game.player.Player;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
@@ -82,7 +83,7 @@ public class Bot extends ImageView {
      * @param player Player to check the collision with
      * @return If the bot collides with the player
      */
-    public boolean collides(Player player) {
+    public boolean collides(GamePlayer player) {
         Rectangle objectBoundaries = boundaries();
         Rectangle playerBoundaries = new Rectangle();
         playerBoundaries.setX(player.getX() + player.width / 4.0);

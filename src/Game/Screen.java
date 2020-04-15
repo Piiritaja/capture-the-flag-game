@@ -9,14 +9,13 @@ import Game.maps.Object;
 import Game.player.AiPlayer;
 import Game.player.Bullet;
 import Game.player.Flag;
+import Game.player.GamePlayer;
 import Game.player.Player;
 import com.esotericsoftware.kryonet.Client;
-import javafx.animation.Animation;
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
@@ -31,7 +30,6 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -42,17 +40,15 @@ import networking.packets.Packet005SendPlayerPosition;
 import networking.packets.Packet008SendPlayerID;
 import networking.packets.Packet012UpdatePlayerPosition;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 
 public class Screen extends Application {
 
     Bullet bullet = new Bullet(0, 0, 3, Color.GREEN);
 
-    private Player player;
+    private GamePlayer player;
     private Group root;
     private MapLoad mapLoad;
     private Base greenBase;
@@ -125,7 +121,7 @@ public class Screen extends Application {
      *
      * @return Player.
      */
-    public Player getPlayer() {
+    public GamePlayer getPlayer() {
         return this.player;
     }
 
@@ -166,7 +162,7 @@ public class Screen extends Application {
     int greenTeamScore = 0;
 
     Battlefield chosenMap = Battlefield.EMPTY;
-    Player.playerColor color = Player.playerColor.RED;
+    GamePlayer.playerColor color = GamePlayer.playerColor.RED;
 
 
     //Constants for player object
@@ -192,9 +188,9 @@ public class Screen extends Application {
 
     public void setPlayerColor(int colorIndex) {
         if (colorIndex == 0) {
-            this.color = Player.playerColor.GREEN;
+            this.color = GamePlayer.playerColor.GREEN;
         } else if (colorIndex == 1) {
-            this.color = Player.playerColor.RED;
+            this.color = GamePlayer.playerColor.RED;
         }
     }
 
@@ -203,12 +199,12 @@ public class Screen extends Application {
      * Only used for creating the client's player!
      */
     public void createPlayer() {
-        player = new Player(
-                (int) Player.calcPlayerXStartingPosition(greenBase,redBase,color),
-                (int) Player.calcPlayerYStartingPosition(greenBase,redBase,color),
+        player = new GamePlayer(
+                (int) Player.calcPlayerXStartingPosition(greenBase, redBase, color),
+                (int) Player.calcPlayerYStartingPosition(greenBase, redBase, color),
                 0,
                 0,
-                color.equals(Player.playerColor.GREEN) ? Player.playerColor.GREEN : Player.playerColor.RED,
+                color.equals(GamePlayer.playerColor.GREEN) ? GamePlayer.playerColor.GREEN : GamePlayer.playerColor.RED,
                 client
         );
         player.setRoot(root);
@@ -225,12 +221,12 @@ public class Screen extends Application {
      * @param id player id.
      */
     public void createPlayer(double x, double y, String id) {
-        Player otherPlayer = new Player(
+        GamePlayer otherPlayer = new GamePlayer(
                 (int) x,
                 (int) y,
                 0,
                 0,
-                color.equals(Player.playerColor.GREEN) ? Player.playerColor.RED : Player.playerColor.GREEN,
+                color.equals(GamePlayer.playerColor.GREEN) ? GamePlayer.playerColor.RED : GamePlayer.playerColor.GREEN,
                 client
         );
         otherPlayer.setPlayerLocationXInTiles(stage.widthProperty().get() / otherPlayer.getX());
@@ -305,12 +301,12 @@ public class Screen extends Application {
         }
     }
 
-    public void createAi(Player.playerColor color) {
+    public void createAi(GamePlayer.playerColor color) {
         double startX;
         double startY;
         Base base;
         Flag flag;
-        if (color.equals(Player.playerColor.GREEN)) {
+        if (color.equals(GamePlayer.playerColor.GREEN)) {
             base = greenBase;
             flag = mapLoad.getGreenFlag();
         } else {
@@ -334,6 +330,7 @@ public class Screen extends Application {
         );
         root.getChildren().add(ai);
         aiPlayers.add(ai);
+        players.add(ai);
     }
 
     @Override
@@ -428,8 +425,8 @@ public class Screen extends Application {
         // save bot locations
         getBotLocationsOnMap();
         updateScale();
-        createAi(Player.playerColor.GREEN);
-        createAi(Player.playerColor.RED);
+        createAi(GamePlayer.playerColor.GREEN);
+        createAi(GamePlayer.playerColor.RED);
 
 
     }
@@ -519,7 +516,7 @@ public class Screen extends Application {
      */
     public void removePlayerWithId(String id) {
         for (Node node : root.getChildren()) {
-            if (node instanceof Player) {
+            if (node instanceof GamePlayer) {
                 if (id.equals(node.getId())) {
                     System.out.println("Removed player");
                     root.getChildren().remove(node);
@@ -591,7 +588,7 @@ public class Screen extends Application {
      */
     public void catchTheFlag() {
         for (Player player : players) {
-            if (player.getColor() == Player.playerColor.RED) {
+            if (player.getColor() == GamePlayer.playerColor.RED) {
                 if (player.getBoundsInParent().intersects(redFlag.getBoundsInParent())) {
                     if (player.getX() > redBase.getRightX() - redBase.getRightX() / 5) {
                         redFlag.relocate(player.getX() + 10, player.getY() + 10);

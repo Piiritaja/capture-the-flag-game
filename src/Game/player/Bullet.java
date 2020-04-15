@@ -1,26 +1,18 @@
 package Game.player;
 
-import Game.Screen;
 import Game.bots.Bot;
 import Game.bots.BotSpawner;
 import Game.maps.Object;
-import com.esotericsoftware.kryonet.Server;
 import com.esotericsoftware.kryonet.Client;
 import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
 import javafx.animation.PathTransition;
 import javafx.animation.Timeline;
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
-import javafx.scene.shape.Path;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Shape;
 import javafx.util.Duration;
-import networking.ServerClient;
 import networking.packets.Packet009BotHit;
-import org.w3c.dom.css.Rect;
 import networking.packets.Packet013PlayerHit;
 
 import java.util.Iterator;

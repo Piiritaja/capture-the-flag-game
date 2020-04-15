@@ -1,14 +1,12 @@
 package Game.maps;
 
 import Game.Screen;
-import Game.player.AiPlayer;
 import Game.player.Bullet;
-import Game.player.Player;
+import Game.player.GamePlayer;
 import Game.bots.Bot;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
@@ -96,7 +94,7 @@ public class Object extends ImageView {
      * @param player Player object to be checked collision with.
      * @return true of false - according to if the two objects collide or not.
      */
-    public boolean collides(Player player) {
+    public boolean collides(GamePlayer player) {
         Rectangle objectBoundaries = boundaries();
         Rectangle playerBoundaries = new Rectangle();
         playerBoundaries.setX(player.getX() + player.width / 4.0);
