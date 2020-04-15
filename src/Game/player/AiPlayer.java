@@ -16,7 +16,10 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.lang.StrictMath.abs;
 
@@ -30,13 +33,19 @@ public class AiPlayer extends Player {
 
     private Flag flag;
     private AnimationTimer timer;
-    private Circle boundary = new Circle();
+    private Circle collisionBoundary = new Circle();
     private Circle shootingBoundary = new Circle();
 
+    //Movement variables
     boolean left = true;
     boolean right = true;
     boolean up = true;
     boolean down = true;
+    int primaryX = 1;
+    int primaryY = 1;
+    boolean leftFree = true;
+    boolean rightFree = true;
+    double shootingUpdateTimer = 0;
 
     private Base base;
 
@@ -60,11 +69,11 @@ public class AiPlayer extends Player {
 
         this.root = root;
 
-        boundary.setCenterX(this.getX() + this.getWidth() / 2);
-        boundary.setCenterY(this.getY() + this.getHeight() / 2);
-        root.getChildren().add(boundary);
-        boundary.setFill(Color.YELLOW);
-        boundary.setOpacity(0.3);
+        collisionBoundary.setCenterX(this.getX() + this.getWidth() / 2);
+        collisionBoundary.setCenterY(this.getY() + this.getHeight() / 2);
+        root.getChildren().add(collisionBoundary);
+        collisionBoundary.setFill(Color.YELLOW);
+        collisionBoundary.setOpacity(0.3);
 
         shootingBoundary.setCenterX(this.getX() + this.getWidth() / 2);
         shootingBoundary.setCenterY(this.getY() + this.getHeight() / 2);
@@ -80,7 +89,7 @@ public class AiPlayer extends Player {
      * @param objectsOnMap Objects to check the collision with.
      * @param botsOnMap    Bots to check the collision with.
      */
-    public void tick(List<Object> objectsOnMap, List<Bot> botsOnMap, Stage stage) {
+    public void tick(List<Object> objectsOnMap, List<Bot> botsOnMap, Stage stage, List<Player> players) {
         animation.pause();
         this.setImage(image);
         double x = this.getX();
@@ -91,23 +100,40 @@ public class AiPlayer extends Player {
         double boundaryCenterX = x + this.getWidth() / 2;
         double boundaryRadius = this.getHeight() / 2;
         double boundaryCenterY = y + this.getHeight() / 2;
-        boundary.setCenterX(boundaryCenterX);
-        boundary.setCenterY(boundaryCenterY);
-        boundary.setRadius(boundaryRadius);
-        shootingBoundary.setCenterX(boundaryCenterX);
-        shootingBoundary.setCenterY(boundaryCenterY);
-        shootingBoundary.setRadius(boundaryRadius * 3);
-        //Map<String, Integer> nextPos = getNextPos(getPosInTiles(stage));
-        //this.setY(nextPos.get("y") * stage.heightProperty().get() / Screen.getMAP_HEIGHT_IN_TILES());
-        //this.setX(nextPos.get("x") * stage.widthProperty().get() / Screen.getMAP_WIDTH_IN_TILES());
+        setBoundaries(boundaryCenterX, boundaryCenterY, boundaryRadius);
 
+        calculateDirection(x, y);
+        final double shootingTimerStep = 0.05;
+        shootingUpdateTimer += shootingTimerStep;
+        move(objectsOnMap, x, y, boundaryCenterX, boundaryCenterY, primaryX, primaryY, leftFree, rightFree);
+        for (Bot bot : botsOnMap) {
+            if (bot.getBoundsInParent().intersects(shootingBoundary.getBoundsInParent()) && shootingUpdateTimer >= 1) {
+                shootBot(bot);
+                shootingUpdateTimer = 0.0;
+            }
+        }
+        for (Player player : players) {
+            if ((!player.equals(this)) && (!player.getColor().equals(this.color)) && shootingUpdateTimer >= 1 &&
+            player.getBoundsInParent().intersects(shootingBoundary.getBoundsInParent())) {
+                shootPlayer(player);
+                shootingUpdateTimer = 0.0;
+            }
+        }
+
+    }
+
+    /**
+     * Calculates the direction of movement for Ai.
+     * @param x current X coordinate of Ai
+     * @param y current Y coordinate of Ai.
+     */
+    private void calculateDirection(double x, double y) {
         double destinationX;
         double destinationY;
-        int primaryX = 1;
-        int primaryY = 1;
-        //System.out.println(getPosInTiles(stage).toString());
-        boolean leftFree = true;
-        boolean rightFree = true;
+        primaryX = 1;
+        primaryY = 1;
+        leftFree = true;
+        rightFree = true;
 
         if (!flag.isPickedUp()) {
             destinationX = flag.getX();
@@ -125,7 +151,7 @@ public class AiPlayer extends Player {
         } else if (destinationX > x + offset) {
             left = false;
             right = true;
-            //else if (destinationX <= x + offset && destinationX >= x - offset)
+        //else if (destinationX <= x + offset && destinationX >= x - offset)
         } else {
             left = false;
             right = false;
@@ -145,23 +171,6 @@ public class AiPlayer extends Player {
                 System.out.println("pickup");
             }
         }
-        move(objectsOnMap, x, y, boundaryCenterX, boundaryCenterY, primaryX, primaryY, leftFree, rightFree);
-        /*for (Object object : objectsOnMap) {
-            if (object.collides(boundary)) {
-                this.setX(x);
-                this.setY(y);
-            }
-        }*/
-
-        /*
-        for (Bot bot : botsOnMap) {
-            if (bot.getBoundsInParent().intersects(boundary.getBoundsInParent())) {
-                this.setX(x);
-                this.setY(y);
-                shoot(bot);
-            }
-        }*/
-
     }
 
     /**
@@ -186,41 +195,41 @@ public class AiPlayer extends Player {
         boolean upFree;
         for (Object object : objectsOnMap) {
             if (left) {
-                boundary.setCenterX(boundaryCenterX - step);
-                if (object.collides(boundary)) {
+                collisionBoundary.setCenterX(boundaryCenterX - step);
+                if (object.collides(collisionBoundary)) {
                     leftFree = false;
                     primaryX = 0;
                     down = true;
                     primaryY = 1;
                 }
-                boundary.setCenterX(boundaryCenterX);
+                collisionBoundary.setCenterX(boundaryCenterX);
             }
             if (right) {
-                boundary.setCenterX(boundaryCenterX + step);
-                if (object.collides(boundary)) {
+                collisionBoundary.setCenterX(boundaryCenterX + step);
+                if (object.collides(collisionBoundary)) {
                     rightFree = false;
                     primaryX = 0;
                     down = true;
                     primaryY = 1;
                 }
-                boundary.setCenterX(boundaryCenterX);
+                collisionBoundary.setCenterX(boundaryCenterX);
             }
             if (down) {
-                boundary.setCenterY(boundaryCenterY + step);
-                if (object.collides(boundary)) {
+                collisionBoundary.setCenterY(boundaryCenterY + step);
+                if (object.collides(collisionBoundary)) {
                     downFree = false;
                     primaryY = -1;
                     up = true;
                 }
-                boundary.setCenterY(boundaryCenterY);
+                collisionBoundary.setCenterY(boundaryCenterY);
             }
             if (up) {
-                boundary.setCenterY(boundaryCenterY - step);
-                if (object.collides(boundary)) {
+                collisionBoundary.setCenterY(boundaryCenterY - step);
+                if (object.collides(collisionBoundary)) {
                     upFree = false;
                     primaryY = 0;
                 }
-                boundary.setCenterY(boundaryCenterY);
+                collisionBoundary.setCenterY(boundaryCenterY);
             }
         }
         if ((left && leftFree) || (right && rightFree)) {
@@ -241,12 +250,29 @@ public class AiPlayer extends Player {
         animation.play();
     }
 
+
+    /**
+     * Set the collision and bot/player/shooting boundary sizes and positions.
+     * @param centerX center of the player X / center of the boundary X
+     * @param centerY center of the player Y / center of the boundary Y
+     * @param radius radius of the collision boundary
+     */
+    private void setBoundaries(double centerX, double centerY, double radius) {
+        collisionBoundary.setCenterX(centerX);
+        collisionBoundary.setCenterY(centerY);
+        collisionBoundary.setRadius(radius);
+        shootingBoundary.setCenterX(centerX);
+        shootingBoundary.setCenterY(centerY);
+        shootingBoundary.setRadius(radius * 4);
+
+    }
+
     /**
      * Player can catch the enemy team`s flag if intersects with it and bring to his base.
      * If enemy team`s flag is brought to own base then the next round starts.
      */
     public void catchTheFlag() {
-        if (boundary.getBoundsInParent().intersects(flag.getBoundsInParent())) {
+        if (collisionBoundary.getBoundsInParent().intersects(flag.getBoundsInParent())) {
             flag.setX(this.getX());
             flag.setY(this.getY());
         }
@@ -254,43 +280,59 @@ public class AiPlayer extends Player {
 
     /**
      * Calculates which way to shoot(UP, DOWN, RIGHT or LEFT).
+     */
+    public void shootBot(Bot bot) {
+        getGunCoordinates();
+        double y = bot.getY() + bot.getBotHeight() / 2;
+        double x = bot.getX() + bot.getBotWidth() / 2;
+        shoot(x, y);
+
+    }
+
+    /**
+     * Calculates which way to shoot(UP, DOWN, RIGHT or LEFT).
+     */
+    public void shootPlayer(Player player) {
+        getGunCoordinates();
+        double y = player.getY() + player.getHeight() / 2;
+        double x = player.getX() + player.getWidth() / 2;
+        shoot(x, y);
+    }
+
+    /**
      * If called, makes new bullet and adds it to the root and bullets list.
      * Sets player image in the same direction with bullets.
      */
-    public void shoot(Bot bot) {
+    public void shoot(double x, double y) {
         getGunCoordinates();
-        double botY = bot.getY() + bot.getBotHeight() / 2;
-        double botX = bot.getX() + bot.getBotWidth() / 2;
-        Line lineRight = new Line(shootingRightX, shootingRightY, Math.min(shootingRightX + 500, botX), botY);
-        Line lineLeft = new Line(shootingLeftX, shootingLeftY, Math.max(shootingLeftX - 500, botX), botY);
-        Line lineDown = new Line(shootingDownX, shootingDownY, botX, Math.min(shootingDownY + 500, botY));
-        Line lineUp = new Line(shootingUpX, shootingUpY, botX, Math.max(shootingUpY - 500, botY));
-        double allowedLengthX = abs(getX() - botX);
-        double allowedLengthY = abs(getY() - botY);
+        Line lineRight = new Line(shootingRightX, shootingRightY, Math.min(shootingRightX + 500, x), y);
+        Line lineLeft = new Line(shootingLeftX, shootingLeftY, Math.max(shootingLeftX - 500, x), y);
+        Line lineDown = new Line(shootingDownX, shootingDownY, x, Math.min(shootingDownY + 500, y));
+        Line lineUp = new Line(shootingUpX, shootingUpY, x, Math.max(shootingUpY - 500, y));
+        double allowedLengthX = abs(getX() - x);
+        double allowedLengthY = abs(getY() - y);
         animation.pause();
-        if (getY() >= botY && botX >= getX() - allowedLengthY && botX <= getX() + allowedLengthY) {
+        if (getY() >= y && x >= getX() - allowedLengthY && x <= getX() + allowedLengthY) {
             this.setImage(walkingUpImage);
             bullet = new Bullet((int) shootingUpX, (int) shootingUpY, 3, Color.YELLOW);
-            bullet.shoot(lineUp, root, Math.min(500, shootingUpY - botY), bullets);
-        } else if (getY() < botY && botX >= getX() - allowedLengthY && botX <= getX() + allowedLengthY) {
+            bullet.shoot(lineUp, root, Math.min(500, shootingUpY - y), bullets);
+        } else if (getY() < y && x >= getX() - allowedLengthY && x <= getX() + allowedLengthY) {
             this.setImage(walkingDownImage);
             bullet = new Bullet((int) shootingDownX, (int) shootingDownY, 3, Color.YELLOW);
-            bullet.shoot(lineDown, root, Math.min(500, botY - shootingDownY), bullets);
-        } else if (getX() < botX && botY >= getY() - allowedLengthX && botY <= getY() + allowedLengthX) {
+            bullet.shoot(lineDown, root, Math.min(500, y - shootingDownY), bullets);
+        } else if (getX() < x && y >= getY() - allowedLengthX && y <= getY() + allowedLengthX) {
             this.setImage(walkingRightImage);
             bullet = new Bullet((int) shootingRightX, (int) shootingRightY, 3, Color.YELLOW);
-            bullet.shoot(lineRight, root, Math.min(500, botX - shootingRightX), bullets);
-        } else if (getX() >= botX && botY >= getY() - allowedLengthX && botY <= getY() + allowedLengthX) {
+            bullet.shoot(lineRight, root, Math.min(500, x - shootingRightX), bullets);
+        } else if (getX() >= x && y >= getY() - allowedLengthX && y <= getY() + allowedLengthX) {
             this.setImage(walkingLeftImage);
             bullet = new Bullet((int) shootingLeftX, (int) shootingLeftY, 3, Color.YELLOW);
-            bullet.shoot(lineLeft, root, Math.min(500, shootingLeftX - botX), bullets);
+            bullet.shoot(lineLeft, root, Math.min(500, shootingLeftX - x), bullets);
         }
         animation.play();
         root.getChildren().add(bullet);
         bullets.add(bullet);
     }
-
-
 
 
 

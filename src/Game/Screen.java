@@ -403,7 +403,7 @@ public class Screen extends Application {
                 //Only this player can tick!
                 player.tick(objectsOnMap, botsOnMap, players);
                 for (AiPlayer ai : aiPlayers) {
-                    ai.tick(objectsOnMap, botsOnMap, stage);
+                    ai.tick(objectsOnMap, botsOnMap, stage, players);
                 }
                 catchTheFlag();
                 player.setOnKeyPressed(player.pressed);
@@ -621,6 +621,8 @@ public class Screen extends Application {
         root.getChildren().remove(stack);
         scoreBoard();
         timer.stop();
+        greenFlag.drop();
+        redFlag.drop();
         for (Player player : players) {
             Timeline playtime = new Timeline(
                     new KeyFrame(Duration.seconds(0), event -> player.setPlayerXStartingPosition(greenBase, redBase)),

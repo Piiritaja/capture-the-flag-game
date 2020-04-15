@@ -63,4 +63,11 @@ public class Flag extends Rectangle {
     public boolean isPickedUp() {
         return pickedUp;
     }
+
+    /***
+     * Sets boolean pickedUp false if flag has been dropped.
+     */
+    public void drop() {
+        this.pickedUp = false;
+    }
 }
