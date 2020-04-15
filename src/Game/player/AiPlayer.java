@@ -16,58 +16,16 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static java.lang.StrictMath.abs;
 
 /**
  * Player class.
  */
-public class AiPlayer extends ImageView {
-
-    //Constants for player size
-    private static final int PLAYER_WIDTH = 60;
-    private static final int PLAYER_HEIGHT = 60;
-    private static final int PLAYER_FRAME_WIDTH = 282;
-    private static final int PLAYER_FRAME_HEIGHT = 282;
-    private static final int COLUMNS = 4;
-    private static final int COUNT = 4;
-    private static final int OFFSET_X = 0;
-    private static final int OFFSET_Y = 0;
-    SpriteAnimation animation;
+public class AiPlayer extends Player {
 
 
-    //Constants for player model graphics
-    private static final String RED_PLAYER_MAIN_IMAGE = "assets/player/red/still.png";
-    private static final String GREEN_PLAYER_MAIN_IMAGE = "assets/player/green/still.png";
-    private Image image;
-    private Image walkingRightImage;
-    private Image walkingLeftImage;
-    private Image walkingUpImage;
-    private Image walkingDownImage;
-    private Group root;
-
-    // shooting coordinates
-    double shootingRightX;
-    double shootingRightY;
-    double shootingUpX;
-    double shootingUpY;
-    double shootingDownX;
-    double shootingDownY;
-    double shootingLeftX;
-    double shootingLeftY;
-
-
-    public List<Bullet> bullets = new ArrayList<>();
-    int step = 2;
-    public int dx, dy, x, y, width, height;
-    private Player.playerColor color;
-    private double playerLocationXInTiles;
-    private double playerLocationYInTiles;
-    Bullet bullet;
     String[][] objectPlacement;
 
     private Flag flag;
@@ -93,44 +51,10 @@ public class AiPlayer extends ImageView {
      * @param dy    Movement y change
      * @param color Player color
      */
-    public AiPlayer(int x, int y, int dx, int dy, Player.playerColor color, Flag flag, Group root, Base base) {
-        if (color.equals(Player.playerColor.GREEN)) {
-            image = new Image(GREEN_PLAYER_MAIN_IMAGE);
-            walkingRightImage = new Image("assets/player/green/walkingRight.png");
-            walkingLeftImage = new Image("assets/player/green/walkingLeft.png");
-            walkingUpImage = new Image("assets/player/green/walkingUp.png");
-            walkingDownImage = new Image("assets/player/green/walkingDown.png");
-        } else if (color.equals(Player.playerColor.RED)) {
-            image = new Image(RED_PLAYER_MAIN_IMAGE);
-            walkingRightImage = new Image("assets/player/red/walkingRight.png");
-            walkingLeftImage = new Image("assets/player/red/walkingLeft.png");
-            walkingUpImage = new Image("assets/player/red/walkingUp.png");
-            walkingDownImage = new Image("assets/player/red/walkingDown.png");
-        } else {
-            image = new Image(RED_PLAYER_MAIN_IMAGE);
-        }
+    public AiPlayer(int x, int y, int dx, int dy, GamePlayer.playerColor color, Flag flag, Group root, Base base) {
+        super(x, y, dx, dy, color);
         this.base = base;
         this.flag = flag;
-        this.setImage(image);
-        this.width = PLAYER_WIDTH;
-        this.height = PLAYER_HEIGHT;
-        this.setFitWidth(PLAYER_WIDTH);
-        this.setFitHeight(PLAYER_HEIGHT);
-        this.setX(x);
-        this.setY(y);
-        this.x = (int) this.getX();
-        this.y = (int) this.getY();
-        this.dx = dx;
-        this.dy = dy;
-        this.color = color;
-        this.setViewport(new Rectangle2D(OFFSET_X, OFFSET_Y, PLAYER_FRAME_WIDTH, PLAYER_FRAME_HEIGHT));
-        animation = new SpriteAnimation(
-                this,
-                Duration.millis(700),
-                COUNT, COLUMNS,
-                OFFSET_X, OFFSET_Y,
-                PLAYER_FRAME_WIDTH, PLAYER_FRAME_HEIGHT
-        );
         //objectPlacement = Object.getObjectPlacements();
         //System.out.println(Arrays.deepToString(objectPlacement));
 
@@ -201,7 +125,7 @@ public class AiPlayer extends ImageView {
         } else if (destinationX > x + offset) {
             left = false;
             right = true;
-        //else if (destinationX <= x + offset && destinationX >= x - offset)
+            //else if (destinationX <= x + offset && destinationX >= x - offset)
         } else {
             left = false;
             right = false;
@@ -243,15 +167,16 @@ public class AiPlayer extends ImageView {
     /**
      * Moves to the given destination.
      * Checks collision.
-     * @param objectsOnMap list of objects (walls) on map
-     * @param x current X coordinate
-     * @param y current Y coordinate
+     *
+     * @param objectsOnMap    list of objects (walls) on map
+     * @param x               current X coordinate
+     * @param y               current Y coordinate
      * @param boundaryCenterX center X coordinate of the collision boundary
      * @param boundaryCenterY center Y coordinate of the collision boundary
-     * @param primaryX primary desired movement direction on X axis
-     * @param primaryY primary desired movemenet direction on Y axis
-     * @param leftFree boolean true if aiPlayer can move left
-     * @param rightFree boolean true if aiPlayer can move right
+     * @param primaryX        primary desired movement direction on X axis
+     * @param primaryY        primary desired movemenet direction on Y axis
+     * @param leftFree        boolean true if aiPlayer can move left
+     * @param rightFree       boolean true if aiPlayer can move right
      */
     private void move(List<Object> objectsOnMap, double x, double y,
                       double boundaryCenterX, double boundaryCenterY,
@@ -365,65 +290,10 @@ public class AiPlayer extends ImageView {
         bullets.add(bullet);
     }
 
-    /**
-     * Calculates gun X and Y position to know where the bullets come out of.
-     */
-    public void getGunCoordinates() {
-        shootingRightX = getX() + getWidth();
-        shootingRightY = getY() + getHeight() / 1.63;
-        shootingUpX = getX() + getWidth() / 1.63;
-        shootingUpY = getY();
-        shootingDownX = getX() + getWidth() - getWidth() / 1.63;
-        shootingDownY = getY() + getHeight();
-        shootingLeftX = getX();
-        shootingLeftY = getY() + getHeight() - getHeight() / 1.63;
-    }
 
-    /**
-     * @return The width of this player.
-     */
-    public double getWidth() {
-        return this.getFitWidth();
-    }
 
-    /**
-     * @return The height of this player.
-     */
-    public double getHeight() {
-        return this.getFitHeight();
-    }
 
-    /**
-     * @return The color of this player.
-     */
-    public Player.playerColor getColor() {
-        return color;
-    }
 
-    /**
-     * Set group for this player.
-     *
-     * @param root The group for this player.
-     */
-    public void setRoot(Group root) {
-        this.root = root;
-    }
-
-    public void setPlayerLocationXInTiles(double x) {
-        this.playerLocationXInTiles = x;
-    }
-
-    public void setPlayerLocationYInTiles(double y) {
-        this.playerLocationYInTiles = y;
-    }
-
-    public double getPlayerLocationXInTiles() {
-        return playerLocationXInTiles;
-    }
-
-    public double getPlayerLocationYInTiles() {
-        return playerLocationYInTiles;
-    }
 
     /*
     private Map<String, Integer> getPosInTiles(Stage stage) {
