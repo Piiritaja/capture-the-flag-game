@@ -18,6 +18,8 @@ import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
+import javafx.geometry.VPos;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
@@ -28,6 +30,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
@@ -62,6 +65,7 @@ public class Screen extends Application {
     private StackPane stack;
     private List<Player> players = new ArrayList<>();
     private List<AiPlayer> aiPlayers = new ArrayList<>();
+    private List<Player> deadPlayers = new ArrayList<>();
     int step = 2;
     List<Base> bases;
 
@@ -394,11 +398,10 @@ public class Screen extends Application {
             @Override
             public void handle(long l) {
                 for (Player p : players) {
-                    bullet.bulletCollision(players, objectsOnMap, root, botSpawner, client, p);
+                    bullet.bulletCollision(players, objectsOnMap, root, botSpawner, client, p, deadPlayers);
                     for (Bot bot : botsOnMap) {
                         bot.botShooting(p, root);
                     }
-                    p.setFocusTraversable(true);
                 }
                 //Only this player can tick!
                 player.tick(objectsOnMap, botsOnMap, players);
@@ -409,6 +412,9 @@ public class Screen extends Application {
                 player.setOnKeyPressed(player.pressed);
                 player.setOnKeyReleased(player.released);
                 root.setOnMouseClicked(player.shooting);
+                player.setFocusTraversable(true);
+                if (redTeamScore == 3 || greenTeamScore == 3) { theEnd(); }
+                if (deadPlayers.contains(player)) { player.setDead(true); }
             }
         };
 
@@ -442,7 +448,7 @@ public class Screen extends Application {
     public void requestNodesFromOtherClients() {
         List<Base> bases = mapLoad.getBases();
         if (botLocationsXY.isEmpty()) {
-            botSpawner.spawnBots(4, stage, root, bases, mapLoad.getObjectsOnMap());
+            botSpawner.spawnBots(4 - botsOnMap.size(), stage, root, bases, mapLoad.getObjectsOnMap());
             botsOnMap = botSpawner.getBotsOnMap();
         } else {
             Packet004RequestPlayers requestPlayers = new Packet004RequestPlayers();
@@ -621,23 +627,28 @@ public class Screen extends Application {
         root.getChildren().remove(stack);
         scoreBoard();
         timer.stop();
-        for (Player player : players) {
+        for (Bot bot :botsOnMap) {
+            root.getChildren().remove(bot);
+        }
+        botsOnMap.clear();
+        requestNodesFromOtherClients();
+        greenFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2);
+        redFlag.relocate(greenBase.getRightX() - 50, greenBase.getBottomY() / 2 - redFlag.getHeight());
+        players.addAll(deadPlayers);
+        deadPlayers.clear();
+        player.setDead(false);
+        for (Player p : players) {
             Timeline playtime = new Timeline(
-                    new KeyFrame(Duration.seconds(0), event -> player.setPlayerXStartingPosition(greenBase, redBase)),
-                    new KeyFrame(Duration.seconds(0), event -> player.setPlayerYStartingPosition(greenBase, redBase)),
-                    new KeyFrame(Duration.seconds(0), event -> player.setLives(10)),
-                    new KeyFrame(Duration.seconds(0), event -> greenFlag.relocate(redBase.getLeftX() +
-                            50, redBase.getBottomY() / 2)),
-                    new KeyFrame(Duration.seconds(0), event -> redFlag.relocate(greenBase.getRightX() -
-                            50, greenBase.getBottomY() / 2 - redFlag.getHeight())),
-                    new KeyFrame(Duration.seconds(0), event -> botSpawner.spawnBots(4 - botsOnMap.size(),
-                            stage, root, bases, mapLoad.getObjectsOnMap())),
-                    new KeyFrame(Duration.seconds(0.5), event -> root.getChildren().remove(player)),
-                    new KeyFrame(Duration.seconds(0.5), event -> root.getChildren().add(player)),
+                    new KeyFrame(Duration.seconds(0), event -> p.setPlayerXStartingPosition(greenBase, redBase)),
+                    new KeyFrame(Duration.seconds(0), event -> p.setPlayerYStartingPosition(greenBase, redBase)),
+                    new KeyFrame(Duration.seconds(0), event -> p.setLives(10)),
+                    new KeyFrame(Duration.seconds(0.5), event -> root.getChildren().remove(p)),
+                    new KeyFrame(Duration.seconds(0.5), event -> root.getChildren().add(p)),
                     new KeyFrame(Duration.seconds(0.5), event -> timer.start())
             );
             playtime.play();
         }
+        updateScale();
     }
 
     /**
@@ -661,6 +672,31 @@ public class Screen extends Application {
         scores.add(greenTeam, 2, 0);
         stack.getChildren().add(scores);
         root.getChildren().add(stack);
+    }
+
+    /**
+     * If one team has 3 points, game ends, winner team name is displayed on the screen.
+     * Goes back to menu.
+     */
+    public void theEnd() {
+        timer.stop();
+        Text winner;
+        if (redTeamScore == 3) {
+            winner = new Text("RED TEAM WINS");
+            winner.setFill(Color.RED);
+        } else {
+            winner = new Text("GREEN TEAM WINS");
+            winner.setFill(Color.GREEN);
+        }
+        winner.setTextOrigin(VPos.TOP);
+        winner.setFont(Font.font("Arial", FontWeight.EXTRA_BOLD, (stage.widthProperty().get() - 10) / 10));
+        winner.layoutXProperty().bind(stage.widthProperty().subtract(winner.prefWidth(-1)).divide(2));
+        winner.layoutYProperty().bind(stage.heightProperty().subtract(winner.prefHeight(-1)).divide(2));
+        Timeline timeline = new Timeline(
+                new KeyFrame(Duration.seconds(0), event -> root.getChildren().add(winner)),
+                new KeyFrame(Duration.seconds(5), event -> exitScreen())
+        );
+        timeline.play();
     }
 }
 

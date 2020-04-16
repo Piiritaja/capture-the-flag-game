@@ -39,7 +39,6 @@ public abstract class Player extends ImageView {
     Image walkingUpImage;
     Image walkingDownImage;
     Group root;
-
     public int lives;
 
     // shooting coordinates
@@ -75,7 +74,6 @@ public abstract class Player extends ImageView {
             walkingLeftImage = new Image("assets/player/red/walkingLeft.png");
             walkingUpImage = new Image("assets/player/red/walkingUp.png");
             walkingDownImage = new Image("assets/player/red/walkingDown.png");
-
         } else {
             image = new Image(RED_PLAYER_MAIN_IMAGE);
         }
@@ -293,7 +291,7 @@ public abstract class Player extends ImageView {
      * @param redBase   base where to put red players
      */
     public void setPlayerXStartingPosition(Base greenBase, Base redBase) {
-        this.setX(calcPlayerXStartingPosition(greenBase, redBase, color));
+        this.x = (int) calcPlayerXStartingPosition(greenBase, redBase, color);
     }
 
     /**
@@ -303,7 +301,7 @@ public abstract class Player extends ImageView {
      * @param redBase   base where to put red players
      */
     public void setPlayerYStartingPosition(Base greenBase, Base redBase) {
-        this.setY(calcPlayerYStartingPosition(greenBase, redBase, color));
+        this.y = (int) calcPlayerYStartingPosition(greenBase, redBase, color);
     }
 
     public static double calcPlayerYStartingPosition(Base greenBase, Base redBase, GamePlayer.playerColor color) {
