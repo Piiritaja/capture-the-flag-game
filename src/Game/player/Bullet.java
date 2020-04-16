@@ -84,7 +84,7 @@ public class Bullet extends Circle {
      * @param client       Client that shoots the bullet.
      */
     public void bulletCollision(List<Player> players, List<Object> objectsOnMap, Group root, BotSpawner botSpawner,
-                                Client client, Player player) {
+                                Client client, Player player, List<Player> deadPlayers) {
         Iterator<Bullet> bullets = player.bullets.iterator();
         while (bullets.hasNext()) {
             Bullet bullet = bullets.next();
@@ -127,9 +127,9 @@ public class Bullet extends Circle {
                         bullets.remove();
                         p.lives -= 1;
                         if (p.lives <= 0) {
-                            p.x = 0;
-                            p.y = 0;
+                            deadPlayers.add(p);
                             root.getChildren().remove(p);
+                            players.remove(p);
                         }
                     }
                 }
