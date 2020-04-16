@@ -406,7 +406,9 @@ public class Screen extends Application {
                 //Only this player can tick!
                 player.tick(objectsOnMap, botsOnMap, players);
                 for (AiPlayer ai : aiPlayers) {
-                    ai.tick(objectsOnMap, botsOnMap, stage, players);
+                    if (!deadPlayers.contains(ai)) {
+                        ai.tick(objectsOnMap, botsOnMap, stage, players);
+                    }
                 }
                 catchTheFlag();
                 player.setOnKeyPressed(player.pressed);
@@ -634,6 +636,8 @@ public class Screen extends Application {
         requestNodesFromOtherClients();
         greenFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2);
         redFlag.relocate(greenBase.getRightX() - 50, greenBase.getBottomY() / 2 - redFlag.getHeight());
+        redFlag.drop();
+        greenFlag.drop();
         players.addAll(deadPlayers);
         deadPlayers.clear();
         player.setDead(false);
@@ -647,6 +651,7 @@ public class Screen extends Application {
                     new KeyFrame(Duration.seconds(0.5), event -> timer.start())
             );
             playtime.play();
+            updateScale();
         }
         updateScale();
     }

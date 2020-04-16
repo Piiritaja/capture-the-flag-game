@@ -15,6 +15,7 @@ import javafx.util.Duration;
 import networking.packets.Packet009BotHit;
 import networking.packets.Packet013PlayerHit;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -86,6 +87,7 @@ public class Bullet extends Circle {
     public void bulletCollision(List<Player> players, List<Object> objectsOnMap, Group root, BotSpawner botSpawner,
                                 Client client, Player player, List<Player> deadPlayers) {
         Iterator<Bullet> bullets = player.bullets.iterator();
+        List<Player> alivePlayers = new ArrayList<>();
         while (bullets.hasNext()) {
             Bullet bullet = bullets.next();
             for (Object object : objectsOnMap) {
@@ -129,12 +131,14 @@ public class Bullet extends Circle {
                         if (p.lives <= 0) {
                             deadPlayers.add(p);
                             root.getChildren().remove(p);
-                            players.remove(p);
+                        } else {
+                            alivePlayers.add(p);
                         }
                     }
                 }
             }
         }
+        players = new ArrayList<>(alivePlayers);
     }
 
     /**

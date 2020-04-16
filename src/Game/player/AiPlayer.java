@@ -71,15 +71,9 @@ public class AiPlayer extends Player {
 
         collisionBoundary.setCenterX(this.getX() + this.getWidth() / 2);
         collisionBoundary.setCenterY(this.getY() + this.getHeight() / 2);
-        root.getChildren().add(collisionBoundary);
-        collisionBoundary.setFill(Color.YELLOW);
-        collisionBoundary.setOpacity(0.3);
 
         shootingBoundary.setCenterX(this.getX() + this.getWidth() / 2);
         shootingBoundary.setCenterY(this.getY() + this.getHeight() / 2);
-        root.getChildren().add(shootingBoundary);
-        shootingBoundary.setFill(Color.BLUE);
-        shootingBoundary.setOpacity(0.2);
     }
 
     /**
@@ -119,6 +113,9 @@ public class AiPlayer extends Player {
                 shootingUpdateTimer = 0.0;
             }
         }
+
+        root.getChildren().remove(collisionBoundary);
+        root.getChildren().removeAll(shootingBoundary);
 
     }
 
@@ -264,6 +261,14 @@ public class AiPlayer extends Player {
         shootingBoundary.setCenterX(centerX);
         shootingBoundary.setCenterY(centerY);
         shootingBoundary.setRadius(radius * 4);
+
+        root.getChildren().add(shootingBoundary);
+        shootingBoundary.setFill(Color.BLUE);
+        shootingBoundary.setOpacity(0.2);
+
+        root.getChildren().add(collisionBoundary);
+        collisionBoundary.setFill(Color.YELLOW);
+        collisionBoundary.setOpacity(0.3);
 
     }
 
