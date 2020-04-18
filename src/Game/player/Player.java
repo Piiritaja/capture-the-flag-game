@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static java.lang.StrictMath.abs;
 
 public abstract class Player extends ImageView {
     //Constants for player size
@@ -200,7 +199,6 @@ public abstract class Player extends ImageView {
     }
 
     public void moveUp() {
-        System.out.println("Moving up");
         this.setImage(walkingUpImage);
         setDy(-step);
         animation.play();
@@ -208,7 +206,6 @@ public abstract class Player extends ImageView {
     }
 
     public void moveDown() {
-        System.out.println("Moving down");
         this.setImage(walkingDownImage);
         setDy(step);
         animation.play();
@@ -216,7 +213,6 @@ public abstract class Player extends ImageView {
     }
 
     public void moveRight() {
-        System.out.println("Moving right");
         this.setImage(walkingRightImage);
         setDx(step);
         animation.play();
@@ -224,7 +220,6 @@ public abstract class Player extends ImageView {
     }
 
     public void moveLeft() {
-        System.out.println("Moving left");
         this.setImage(walkingLeftImage);
         setDx(-step);
         animation.play();
@@ -232,13 +227,11 @@ public abstract class Player extends ImageView {
     }
 
     public void stopMovementY() {
-        System.out.println("Stopped movement Y");
         setDy(0);
         animation.pause();
     }
 
     public void stopPlayerMovementX() {
-        System.out.println("Stopped movement X");
         setDx(0);
         animation.pause();
     }

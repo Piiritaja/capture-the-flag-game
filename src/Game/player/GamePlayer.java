@@ -51,6 +51,10 @@ public class GamePlayer extends Player {
         }
     }
 
+    public Client getClient(){
+        return this.client;
+    }
+
     /**
      * Initializes player.
      * Sets size, color, image depending of the color, initial position.
