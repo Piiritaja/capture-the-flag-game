@@ -18,10 +18,8 @@ import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
@@ -30,7 +28,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
@@ -224,13 +221,14 @@ public class Screen extends Application {
      * @param y  player starting position on y axis
      * @param id player id.
      */
-    public void createPlayer(double x, double y, String id) {
+    public void createPlayer(double x, double y, String id, char colorChar) {
+        GamePlayer.playerColor playerColor = colorChar == 'G' ? GamePlayer.playerColor.GREEN : GamePlayer.playerColor.RED;
         GamePlayer otherPlayer = new GamePlayer(
                 (int) x,
                 (int) y,
                 0,
                 0,
-                color.equals(GamePlayer.playerColor.GREEN) ? GamePlayer.playerColor.RED : GamePlayer.playerColor.GREEN,
+                playerColor,
                 client
         );
         otherPlayer.setPlayerLocationXInTiles(stage.widthProperty().get() / otherPlayer.getX());
@@ -332,6 +330,7 @@ public class Screen extends Application {
                 root,
                 base
         );
+        ai.setId("AI");
         root.getChildren().add(ai);
         aiPlayers.add(ai);
         players.add(ai);
@@ -373,6 +372,8 @@ public class Screen extends Application {
         positionPacket.yPosition = player.getY();
         positionPacket.battlefield = getChosenMap();
         positionPacket.id = player.getId();
+        char colorChar = color.equals(GamePlayer.playerColor.GREEN) ? 'G' : 'R';
+        positionPacket.pColor = colorChar;
         this.client.sendTCP(positionPacket);
 
         redFlag = mapLoad.getRedFlag();
@@ -385,11 +386,14 @@ public class Screen extends Application {
         Timeline packetTimer = new Timeline(new KeyFrame(Duration.millis(50), new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                Packet012UpdatePlayerPosition updatePlayerPosition = new Packet012UpdatePlayerPosition();
-                updatePlayerPosition.id = player.getId();
-                updatePlayerPosition.positionY = (player.getY() / stage.heightProperty().get());
-                updatePlayerPosition.positionX = (player.getX() / stage.widthProperty().get());
-                client.sendUDP(updatePlayerPosition);
+                if (player != null) {
+                    Packet012UpdatePlayerPosition updatePlayerPosition = new Packet012UpdatePlayerPosition();
+                    updatePlayerPosition.id = player.getId();
+                    updatePlayerPosition.positionY = (player.getY() / stage.heightProperty().get());
+                    updatePlayerPosition.positionX = (player.getX() / stage.widthProperty().get());
+                    client.sendUDP(updatePlayerPosition);
+                }
+
             }
         }));
         packetTimer.setCycleCount(Timeline.INDEFINITE);
@@ -404,19 +408,29 @@ public class Screen extends Application {
                     }
                 }
                 //Only this player can tick!
-                player.tick(objectsOnMap, botsOnMap, players);
+                if (player != null) {
+                    player.tick(objectsOnMap, botsOnMap, players);
+
+                }
                 for (AiPlayer ai : aiPlayers) {
                     if (!deadPlayers.contains(ai)) {
                         ai.tick(objectsOnMap, botsOnMap, stage, players);
                     }
                 }
                 catchTheFlag();
-                player.setOnKeyPressed(player.pressed);
-                player.setOnKeyReleased(player.released);
-                root.setOnMouseClicked(player.shooting);
-                player.setFocusTraversable(true);
-                if (redTeamScore == 3 || greenTeamScore == 3) { theEnd(); }
-                if (deadPlayers.contains(player)) { player.setDead(true); }
+                if (player != null) {
+                    player.setOnKeyPressed(player.pressed);
+                    player.setOnKeyReleased(player.released);
+                    root.setOnMouseClicked(player.shooting);
+                    player.setFocusTraversable(true);
+                }
+
+                if (redTeamScore == 3 || greenTeamScore == 3) {
+                    theEnd();
+                }
+                if (deadPlayers.contains(player)) {
+                    player.setDead(true);
+                }
             }
         };
 
@@ -494,6 +508,7 @@ public class Screen extends Application {
         sendPlayerID.playerID = player.getId();
         this.client.sendTCP(sendPlayerID);
         stage.close();
+        player = null;
         Menu menu = new Menu(serverclient);
         menu.start(new Stage());
 
@@ -511,8 +526,6 @@ public class Screen extends Application {
             if (p.getId().equals(id)) {
                 p.setX(positionX);
                 p.setY(positionY);
-                System.out.println(String.format("Updated player position to (%d,%d)", positionX, positionY));
-                System.out.println(String.format("Player position now (%d,%d)", (int) p.getX(), (int) p.getY()));
             }
         }
     }
@@ -523,12 +536,28 @@ public class Screen extends Application {
      * @param id ID of the player to remove.
      */
     public void removePlayerWithId(String id) {
-        for (Node node : root.getChildren()) {
-            if (node instanceof GamePlayer) {
-                if (id.equals(node.getId())) {
-                    System.out.println("Removed player");
-                    root.getChildren().remove(node);
-                }
+        Player playerToRemove = null;
+        for (Player cPlayer : players) {
+            if (cPlayer.getId().equals(id)) {
+                root.getChildren().remove(cPlayer);
+                playerToRemove = cPlayer;
+                System.out.println("Removed a player");
+
+            }
+        }
+
+        if (playerToRemove != null) {
+            System.out.println(players.contains(playerToRemove));
+            players.remove(playerToRemove);
+            deadPlayers.remove(playerToRemove);
+            System.out.println("Removed a player from players list");
+        }
+    }
+
+    public void removeDisconnectedPlayer() {
+        for (Player cPlayer : players) {
+            if (cPlayer instanceof GamePlayer && !((GamePlayer) cPlayer).getClient().isConnected()) {
+                removePlayerWithId(cPlayer.getId());
             }
         }
     }
@@ -629,7 +658,7 @@ public class Screen extends Application {
         root.getChildren().remove(stack);
         scoreBoard();
         timer.stop();
-        for (Bot bot :botsOnMap) {
+        for (Bot bot : botsOnMap) {
             root.getChildren().remove(bot);
         }
         botsOnMap.clear();

@@ -18,8 +18,10 @@ import networking.packets.Packet010PlayerMovement;
 import networking.packets.Packet011PlayerMovementStop;
 import networking.packets.Packet012UpdatePlayerPosition;
 import networking.packets.Packet013PlayerHit;
+import networking.packets.Packet014PlayerDisconnected;
 
 import java.io.IOException;
+
 
 public class GameServer {
 
@@ -27,10 +29,11 @@ public class GameServer {
     private Server server;
     private ServerListener serverListener;
     private int numberOfConnections;
+    private int totalNumberOfConnections;
 
     //Server ports
-    private static final int TCP_PORT = 54555;
-    private static final int UDP_PORT = 54777;
+    private static final int TCP_PORT = 5201;
+    private static final int UDP_PORT = 5200;
 
 
     /**
@@ -40,6 +43,15 @@ public class GameServer {
      */
     public void setNumberOfConnections(int numberOfConnections) {
         this.numberOfConnections = numberOfConnections;
+    }
+
+    public int getTotalNumberOfConnections() {
+        return this.totalNumberOfConnections;
+    }
+
+    public void setTotalNumberOfConnections(int c) {
+        this.totalNumberOfConnections = c;
+
     }
 
     /**
@@ -80,8 +92,6 @@ public class GameServer {
     }
 
 
-
-
     /**
      * Register packets for server listener.
      */
@@ -102,16 +112,17 @@ public class GameServer {
         kryo.register(Packet011PlayerMovementStop.class);
         kryo.register(Packet012UpdatePlayerPosition.class);
         kryo.register(Packet013PlayerHit.class);
+        kryo.register(Packet014PlayerDisconnected.class);
         kryo.register(java.util.Map.class);
         kryo.register(java.util.HashMap.class);
         kryo.register(Double[].class);
         kryo.register(Integer.class);
         kryo.register(Battlefield.class);
-
     }
 
     public static void main(String[] args) {
         new GameServer();
+        System.out.println(String.format("Server started at TCP/UDP (%d,%d)", TCP_PORT, UDP_PORT));
 
     }
 

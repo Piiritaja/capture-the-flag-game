@@ -73,7 +73,6 @@ public class Menu extends Application {
         this.client = serverClient.getClient();
         this.screen = new Screen(this.serverClient);
         this.serverClient.setMenu(this);
-        this.client.sendTCP(new Packet000RequestAccess());
     }
 
     /**
