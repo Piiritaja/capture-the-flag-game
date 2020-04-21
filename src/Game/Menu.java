@@ -15,7 +15,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import networking.ServerClient;
-import networking.packets.Packet000RequestAccess;
 import networking.packets.Packet006RequestBotsLocation;
 
 import java.io.FileInputStream;

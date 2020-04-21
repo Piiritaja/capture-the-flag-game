@@ -1,8 +1,8 @@
 package networking;
 
 
+import Game.player.AiPlayer;
 import Game.player.GamePlayer;
-import Game.player.Player;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import javafx.application.Platform;
@@ -20,6 +20,10 @@ import networking.packets.Packet011PlayerMovementStop;
 import networking.packets.Packet012UpdatePlayerPosition;
 import networking.packets.Packet013PlayerHit;
 import networking.packets.Packet014PlayerDisconnected;
+import networking.packets.Packet015RequestAI;
+import networking.packets.Packet016SendAiPlayer;
+
+import java.util.List;
 
 public class ClientNetworkListener extends Listener {
     private ServerClient serverClient;
@@ -131,7 +135,9 @@ public class ClientNetworkListener extends Listener {
 
         } else if (object instanceof Packet006RequestBotsLocation) {
             System.out.println("Received requestBotsLocation packet");
-            if (serverClient.getMenu().getScreen().isInGame() && ((Packet006RequestBotsLocation) object).battlefield == serverClient.getMenu().getScreen().getChosenMap()) {
+            if (serverClient.getMenu().getScreen().isInGame()
+                    && ((Packet006RequestBotsLocation) object).battlefield == serverClient.getMenu().getScreen().getChosenMap()
+                    && serverClient.getMenu().getScreen().isMaster()) {
                 System.out.println("Sending sendBotsLocation packet");
                 Packet007SendBotsLocation sendBots = new Packet007SendBotsLocation();
                 sendBots.locations = serverClient.getMenu().getScreen().getBotLocationsXY();
@@ -176,6 +182,33 @@ public class ClientNetworkListener extends Listener {
         } else if (object instanceof Packet014PlayerDisconnected) {
             System.out.println("Someone disconnected");
             Platform.runLater(() -> serverClient.getMenu().getScreen().removeDisconnectedPlayer());
+        } else if (object instanceof Packet015RequestAI) {
+            if (this.serverClient.getMenu().getScreen().getChosenMap().equals(((Packet015RequestAI) object).battlefield)
+                    && serverClient.getMenu().getScreen().isInGame()
+                    && serverClient.getMenu().getScreen().isMaster()) {
+                System.out.println("Got ya");
+                List<AiPlayer> players = this.serverClient.getMenu().getScreen().getAiPlayers();
+                for (AiPlayer player : players) {
+                    double x = player.getX();
+                    double y = player.getY();
+                    String id = player.getId();
+                    char color = player.getColor().equals(GamePlayer.playerColor.GREEN) ? 'G' : 'R';
+                    Packet016SendAiPlayer sendAiPlayer = new Packet016SendAiPlayer();
+                    sendAiPlayer.battlefield = this.serverClient.getMenu().getScreen().getChosenMap();
+                    sendAiPlayer.pColor = color;
+                    sendAiPlayer.xPosition = x;
+                    sendAiPlayer.yPosition = y;
+                    sendAiPlayer.id = id;
+                    connection.sendTCP(sendAiPlayer);
+
+                }
+            }
+
+        } else if (object instanceof Packet016SendAiPlayer) {
+            System.out.println("Received Ai packet");
+            GamePlayer.playerColor color = ((Packet016SendAiPlayer) object).pColor == 'G' ? GamePlayer.playerColor.GREEN : GamePlayer.playerColor.RED;
+
+            Platform.runLater(() -> serverClient.getMenu().getScreen().createAi(color, ((Packet016SendAiPlayer) object).xPosition, ((Packet016SendAiPlayer) object).yPosition, ((Packet016SendAiPlayer) object).id));
         }
 
     }

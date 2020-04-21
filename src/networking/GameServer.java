@@ -19,6 +19,8 @@ import networking.packets.Packet011PlayerMovementStop;
 import networking.packets.Packet012UpdatePlayerPosition;
 import networking.packets.Packet013PlayerHit;
 import networking.packets.Packet014PlayerDisconnected;
+import networking.packets.Packet015RequestAI;
+import networking.packets.Packet016SendAiPlayer;
 
 import java.io.IOException;
 
@@ -113,6 +115,8 @@ public class GameServer {
         kryo.register(Packet012UpdatePlayerPosition.class);
         kryo.register(Packet013PlayerHit.class);
         kryo.register(Packet014PlayerDisconnected.class);
+        kryo.register(Packet015RequestAI.class);
+        kryo.register(Packet016SendAiPlayer.class);
         kryo.register(java.util.Map.class);
         kryo.register(java.util.HashMap.class);
         kryo.register(Double[].class);

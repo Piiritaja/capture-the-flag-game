@@ -4,6 +4,7 @@ import Game.Screen;
 import Game.bots.Bot;
 import Game.maps.Base;
 import Game.maps.Object;
+import com.esotericsoftware.kryonet.Client;
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
@@ -14,6 +15,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import networking.packets.Packet010PlayerMovement;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,6 +37,8 @@ public class AiPlayer extends Player {
     private AnimationTimer timer;
     private Circle collisionBoundary = new Circle();
     private Circle shootingBoundary = new Circle();
+    private Client client;
+    private boolean master;
 
     //Movement variables
     boolean left = true;
@@ -60,12 +64,14 @@ public class AiPlayer extends Player {
      * @param dy    Movement y change
      * @param color Player color
      */
-    public AiPlayer(int x, int y, int dx, int dy, GamePlayer.playerColor color, Flag flag, Group root, Base base) {
+    public AiPlayer(int x, int y, int dx, int dy, GamePlayer.playerColor color, Flag flag, Group root, Base base, Client client, boolean master) {
         super(x, y, dx, dy, color);
         this.base = base;
         this.flag = flag;
         //objectPlacement = Object.getObjectPlacements();
         //System.out.println(Arrays.deepToString(objectPlacement));
+        this.client = client;
+        this.master = master;
 
         this.root = root;
 
@@ -108,7 +114,7 @@ public class AiPlayer extends Player {
         }
         for (Player player : players) {
             if ((!player.equals(this)) && (!player.getColor().equals(this.color)) && shootingUpdateTimer >= 1 &&
-            player.getBoundsInParent().intersects(shootingBoundary.getBoundsInParent())) {
+                    player.getBoundsInParent().intersects(shootingBoundary.getBoundsInParent())) {
                 shootPlayer(player);
                 shootingUpdateTimer = 0.0;
             }
@@ -121,6 +127,7 @@ public class AiPlayer extends Player {
 
     /**
      * Calculates the direction of movement for Ai.
+     *
      * @param x current X coordinate of Ai
      * @param y current Y coordinate of Ai.
      */
@@ -148,7 +155,7 @@ public class AiPlayer extends Player {
         } else if (destinationX > x + offset) {
             left = false;
             right = true;
-        //else if (destinationX <= x + offset && destinationX >= x - offset)
+            //else if (destinationX <= x + offset && destinationX >= x - offset)
         } else {
             left = false;
             right = false;
@@ -229,30 +236,58 @@ public class AiPlayer extends Player {
                 collisionBoundary.setCenterY(boundaryCenterY);
             }
         }
+        Packet010PlayerMovement playerMovement = new Packet010PlayerMovement();
+        playerMovement.playerId = this.getId();
+
         if ((left && leftFree) || (right && rightFree)) {
             this.setX(x + step * primaryX);
             if (primaryX == -1) {
-                this.setImage(walkingLeftImage);
+                playerMovement.direction = 4;
+                movementPositionLeft();
             } else {
-                this.setImage(walkingRightImage);
+                playerMovement.direction = 3;
+                movementPositionRight();
             }
         } else {
             this.setY(y + step * primaryY);
             if (primaryY == -1) {
-                this.setImage(walkingUpImage);
+                playerMovement.direction = 1;
+                movementPositionUp();
             } else {
-                this.setImage(walkingDownImage);
+                playerMovement.direction = 2;
+                movementPositionDown();
             }
         }
+            client.sendUDP(playerMovement);
+    }
+
+    public void movementPositionUp() {
+        this.setImage(walkingUpImage);
+        animation.play();
+    }
+
+    public void movementPositionDown() {
+        this.setImage(walkingDownImage);
+        animation.play();
+    }
+
+    public void movementPositionLeft() {
+        this.setImage(walkingLeftImage);
+        animation.play();
+    }
+
+    public void movementPositionRight() {
+        this.setImage(walkingRightImage);
         animation.play();
     }
 
 
     /**
      * Set the collision and bot/player/shooting boundary sizes and positions.
+     *
      * @param centerX center of the player X / center of the boundary X
      * @param centerY center of the player Y / center of the boundary Y
-     * @param radius radius of the collision boundary
+     * @param radius  radius of the collision boundary
      */
     private void setBoundaries(double centerX, double centerY, double radius) {
         collisionBoundary.setCenterX(centerX);
