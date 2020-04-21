@@ -18,6 +18,8 @@ import networking.packets.Packet011PlayerMovementStop;
 import networking.packets.Packet012UpdatePlayerPosition;
 import networking.packets.Packet013PlayerHit;
 import networking.packets.Packet014PlayerDisconnected;
+import networking.packets.Packet015RequestAI;
+import networking.packets.Packet016SendAiPlayer;
 
 public class ServerListener extends Listener {
     private Server server;
@@ -93,6 +95,7 @@ public class ServerListener extends Listener {
         } else if (object instanceof Packet006RequestBotsLocation) {
             server.sendToAllExceptTCP(connection.getID(), object);
         } else if (object instanceof Packet007SendBotsLocation) {
+            System.out.println("SendBotsLocation");
             server.sendToAllExceptTCP(connection.getID(), object);
         } else if (object instanceof Packet008SendPlayerID) {
             server.sendToAllExceptTCP(connection.getID(), object);
@@ -106,6 +109,11 @@ public class ServerListener extends Listener {
             server.sendToAllExceptUDP(connection.getID(), object);
         } else if (object instanceof Packet013PlayerHit) {
             server.sendToAllExceptUDP(connection.getID(), object);
+        } else if (object instanceof Packet015RequestAI) {
+            System.out.println("Received request Ai");
+            server.sendToAllExceptTCP(connection.getID(), object);
+        } else if (object instanceof Packet016SendAiPlayer) {
+            server.sendToAllExceptTCP(connection.getID(), object);
         }
 
     }

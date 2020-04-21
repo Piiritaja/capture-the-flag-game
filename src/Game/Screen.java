@@ -39,9 +39,11 @@ import networking.packets.Packet004RequestPlayers;
 import networking.packets.Packet005SendPlayerPosition;
 import networking.packets.Packet008SendPlayerID;
 import networking.packets.Packet012UpdatePlayerPosition;
+import networking.packets.Packet015RequestAI;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 
 public class Screen extends Application {
@@ -63,6 +65,7 @@ public class Screen extends Application {
     private List<Player> players = new ArrayList<>();
     private List<AiPlayer> aiPlayers = new ArrayList<>();
     private List<Player> deadPlayers = new ArrayList<>();
+    private boolean master;
     int step = 2;
     List<Base> bases;
 
@@ -79,14 +82,19 @@ public class Screen extends Application {
         return stage;
     }
 
+    public boolean isMaster() {
+        return master;
+    }
+
     public Screen(ServerClient serverclient) {
         this.serverclient = serverclient;
         this.client = serverclient.getClient();
         this.root = new Group();
         this.inGame = false;
-        mapLoad = new MapLoad();
-        botSpawner = new BotSpawner();
-        botsOnMap = new ArrayList<>();
+        this.mapLoad = new MapLoad();
+        this.botSpawner = new BotSpawner();
+        this.botsOnMap = new ArrayList<>();
+        this.master = false;
 
 
     }
@@ -128,6 +136,10 @@ public class Screen extends Application {
 
     public Group getRoot() {
         return this.root;
+    }
+
+    public List<AiPlayer> getAiPlayers() {
+        return this.aiPlayers;
     }
 
 
@@ -266,7 +278,24 @@ public class Screen extends Application {
      */
     public void movePlayerWithId(String id, byte direction) {
         for (Player p : players) {
-            if (p.getId().equals(id)) {
+            if (p instanceof AiPlayer) {
+                if (p.getId().equals(id)) {
+                    switch (direction) {
+                        case 1:
+                            ((AiPlayer) p).movementPositionUp();
+                            break;
+                        case 2:
+                            ((AiPlayer) p).movementPositionDown();
+                            break;
+                        case 3:
+                            ((AiPlayer) p).movementPositionRight();
+                            break;
+                        case 4:
+                            ((AiPlayer) p).movementPositionLeft();
+                            break;
+                    }
+                }
+            } else if (p.getId().equals(id)) {
                 switch (direction) {
                     case 1:
                         p.moveUp();
@@ -303,9 +332,7 @@ public class Screen extends Application {
         }
     }
 
-    public void createAi(GamePlayer.playerColor color) {
-        double startX;
-        double startY;
+    public void createAi(GamePlayer.playerColor color, double startX, double startY, String id) {
         Base base;
         Flag flag;
         if (color.equals(GamePlayer.playerColor.GREEN)) {
@@ -316,10 +343,6 @@ public class Screen extends Application {
             flag = mapLoad.getRedFlag();
         }
 
-        double rangeX = ((base.getRightX() - base.getLeftX()) + 1);
-        double rangeY = ((base.getBottomY() - base.getTopY()) + 1);
-        startX = (Math.random() * rangeX) + base.getLeftX();
-        startY = (Math.random() * rangeY) + base.getTopY();
         AiPlayer ai = new AiPlayer(
                 (int) startX,
                 (int) startY,
@@ -328,12 +351,33 @@ public class Screen extends Application {
                 color,
                 flag,
                 root,
-                base
+                base,
+                client,
+                isMaster()
         );
-        ai.setId("AI");
+        ai.setId(id);
         root.getChildren().add(ai);
         aiPlayers.add(ai);
         players.add(ai);
+
+    }
+
+    public void createAi(GamePlayer.playerColor color) {
+        double startX;
+        double startY;
+        Base base;
+        if (color.equals(GamePlayer.playerColor.GREEN)) {
+            base = greenBase;
+        } else {
+            base = redBase;
+        }
+
+        double rangeX = ((base.getRightX() - base.getLeftX()) + 1);
+        double rangeY = ((base.getBottomY() - base.getTopY()) + 1);
+        startX = (Math.random() * rangeX) + base.getLeftX();
+        startY = (Math.random() * rangeY) + base.getTopY();
+        createAi(color, startX, startY, UUID.randomUUID().toString().substring(0, 4));
+
     }
 
     @Override
@@ -393,6 +437,15 @@ public class Screen extends Application {
                     updatePlayerPosition.positionX = (player.getX() / stage.widthProperty().get());
                     client.sendUDP(updatePlayerPosition);
                 }
+                if (isMaster()) {
+                    for (AiPlayer aiPlayer : aiPlayers) {
+                        Packet012UpdatePlayerPosition updateAiPosition = new Packet012UpdatePlayerPosition();
+                        updateAiPosition.id = aiPlayer.getId();
+                        updateAiPosition.positionX = (aiPlayer.getX() / stage.widthProperty().get());
+                        updateAiPosition.positionY = (aiPlayer.getY() / stage.heightProperty().get());
+                        client.sendUDP(updateAiPosition);
+                    }
+                }
 
             }
         }));
@@ -412,11 +465,15 @@ public class Screen extends Application {
                     player.tick(objectsOnMap, botsOnMap, players);
 
                 }
-                for (AiPlayer ai : aiPlayers) {
-                    if (!deadPlayers.contains(ai)) {
-                        ai.tick(objectsOnMap, botsOnMap, stage, players);
+
+                if (isMaster()) {
+                    for (AiPlayer ai : aiPlayers) {
+                        if (!deadPlayers.contains(ai)) {
+                            ai.tick(objectsOnMap, botsOnMap, stage, players);
+                        }
                     }
                 }
+
                 catchTheFlag();
                 if (player != null) {
                     player.setOnKeyPressed(player.pressed);
@@ -447,8 +504,6 @@ public class Screen extends Application {
         // save bot locations
         getBotLocationsOnMap();
         updateScale();
-        createAi(GamePlayer.playerColor.GREEN);
-        createAi(GamePlayer.playerColor.RED);
 
 
     }
@@ -457,6 +512,9 @@ public class Screen extends Application {
         for (Player p : players) {
             if (p.getId().equals(id)) {
                 p.setLives(lives);
+                if (lives <= 0) {
+                    root.getChildren().remove(p);
+                }
             }
         }
     }
@@ -464,8 +522,11 @@ public class Screen extends Application {
     public void requestNodesFromOtherClients() {
         List<Base> bases = mapLoad.getBases();
         if (botLocationsXY.isEmpty()) {
+            createAi(GamePlayer.playerColor.GREEN);
+            createAi(GamePlayer.playerColor.RED);
             botSpawner.spawnBots(4 - botsOnMap.size(), stage, root, bases, mapLoad.getObjectsOnMap());
             botsOnMap = botSpawner.getBotsOnMap();
+            master = true;
         } else {
             Packet004RequestPlayers requestPlayers = new Packet004RequestPlayers();
             requestPlayers.battlefield = getChosenMap();
@@ -476,6 +537,9 @@ public class Screen extends Application {
                 botSpawner.spawnBotsWithIdAndLocation(id, 4, (int) (positions[0] * stage.widthProperty().get()), (int) (positions[1] * stage.heightProperty().get()), stage, root, bases, mapLoad.getObjectsOnMap());
                 botsOnMap = botSpawner.getBotsOnMap();
             }
+            Packet015RequestAI requestAI = new Packet015RequestAI();
+            requestAI.battlefield = this.getChosenMap();
+            client.sendTCP(requestAI);
         }
     }
 
