@@ -119,7 +119,7 @@ public class Bot extends ImageView {
         time += 0.05;
         double lineStartingX = getX();
         double lineStartingY = getY();
-        if (time > 2) {
+        if (time > 5) {
             double distanceBetweenPlayerAndBotX = abs(getX() - player.getX());
             double distanceBetweenPlayerAndBotY = abs(getY() - player.getY());
             if (player.getX() <= getX() + SHOOTING_LENGTH && player.getX() >= getX() - SHOOTING_LENGTH &&
@@ -152,7 +152,7 @@ public class Bot extends ImageView {
                         Math.pow((player.getY() - getY()), 2)), player.bullets);
                 root.getChildren().add(bullet);
                 player.bullets.add(bullet);
-                if (time > 2) {
+                if (time > 5) {
                     time = 0;
                 }
             }

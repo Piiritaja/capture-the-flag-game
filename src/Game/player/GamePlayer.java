@@ -35,7 +35,6 @@ public class GamePlayer extends Player {
 
 
     private Client client;
-    private boolean dead = false;
 
     /**
      * Player`s possible colors.
@@ -111,21 +110,6 @@ public class GamePlayer extends Player {
         }
     }
 
-    /**
-     * Checks if player is dead or not.
-     * @return dead
-     */
-    public boolean isDead() {
-        return dead;
-    }
-
-    /**
-     * Sets boolean dead.
-     * @param dead is player dead or not.
-     */
-    public void setDead(boolean dead) {
-        this.dead = dead;
-    }
 
     /**
      * Calculates which way to shoot(UP, DOWN, RIGHT or LEFT).

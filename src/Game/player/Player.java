@@ -1,6 +1,10 @@
 package Game.player;
 
 import Game.maps.Base;
+import Game.maps.MapLoad;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
@@ -14,6 +18,8 @@ import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public abstract class Player extends ImageView {
@@ -39,6 +45,8 @@ public abstract class Player extends ImageView {
     Image walkingDownImage;
     Group root;
     public int lives;
+    private boolean dead = false;
+    public Timeline playerDead = new Timeline();
 
     // shooting coordinates
     double shootingRightX;
@@ -98,6 +106,22 @@ public abstract class Player extends ImageView {
                 PLAYER_FRAME_WIDTH, PLAYER_FRAME_HEIGHT
         );
     }
+    /**
+     * Checks if player is dead or not.
+     * @return dead
+     */
+    public boolean isDead() {
+        return dead;
+    }
+
+    /**
+     * Sets boolean dead.
+     * @param dead is player dead or not.
+     */
+    public void setDead(boolean dead) {
+        this.dead = dead;
+    }
+
 
     /**
      * Sets movement x change.
@@ -268,11 +292,11 @@ public abstract class Player extends ImageView {
     public static double calcPlayerXStartingPosition(Base greenBase, Base redBase, GamePlayer.playerColor color) {
         Random positionPicker = new Random();
         if (color.equals(GamePlayer.playerColor.GREEN)) {
-            return Math.max((int) greenBase.getLeftX() + 40, (positionPicker.nextInt((int)
-                    greenBase.getRightX() - 40)));
+            return Math.max((int) greenBase.getLeftX() + 100, (positionPicker.nextInt((int)
+                    greenBase.getRightX() - 100)));
         } else if (color.equals(GamePlayer.playerColor.RED)) {
-            return Math.min((int) redBase.getRightX() - 40, (positionPicker.nextInt((int)
-                    redBase.getLeftX() + 40)));
+            return Math.min((int) redBase.getRightX() - 100, (positionPicker.nextInt((int)
+                    redBase.getLeftX() + 100)));
         }
         return 90;
     }
@@ -300,13 +324,31 @@ public abstract class Player extends ImageView {
     public static double calcPlayerYStartingPosition(Base greenBase, Base redBase, GamePlayer.playerColor color) {
         Random positionPicker = new Random();
         if (color.equals(GamePlayer.playerColor.GREEN)) {
-            return Math.max((int) greenBase.getTopY() + 40, (positionPicker.nextInt((int)
-                    greenBase.getBottomY() - 40)));
+            return Math.max((int) greenBase.getTopY() + 100, (positionPicker.nextInt((int)
+                    greenBase.getBottomY() - 100)));
         } else if (color.equals(GamePlayer.playerColor.RED)) {
-            return Math.max((int) redBase.getTopY() + 40, (positionPicker.nextInt((int)
-                    redBase.getBottomY() - 40)));
+            return Math.max((int) redBase.getTopY() + 100, (positionPicker.nextInt((int)
+                    redBase.getBottomY() - 100)));
         }
         return 90;
     }
 
+    /**
+     * If player is killed, player respawns after 5 seconds.
+     * @param mapLoad       map loading
+     * @param players       alive players
+     * @param deadPlayers   dead players
+     */
+    public void reSpawn(MapLoad mapLoad, List<Player> players, List<Player> deadPlayers) {
+        playerDead = new Timeline(
+                new KeyFrame(Duration.seconds(5), event -> this.setPlayerXStartingPosition(mapLoad.getBaseByColor(Base.baseColor.GREEN), mapLoad.getBaseByColor(Base.baseColor.RED))),
+                new KeyFrame(Duration.seconds(5), event -> this.setPlayerYStartingPosition(mapLoad.getBaseByColor(Base.baseColor.GREEN), mapLoad.getBaseByColor(Base.baseColor.RED))),
+                new KeyFrame(Duration.seconds(5), event -> this.setLives(10)),
+                new KeyFrame(Duration.seconds(5), event -> players.add(this)),
+                new KeyFrame(Duration.seconds(5), event -> root.getChildren().add(this)),
+                new KeyFrame(Duration.seconds(5), event -> deadPlayers.remove(this)),
+                new KeyFrame(Duration.seconds(5), event -> this.setDead(false))
+        );
+        playerDead.play();
+    }
 }

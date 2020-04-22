@@ -41,8 +41,10 @@ import networking.packets.Packet008SendPlayerID;
 import networking.packets.Packet012UpdatePlayerPosition;
 import networking.packets.Packet015RequestAI;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 
@@ -454,8 +456,10 @@ public class Screen extends Application {
         timer = new AnimationTimer() {
             @Override
             public void handle(long l) {
-                for (Player p : players) {
-                    bullet.bulletCollision(players, objectsOnMap, root, botSpawner, client, p, deadPlayers);
+                for (int a = 0; a < players.size(); a++) {
+                    Player p = players.get(a);
+                    bullet.bulletCollision(players, objectsOnMap, root, botSpawner, client, p, deadPlayers, mapLoad, a);
+                    catchTheFlag(p);
                     for (Bot bot : botsOnMap) {
                         bot.botShooting(p, root);
                     }
@@ -473,15 +477,12 @@ public class Screen extends Application {
                         }
                     }
                 }
-
-                catchTheFlag();
                 if (player != null) {
                     player.setOnKeyPressed(player.pressed);
                     player.setOnKeyReleased(player.released);
                     root.setOnMouseClicked(player.shooting);
                     player.setFocusTraversable(true);
                 }
-
                 if (redTeamScore == 3 || greenTeamScore == 3) {
                     theEnd();
                 }
@@ -687,28 +688,26 @@ public class Screen extends Application {
      * Player can catch the enemy team`s flag if intersects with it and bring to his base.
      * If enemy team`s flag is brought to own base then the next round starts.
      */
-    public void catchTheFlag() {
-        for (Player player : players) {
-            if (player.getColor() == GamePlayer.playerColor.RED) {
-                if (player.getBoundsInParent().intersects(redFlag.getBoundsInParent())) {
-                    if (player.getX() > redBase.getRightX() - redBase.getRightX() / 5) {
-                        redFlag.relocate(player.getX() + 10, player.getY() + 10);
-                    } else {
-                        redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
-                        redTeamScore += 1;
-                        newRound();
-                    }
+    public void catchTheFlag(Player player) {
+        if (player.getColor() == GamePlayer.playerColor.RED) {
+            if (player.getBoundsInParent().intersects(redFlag.getBoundsInParent())) {
+                if (player.getX() > redBase.getRightX() - redBase.getRightX() / 5) {
+                    redFlag.relocate(player.getX() + 10, player.getY() + 10);
+                } else {
+                    redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
+                    redTeamScore += 1;
+                    newRound();
                 }
-            } else {
-                if (player.getBoundsInParent().intersects(greenFlag.getBoundsInParent())) {
-                    if (player.getX() < greenBase.getLeftX()) {
-                        greenFlag.relocate(player.getX() + 10, player.getY() + 10);
-                    } else {
-                        greenFlag.relocate(greenBase.getRightX() - 50,
-                                greenBase.getBottomY() / 2);
-                        greenTeamScore += 1;
-                        newRound();
-                    }
+            }
+        } else {
+            if (player.getBoundsInParent().intersects(greenFlag.getBoundsInParent())) {
+                if (player.getX() < greenBase.getLeftX()) {
+                    greenFlag.relocate(player.getX() + 10, player.getY() + 10);
+                } else {
+                    greenFlag.relocate(greenBase.getRightX() - 50,
+                            greenBase.getBottomY() / 2);
+                    greenTeamScore += 1;
+                    newRound();
                 }
             }
         }
@@ -741,6 +740,7 @@ public class Screen extends Application {
                     new KeyFrame(Duration.seconds(0), event -> p.setLives(10)),
                     new KeyFrame(Duration.seconds(0.5), event -> root.getChildren().remove(p)),
                     new KeyFrame(Duration.seconds(0.5), event -> root.getChildren().add(p)),
+                    new KeyFrame(Duration.seconds(0.5), event -> p.playerDead.stop()),
                     new KeyFrame(Duration.seconds(0.5), event -> timer.start())
             );
             playtime.play();
@@ -797,4 +797,3 @@ public class Screen extends Application {
         timeline.play();
     }
 }
-

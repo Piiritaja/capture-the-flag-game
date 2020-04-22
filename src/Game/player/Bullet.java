@@ -2,6 +2,7 @@ package Game.player;
 
 import Game.bots.Bot;
 import Game.bots.BotSpawner;
+import Game.maps.MapLoad;
 import Game.maps.Object;
 import com.esotericsoftware.kryonet.Client;
 import javafx.animation.KeyFrame;
@@ -85,9 +86,8 @@ public class Bullet extends Circle {
      * @param client       Client that shoots the bullet.
      */
     public void bulletCollision(List<Player> players, List<Object> objectsOnMap, Group root, BotSpawner botSpawner,
-                                Client client, Player player, List<Player> deadPlayers) {
+                                Client client, Player player, List<Player> deadPlayers, MapLoad mapLoad, int a) {
         Iterator<Bullet> bullets = player.bullets.iterator();
-        List<Player> alivePlayers = new ArrayList<>();
         while (bullets.hasNext()) {
             Bullet bullet = bullets.next();
             for (Object object : objectsOnMap) {
@@ -118,7 +118,8 @@ public class Bullet extends Circle {
                     }
                 }
             }
-            for (Player p : players) {
+            for (int i = 0; i < players.size(); i++) {
+                Player p = players.get(i);
                 if (bullet.getColor() != p.getColorTypeColor()) {
                     if (p.collides(bullet)) {
                         Packet013PlayerHit playerHit = new Packet013PlayerHit();
@@ -129,16 +130,17 @@ public class Bullet extends Circle {
                         bullets.remove();
                         p.lives -= 1;
                         if (p.lives <= 0) {
+                            p.reSpawn(mapLoad, players, deadPlayers);
                             deadPlayers.add(p);
                             root.getChildren().remove(p);
-                        } else {
-                            alivePlayers.add(p);
+                            i--;
+                            a--;
+                            players.remove(p);
                         }
                     }
                 }
             }
         }
-        players = new ArrayList<>(alivePlayers);
     }
 
     /**
