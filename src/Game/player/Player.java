@@ -10,6 +10,7 @@ import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
@@ -20,6 +21,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import static java.lang.StrictMath.abs;
 
 
 public abstract class Player extends ImageView {
@@ -45,7 +48,7 @@ public abstract class Player extends ImageView {
     Image walkingDownImage;
     Group root;
     public int lives;
-    private boolean dead = false;
+    boolean dead = false;
     public Timeline playerDead = new Timeline();
 
     // shooting coordinates
@@ -106,8 +109,10 @@ public abstract class Player extends ImageView {
                 PLAYER_FRAME_WIDTH, PLAYER_FRAME_HEIGHT
         );
     }
+
     /**
      * Checks if player is dead or not.
+     *
      * @return dead
      */
     public boolean isDead() {
@@ -116,6 +121,7 @@ public abstract class Player extends ImageView {
 
     /**
      * Sets boolean dead.
+     *
      * @param dead is player dead or not.
      */
     public void setDead(boolean dead) {
@@ -335,9 +341,10 @@ public abstract class Player extends ImageView {
 
     /**
      * If player is killed, player respawns after 5 seconds.
-     * @param mapLoad       map loading
-     * @param players       alive players
-     * @param deadPlayers   dead players
+     *
+     * @param mapLoad     map loading
+     * @param players     alive players
+     * @param deadPlayers dead players
      */
     public void reSpawn(MapLoad mapLoad, List<Player> players, List<Player> deadPlayers) {
         playerDead = new Timeline(
@@ -351,4 +358,38 @@ public abstract class Player extends ImageView {
         );
         playerDead.play();
     }
+
+    public void shoot(double x, double y, boolean lethal) {
+        getGunCoordinates();
+        Line lineRight = new Line(shootingRightX, shootingRightY, Math.min(shootingRightX + 500, x), y);
+        Line lineLeft = new Line(shootingLeftX, shootingLeftY, Math.max(shootingLeftX - 500, x), y);
+        Line lineDown = new Line(shootingDownX, shootingDownY, x, Math.min(shootingDownY + 500, y));
+        Line lineUp = new Line(shootingUpX, shootingUpY, x, Math.max(shootingUpY - 500, y));
+        double allowedLengthX = abs(getX() - x);
+        double allowedLengthY = abs(getY() - y);
+        animation.pause();
+        if (getY() >= y && x >= getX() - allowedLengthY && x <= getX() + allowedLengthY) {
+            this.setImage(walkingUpImage);
+            bullet = new Bullet((int) shootingUpX, (int) shootingUpY, 3, Color.YELLOW, lethal);
+            bullet.shoot(lineUp, root, Math.min(500, shootingUpY - y), bullets);
+        } else if (getY() < y && x >= getX() - allowedLengthY && x <= getX() + allowedLengthY) {
+            this.setImage(walkingDownImage);
+            bullet = new Bullet((int) shootingDownX, (int) shootingDownY, 3, Color.YELLOW, lethal);
+            bullet.shoot(lineDown, root, Math.min(500, y - shootingDownY), bullets);
+        } else if (getX() < x && y >= getY() - allowedLengthX && y <= getY() + allowedLengthX) {
+            this.setImage(walkingRightImage);
+            bullet = new Bullet((int) shootingRightX, (int) shootingRightY, 3, Color.YELLOW, lethal);
+            bullet.shoot(lineRight, root, Math.min(500, x - shootingRightX), bullets);
+        } else if (getX() >= x && y >= getY() - allowedLengthX && y <= getY() + allowedLengthX) {
+            this.setImage(walkingLeftImage);
+            bullet = new Bullet((int) shootingLeftX, (int) shootingLeftY, 3, Color.YELLOW, lethal);
+            bullet.shoot(lineLeft, root, Math.min(500, shootingLeftX - x), bullets);
+        }
+        animation.play();
+        root.getChildren().add(bullet);
+        bullets.add(bullet);
+
+    }
+
+
 }

@@ -20,6 +20,7 @@ import javafx.scene.shape.Shape;
 import javafx.util.Duration;
 import networking.packets.Packet010PlayerMovement;
 import networking.packets.Packet011PlayerMovementStop;
+import networking.packets.Packet017GamePlayerShoot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +51,7 @@ public class GamePlayer extends Player {
         }
     }
 
-    public Client getClient(){
+    public Client getClient() {
         return this.client;
     }
 
@@ -110,6 +111,23 @@ public class GamePlayer extends Player {
         }
     }
 
+    /**
+     * Checks if player is dead or not.
+     *
+     * @return dead
+     */
+    public boolean isDead() {
+        return dead;
+    }
+
+    /**
+     * Sets boolean dead.
+     *
+     * @param dead is player dead or not.
+     */
+    public void setDead(boolean dead) {
+        this.dead = dead;
+    }
 
     /**
      * Calculates which way to shoot(UP, DOWN, RIGHT or LEFT).
@@ -118,40 +136,20 @@ public class GamePlayer extends Player {
      */
     public EventHandler<MouseEvent> shooting = mouseEvent -> {
         if (!this.isDead()) {
-            getGunCoordinates();
             double mouseY = mouseEvent.getY();
             double mouseX = mouseEvent.getX();
-            Line lineRight = new Line(shootingRightX, shootingRightY, Math.min(shootingRightX + 500, mouseX), mouseY);
-            Line lineLeft = new Line(shootingLeftX, shootingLeftY, Math.max(shootingLeftX - 500, mouseX), mouseY);
-            Line lineDown = new Line(shootingDownX, shootingDownY, mouseX, Math.min(shootingDownY + 500, mouseY));
-            Line lineUp = new Line(shootingUpX, shootingUpY, mouseX, Math.max(shootingUpY - 500, mouseY));
             if (Objects.equals(mouseEvent.getEventType(), MouseEvent.MOUSE_CLICKED)) {
-                double allowedLengthX = abs(getX() - mouseX);
-                double allowedLengthY = abs(getY() - mouseY);
-                animation.pause();
-                if (getY() >= mouseY && mouseX >= getX() - allowedLengthY && mouseX <= getX() + allowedLengthY) {
-                    this.setImage(walkingUpImage);
-                    bullet = new Bullet((int) shootingUpX, (int) shootingUpY, 3, getColorTypeColor());
-                    bullet.shoot(lineUp, root, Math.min(500, shootingUpY - mouseY), bullets);
-                } else if (getY() < mouseY && mouseX >= getX() - allowedLengthY && mouseX <= getX() + allowedLengthY) {
-                    this.setImage(walkingDownImage);
-                    bullet = new Bullet((int) shootingDownX, (int) shootingDownY, 3, getColorTypeColor());
-                    bullet.shoot(lineDown, root, Math.min(500, mouseY - shootingDownY), bullets);
-                } else if (getX() < mouseX && mouseY >= getY() - allowedLengthX && mouseY <= getY() + allowedLengthX) {
-                    this.setImage(walkingRightImage);
-                    bullet = new Bullet((int) shootingRightX, (int) shootingRightY, 3, getColorTypeColor());
-                    bullet.shoot(lineRight, root, Math.min(500, mouseX - shootingRightX), bullets);
-                } else if (getX() >= mouseX && mouseY >= getY() - allowedLengthX && mouseY <= getY() + allowedLengthX) {
-                    this.setImage(walkingLeftImage);
-                    bullet = new Bullet((int) shootingLeftX, (int) shootingLeftY, 3, getColorTypeColor());
-                    bullet.shoot(lineLeft, root, Math.min(500, shootingLeftX - mouseX), bullets);
-                }
-                animation.play();
-                root.getChildren().add(bullet);
-                bullets.add(bullet);
+                Packet017GamePlayerShoot gamePlayerShoot = new Packet017GamePlayerShoot();
+                gamePlayerShoot.mouseX = mouseX;
+                gamePlayerShoot.mouseY = mouseY;
+                gamePlayerShoot.playerId = this.getId();
+                client.sendUDP(gamePlayerShoot);
+                shoot(mouseX, mouseY, true);
             }
         }
     };
+
+
 
 
     /**
