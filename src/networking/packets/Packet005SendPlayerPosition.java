@@ -8,4 +8,5 @@ public class Packet005SendPlayerPosition {
     public double yPosition;
     public Battlefield battlefield;
     public String id;
+    public int lives;
 }

@@ -40,11 +40,10 @@ import networking.packets.Packet005SendPlayerPosition;
 import networking.packets.Packet008SendPlayerID;
 import networking.packets.Packet012UpdatePlayerPosition;
 import networking.packets.Packet015RequestAI;
+import networking.packets.Packet018PlayerConnected;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 
@@ -70,6 +69,7 @@ public class Screen extends Application {
     private boolean master;
     int step = 2;
     List<Base> bases;
+    private int playerCount;
 
     // map size constants
     private static final int MAP_WIDTH_IN_TILES = 40;
@@ -88,6 +88,14 @@ public class Screen extends Application {
         return master;
     }
 
+    public int getPlayerCount() {
+        return this.playerCount;
+    }
+
+    public void setPlayerCount(int playerCount) {
+        this.playerCount = playerCount;
+    }
+
     public Screen(ServerClient serverclient) {
         this.serverclient = serverclient;
         this.client = serverclient.getClient();
@@ -97,6 +105,7 @@ public class Screen extends Application {
         this.botSpawner = new BotSpawner();
         this.botsOnMap = new ArrayList<>();
         this.master = false;
+        this.playerCount = 1;
 
 
     }
@@ -235,7 +244,7 @@ public class Screen extends Application {
      * @param y  player starting position on y axis
      * @param id player id.
      */
-    public void createPlayer(double x, double y, String id, char colorChar) {
+    public void createPlayer(double x, double y, String id, char colorChar, int lives) {
         GamePlayer.playerColor playerColor = colorChar == 'G' ? GamePlayer.playerColor.GREEN : GamePlayer.playerColor.RED;
         GamePlayer otherPlayer = new GamePlayer(
                 (int) x,
@@ -251,6 +260,8 @@ public class Screen extends Application {
         otherPlayer.setId(id);
         root.getChildren().add(otherPlayer);
         players.add(otherPlayer);
+        otherPlayer.setLives(lives);
+        otherPlayer.setLives(lives);
         System.out.println("Created opponent with id: " + otherPlayer.getId());
         updateScale();
     }
@@ -392,6 +403,7 @@ public class Screen extends Application {
 
     @Override
     public void start(Stage stage) {
+        System.out.println(getPlayerCount());
         inGame = true;
         boolean fullScreen = stage.isFullScreen();
         this.stage = stage;
@@ -428,6 +440,7 @@ public class Screen extends Application {
         positionPacket.id = player.getId();
         char colorChar = color.equals(GamePlayer.playerColor.GREEN) ? 'G' : 'R';
         positionPacket.pColor = colorChar;
+        positionPacket.lives = player.lives;
         this.client.sendTCP(positionPacket);
 
         redFlag = mapLoad.getRedFlag();
@@ -461,6 +474,43 @@ public class Screen extends Application {
         }));
         packetTimer.setCycleCount(Timeline.INDEFINITE);
         packetTimer.play();
+
+
+        stage.getScene().setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ESCAPE) {
+                exitScreen();
+            }
+        });
+
+        stage.setFullScreen(fullScreen);
+        stage.show();
+
+        // save bot locations
+        getBotLocationsOnMap();
+        updateScale();
+        if (canTickPlayers()) {
+            tickPlayers();
+        }
+        Packet018PlayerConnected playerConnected = new Packet018PlayerConnected();
+        client.sendTCP(playerConnected);
+
+    }
+
+    public boolean canTickPlayers() {
+        int count = 0;
+        for (Player p : players) {
+            if (p instanceof GamePlayer) {
+                count++;
+            }
+        }
+        if (count == getPlayerCount()) {
+            return true;
+        }
+        return false;
+
+    }
+
+    public void tickPlayers() {
         timer = new AnimationTimer() {
             @Override
             public void handle(long l) {
@@ -499,22 +549,7 @@ public class Screen extends Application {
                 }
             }
         };
-
-        stage.getScene().setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ESCAPE) {
-                exitScreen();
-            }
-        });
-
-        stage.setFullScreen(fullScreen);
         timer.start();
-        stage.show();
-
-        // save bot locations
-        getBotLocationsOnMap();
-        updateScale();
-
-
     }
 
     public void updatePlayerLives(String id, int lives) {

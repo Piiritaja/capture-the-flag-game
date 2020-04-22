@@ -22,6 +22,7 @@ import networking.packets.Packet014PlayerDisconnected;
 import networking.packets.Packet015RequestAI;
 import networking.packets.Packet016SendAiPlayer;
 import networking.packets.Packet017GamePlayerShoot;
+import networking.packets.Packet018PlayerConnected;
 
 import java.io.IOException;
 
@@ -136,6 +137,7 @@ public class ServerClient {
         kryo.register(Packet015RequestAI.class);
         kryo.register(Packet016SendAiPlayer.class);
         kryo.register(Packet017GamePlayerShoot.class);
+        kryo.register(Packet018PlayerConnected.class);
         kryo.register(java.util.Map.class);
         kryo.register(java.util.HashMap.class);
         kryo.register(Double[].class);

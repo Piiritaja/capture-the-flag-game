@@ -23,6 +23,7 @@ import networking.packets.Packet014PlayerDisconnected;
 import networking.packets.Packet015RequestAI;
 import networking.packets.Packet016SendAiPlayer;
 import networking.packets.Packet017GamePlayerShoot;
+import networking.packets.Packet018PlayerConnected;
 
 import java.util.List;
 
@@ -113,6 +114,7 @@ public class ClientNetworkListener extends Listener {
                 sendPlayerPosition.battlefield = ((Packet004RequestPlayers) object).battlefield;
                 sendPlayerPosition.id = serverClient.getMenu().getScreen().getPlayer().getId();
                 sendPlayerPosition.pColor = serverClient.getMenu().getScreen().getPlayer().getColor().equals(GamePlayer.playerColor.GREEN) ? 'G' : 'R';
+                sendPlayerPosition.lives = serverClient.getMenu().getScreen().getPlayer().getLives();
                 System.out.println("Received id " + sendPlayerPosition.id);
 
                 connection.sendTCP(sendPlayerPosition);
@@ -127,7 +129,8 @@ public class ClientNetworkListener extends Listener {
                 double playerYPosition = ((Packet005SendPlayerPosition) object).yPosition;
                 String id = ((Packet005SendPlayerPosition) object).id;
                 char playerColor = ((Packet005SendPlayerPosition) object).pColor;
-                Platform.runLater(() -> this.serverClient.getMenu().getScreen().createPlayer(playerXPosition, playerYPosition, id, playerColor));
+                int lives = ((Packet005SendPlayerPosition) object).lives;
+                Platform.runLater(() -> this.serverClient.getMenu().getScreen().createPlayer(playerXPosition, playerYPosition, id, playerColor, lives));
                 System.out.println("Created player at:");
                 System.out.println(playerXPosition);
                 System.out.println(playerYPosition);
@@ -213,8 +216,14 @@ public class ClientNetworkListener extends Listener {
             System.out.println("Received gamePlayerShoot packet");
             Platform.runLater(() -> serverClient.getMenu().getScreen().shootPlayerWithId(((Packet017GamePlayerShoot) object).playerId, ((Packet017GamePlayerShoot) object).mouseX, ((Packet017GamePlayerShoot) object).mouseY));
 
+        } else if (object instanceof Packet018PlayerConnected) {
+            System.out.println("Received playerConnected packet");
+            Platform.runLater(() -> {
+                if (serverClient.getMenu().getScreen().canTickPlayers()) {
+                    serverClient.getMenu().getScreen().tickPlayers();
+                }
+            });
         }
-
     }
 
 }
