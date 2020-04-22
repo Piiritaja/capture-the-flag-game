@@ -16,6 +16,7 @@ import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import networking.packets.Packet010PlayerMovement;
+import networking.packets.Packet017GamePlayerShoot;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -258,7 +259,7 @@ public class AiPlayer extends Player {
                 movementPositionDown();
             }
         }
-            client.sendUDP(playerMovement);
+        client.sendUDP(playerMovement);
     }
 
     public void movementPositionUp() {
@@ -322,10 +323,15 @@ public class AiPlayer extends Player {
      * Calculates which way to shoot(UP, DOWN, RIGHT or LEFT).
      */
     public void shootBot(Bot bot) {
+        Packet017GamePlayerShoot gamePlayerShoot = new Packet017GamePlayerShoot();
         getGunCoordinates();
         double y = bot.getY() + bot.getBotHeight() / 2;
         double x = bot.getX() + bot.getBotWidth() / 2;
-        shoot(x, y);
+        gamePlayerShoot.playerId = this.getId();
+        gamePlayerShoot.mouseX = x;
+        gamePlayerShoot.mouseY = y;
+        client.sendUDP(gamePlayerShoot);
+        shoot(x, y, true);
 
     }
 
@@ -333,45 +339,15 @@ public class AiPlayer extends Player {
      * Calculates which way to shoot(UP, DOWN, RIGHT or LEFT).
      */
     public void shootPlayer(Player player) {
+        Packet017GamePlayerShoot gamePlayerShoot = new Packet017GamePlayerShoot();
         getGunCoordinates();
         double y = player.getY() + player.getHeight() / 2;
         double x = player.getX() + player.getWidth() / 2;
-        shoot(x, y);
-    }
-
-    /**
-     * If called, makes new bullet and adds it to the root and bullets list.
-     * Sets player image in the same direction with bullets.
-     */
-    public void shoot(double x, double y) {
-        getGunCoordinates();
-        Line lineRight = new Line(shootingRightX, shootingRightY, Math.min(shootingRightX + 500, x), y);
-        Line lineLeft = new Line(shootingLeftX, shootingLeftY, Math.max(shootingLeftX - 500, x), y);
-        Line lineDown = new Line(shootingDownX, shootingDownY, x, Math.min(shootingDownY + 500, y));
-        Line lineUp = new Line(shootingUpX, shootingUpY, x, Math.max(shootingUpY - 500, y));
-        double allowedLengthX = abs(getX() - x);
-        double allowedLengthY = abs(getY() - y);
-        animation.pause();
-        if (getY() >= y && x >= getX() - allowedLengthY && x <= getX() + allowedLengthY) {
-            this.setImage(walkingUpImage);
-            bullet = new Bullet((int) shootingUpX, (int) shootingUpY, 3, Color.YELLOW);
-            bullet.shoot(lineUp, root, Math.min(500, shootingUpY - y), bullets);
-        } else if (getY() < y && x >= getX() - allowedLengthY && x <= getX() + allowedLengthY) {
-            this.setImage(walkingDownImage);
-            bullet = new Bullet((int) shootingDownX, (int) shootingDownY, 3, Color.YELLOW);
-            bullet.shoot(lineDown, root, Math.min(500, y - shootingDownY), bullets);
-        } else if (getX() < x && y >= getY() - allowedLengthX && y <= getY() + allowedLengthX) {
-            this.setImage(walkingRightImage);
-            bullet = new Bullet((int) shootingRightX, (int) shootingRightY, 3, Color.YELLOW);
-            bullet.shoot(lineRight, root, Math.min(500, x - shootingRightX), bullets);
-        } else if (getX() >= x && y >= getY() - allowedLengthX && y <= getY() + allowedLengthX) {
-            this.setImage(walkingLeftImage);
-            bullet = new Bullet((int) shootingLeftX, (int) shootingLeftY, 3, Color.YELLOW);
-            bullet.shoot(lineLeft, root, Math.min(500, shootingLeftX - x), bullets);
-        }
-        animation.play();
-        root.getChildren().add(bullet);
-        bullets.add(bullet);
+        gamePlayerShoot.playerId = this.getId();
+        gamePlayerShoot.mouseX = x;
+        gamePlayerShoot.mouseY = y;
+        client.sendUDP(gamePlayerShoot);
+        shoot(x, y, true);
     }
 
 

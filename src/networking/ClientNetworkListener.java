@@ -22,6 +22,7 @@ import networking.packets.Packet013PlayerHit;
 import networking.packets.Packet014PlayerDisconnected;
 import networking.packets.Packet015RequestAI;
 import networking.packets.Packet016SendAiPlayer;
+import networking.packets.Packet017GamePlayerShoot;
 
 import java.util.List;
 
@@ -207,8 +208,11 @@ public class ClientNetworkListener extends Listener {
         } else if (object instanceof Packet016SendAiPlayer) {
             System.out.println("Received Ai packet");
             GamePlayer.playerColor color = ((Packet016SendAiPlayer) object).pColor == 'G' ? GamePlayer.playerColor.GREEN : GamePlayer.playerColor.RED;
-
             Platform.runLater(() -> serverClient.getMenu().getScreen().createAi(color, ((Packet016SendAiPlayer) object).xPosition, ((Packet016SendAiPlayer) object).yPosition, ((Packet016SendAiPlayer) object).id));
+        } else if (object instanceof Packet017GamePlayerShoot) {
+            System.out.println("Received gamePlayerShoot packet");
+            Platform.runLater(() -> serverClient.getMenu().getScreen().shootPlayerWithId(((Packet017GamePlayerShoot) object).playerId, ((Packet017GamePlayerShoot) object).mouseX, ((Packet017GamePlayerShoot) object).mouseY));
+
         }
 
     }

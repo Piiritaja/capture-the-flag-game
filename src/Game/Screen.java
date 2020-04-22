@@ -50,7 +50,7 @@ import java.util.UUID;
 
 public class Screen extends Application {
 
-    Bullet bullet = new Bullet(0, 0, 3, Color.GREEN);
+    Bullet bullet = new Bullet(0, 0, 3, Color.GREEN, true);
 
     private GamePlayer player;
     private Group root;
@@ -269,6 +269,14 @@ public class Screen extends Application {
             chosenMap = Battlefield.MAP2;
         }
 
+    }
+
+    public void shootPlayerWithId(String id, double mouseX, double mouseY) {
+        for (Player p : players) {
+            if (p.getId().equals(id)) {
+                p.shoot(mouseX, mouseY, false);
+            }
+        }
     }
 
     /**
@@ -525,7 +533,7 @@ public class Screen extends Application {
         if (botLocationsXY.isEmpty()) {
             createAi(GamePlayer.playerColor.GREEN);
             createAi(GamePlayer.playerColor.RED);
-            botSpawner.spawnBots(4 - botsOnMap.size(), stage, root, bases, mapLoad.getObjectsOnMap());
+            botSpawner.spawnBots(4 - botsOnMap.size(), stage, root, bases, mapLoad.getObjectsOnMap(), true);
             botsOnMap = botSpawner.getBotsOnMap();
             master = true;
         } else {
@@ -535,7 +543,7 @@ public class Screen extends Application {
             for (Map.Entry<Integer, Double[]> entry : botLocationsXY.entrySet()) {
                 Double[] positions = entry.getValue();
                 int id = entry.getKey();
-                botSpawner.spawnBotsWithIdAndLocation(id, 4, (int) (positions[0] * stage.widthProperty().get()), (int) (positions[1] * stage.heightProperty().get()), stage, root, bases, mapLoad.getObjectsOnMap());
+                botSpawner.spawnBotsWithIdAndLocation(id, 4, (int) (positions[0] * stage.widthProperty().get()), (int) (positions[1] * stage.heightProperty().get()), stage, root, false);
                 botsOnMap = botSpawner.getBotsOnMap();
             }
             Packet015RequestAI requestAI = new Packet015RequestAI();

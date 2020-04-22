@@ -34,6 +34,7 @@ public class Bot extends ImageView {
     private int botId;
     double time = 0;
     Bullet bullet;
+    boolean lethal;
 
     //Constants for bot model graphics
 
@@ -47,7 +48,7 @@ public class Bot extends ImageView {
      * @param y     Initial y coordinate
      * @param lives Health points of the bot
      */
-    public Bot(int x, int y, int lives, Stage stage) {
+    public Bot(int x, int y, int lives, Stage stage, boolean lethal) {
         final int mapWidthInTiles = 40;
         final int mapHeightInTiles = 25;
         botWidth = stage.widthProperty().get() / mapWidthInTiles * 1.5;
@@ -60,6 +61,7 @@ public class Bot extends ImageView {
         this.x = (int) this.getX();
         this.y = (int) this.getY();
         this.lives = lives;
+        this.lethal = lethal;
     }
 
     /**
@@ -125,7 +127,7 @@ public class Bot extends ImageView {
             if (player.getX() <= getX() + SHOOTING_LENGTH && player.getX() >= getX() - SHOOTING_LENGTH &&
                     getY() - SHOOTING_LENGTH <= player.getY() && player.getY() <= getY() + SHOOTING_LENGTH) {
                 if (getY() >= player.getY() && player.getX() >= getX() - distanceBetweenPlayerAndBotY
-                        && player.getX() <= getX() + distanceBetweenPlayerAndBotY){
+                        && player.getX() <= getX() + distanceBetweenPlayerAndBotY) {
                     lineStartingX = getX() + getBotWidth() - getBotWidth() / 3.5;
                     lineStartingY = getY() + getBotHeight() * 0.1;
                     this.setImage(BOT_STILL_IMAGE_UP);
@@ -147,7 +149,7 @@ public class Bot extends ImageView {
                 }
                 Line line = new Line(lineStartingX, lineStartingY, player.getX() + player.getWidth() / 2,
                         player.getY() + player.getHeight() / 2);
-                bullet = new Bullet((int) lineStartingX, (int) lineStartingY, 3, Color.BLUE);
+                bullet = new Bullet((int) lineStartingX, (int) lineStartingY, 3, Color.BLUE, lethal);
                 bullet.shoot(line, root, sqrt(Math.pow(player.getX() - getX(), 2) +
                         Math.pow((player.getY() - getY()), 2)), player.bullets);
                 root.getChildren().add(bullet);
