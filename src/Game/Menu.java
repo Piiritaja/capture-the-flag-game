@@ -44,7 +44,6 @@ public class Menu extends Application {
     private static final String NOT_CHOSEN_OPACITY = "-fx-opacity: 50%";
     private static final String CHOSEN_OPACITY = "-fx-opacity: 100%";
 
-
     private Text usersOnlineText = new Text(10, 50, "Offline mode");
 
     /**
@@ -65,6 +64,7 @@ public class Menu extends Application {
      * Usually called from the Screen class, when connection with the server has already been established.
      * Create new screen and assign it to this object.
      * Assign the given client to this object.
+     *
      * @param serverClient server client to assign to this class object.
      */
     public Menu(ServerClient serverClient) {
@@ -167,7 +167,9 @@ public class Menu extends Application {
         Text t = new Text(10, 50, "Choose a map");
         Group root = new Group();
         Button playButton = new Button("start game");
+        Button joinButton = new Button("Join a game");
         playButton.setOnAction(actionEvent -> startScreen());
+        joinButton.setOnAction(actionEvent -> joinGame());
 
         this.mainStage.getScene().setRoot(root);
         List<ImageView> images = loadMapImages();
@@ -189,13 +191,23 @@ public class Menu extends Application {
 
         List<ImageView> teamColors = loadTeamColors();
 
+        Text playerCount = new Text(10, 50, "Choose number of online players");
+        playerCount.getStyleClass().add("choose");
+
+        List<ImageView> playerNumbers = loadPlayerNumbers();
+
+        HBox playerNumbersHBox = new HBox();
+
+        setPlayerNumberEffect(playerNumbers, playerNumbersHBox);
+
         HBox teamPickerHbox = new HBox();
         teamPickerHbox.getStyleClass().add(CONTAINER_CLASS);
 
         setTeamPickEffect(teamColors, teamPickerHbox);
         setImagesToScale(teamColors, teamPickerHbox);
+        setImagesToScale(playerNumbers, playerNumbersHBox);
 
-        VBox vbox = new VBox(t, hbox, teamPickerTitle, teamPickerHbox, playButton);
+        VBox vbox = new VBox(t, hbox, teamPickerTitle, teamPickerHbox, playerCount, playerNumbersHBox, playButton, joinButton);
         vbox.getStyleClass().add(CONTAINER_CLASS);
         root.getChildren().add(vbox);
 
@@ -204,13 +216,24 @@ public class Menu extends Application {
     }
 
     /**
-     * Method to go from the Choose map screen to Game screen.
      * Requests bots from other clients already in that map.
      */
-    public void startScreen() {
+    public void joinGame() {
+        if (getScreen().getPlayerCount() <= 1) {
+            startScreen();
+            return;
+        }
         Packet006RequestBotsLocation requestBotsLocation = new Packet006RequestBotsLocation();
         requestBotsLocation.battlefield = this.screen.getChosenMap();
         client.sendTCP(requestBotsLocation);
+        startScreen();
+    }
+
+
+    /**
+     * Method to go from the Choose map screen to Game screen.
+     */
+    public void startScreen() {
         screen.start(mainStage);
     }
 
@@ -228,6 +251,25 @@ public class Menu extends Application {
             image.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
                 int colorIndex = images.indexOf(image);
                 screen.setPlayerColor(colorIndex);
+                for (ImageView image2 : images) {
+                    image2.setStyle(NOT_CHOSEN_OPACITY);
+                }
+                image.setStyle(CHOSEN_OPACITY);
+                event.consume();
+            });
+        }
+    }
+
+    private void setPlayerNumberEffect(List<ImageView> images, HBox hbox) {
+        for (ImageView image : images) {
+            hbox.getChildren().add(image);
+            image.setFitHeight(mainStage.getHeight() / 4);
+            image.setFitWidth(mainStage.getWidth() / 4);
+            image.setPreserveRatio(true);
+            image.setStyle(NOT_CHOSEN_OPACITY);
+            image.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+                int playerCount = images.indexOf(image) + 1;
+                screen.setPlayerCount(playerCount);
                 for (ImageView image2 : images) {
                     image2.setStyle(NOT_CHOSEN_OPACITY);
                 }
@@ -337,6 +379,22 @@ public class Menu extends Application {
         }
 
 
+    }
+
+    public List<ImageView> loadPlayerNumbers() {
+        try {
+            FileInputStream map1InputStream = new FileInputStream("src/assets/misc/1Player.png");
+            Image map1Image = new Image(map1InputStream);
+            ImageView map1ImageView = new ImageView(map1Image);
+
+            FileInputStream map2InputStream = new FileInputStream("src/assets/misc/2players.png");
+            Image map2Image = new Image(map2InputStream);
+            ImageView map2ImageView = new ImageView(map2Image);
+            return Arrays.asList(map1ImageView, map2ImageView);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
     /**

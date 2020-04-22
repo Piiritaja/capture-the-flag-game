@@ -21,6 +21,7 @@ import networking.packets.Packet014PlayerDisconnected;
 import networking.packets.Packet015RequestAI;
 import networking.packets.Packet016SendAiPlayer;
 import networking.packets.Packet017GamePlayerShoot;
+import networking.packets.Packet018PlayerConnected;
 
 public class ServerListener extends Listener {
     private Server server;
@@ -115,8 +116,9 @@ public class ServerListener extends Listener {
         } else if (object instanceof Packet016SendAiPlayer) {
             server.sendToAllExceptTCP(connection.getID(), object);
         } else if (object instanceof Packet017GamePlayerShoot) {
-            System.out.println("Received gamePlayerShoot");
             server.sendToAllExceptUDP(connection.getID(), object);
+        } else if (object instanceof Packet018PlayerConnected) {
+            server.sendToAllTCP(object);
         }
 
     }
