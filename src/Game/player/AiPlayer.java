@@ -78,7 +78,14 @@ public class AiPlayer extends Player {
         this.client = client;
         this.master = master;
 
-        primaryMovementDirection = PrimaryMovementDirection.UP;
+        final int randomMovementRange = 150;
+        double directionRandomRange = ((randomMovementRange - 1) + 1);
+        int randomDir = (int) (Math.random() * directionRandomRange) + 1;
+        if (randomDir % 2 == 0) {
+            primaryMovementDirection = PrimaryMovementDirection.UP;
+        } else {
+            primaryMovementDirection = PrimaryMovementDirection.DOWN;
+        }
 
         this.root = root;
 

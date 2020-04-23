@@ -736,22 +736,30 @@ public class Screen extends Application {
     public void catchTheFlag(Player player) {
         if (player.getColor() == GamePlayer.playerColor.RED) {
             if (player.getBoundsInParent().intersects(redFlag.getBoundsInParent())) {
+                if (player.getPickedUpFlag() == null && !redFlag.isPickedUp()) {
+                    player.pickupFlag(redFlag);
+                }
                 if (player.getX() > redBase.getRightX() - redBase.getRightX() / 5) {
                     redFlag.relocate(player.getX() + 10, player.getY() + 10);
                 } else {
                     redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
                     redTeamScore += 1;
                     newRound();
+                    player.dropPickedUpFlag();
                 }
             }
         } else {
             if (player.getBoundsInParent().intersects(greenFlag.getBoundsInParent())) {
+                if (player.getPickedUpFlag() == null && !greenFlag.isPickedUp()) {
+                    player.pickupFlag(greenFlag);
+                }
                 if (player.getX() < greenBase.getLeftX()) {
                     greenFlag.relocate(player.getX() + 10, player.getY() + 10);
                 } else {
                     greenFlag.relocate(greenBase.getRightX() - 50,
                             greenBase.getBottomY() / 2);
                     greenTeamScore += 1;
+                    player.dropPickedUpFlag();
                     newRound();
                 }
             }

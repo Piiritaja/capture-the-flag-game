@@ -138,6 +138,9 @@ public class Bullet extends Circle {
                         }
 
                         if (p.lives <= 0) {
+                            if (p.getPickedUpFlag() != null) {
+                                p.dropPickedUpFlag();
+                            }
                             p.reSpawn(mapLoad, players, deadPlayers);
                             deadPlayers.add(p);
                             root.getChildren().remove(p);
