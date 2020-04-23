@@ -18,9 +18,13 @@ import networking.packets.Packet010PlayerMovement;
 import networking.packets.Packet011PlayerMovementStop;
 import networking.packets.Packet012UpdatePlayerPosition;
 import networking.packets.Packet013PlayerHit;
+import networking.packets.Packet014PlayerDisconnected;
+import networking.packets.Packet015RequestAI;
+import networking.packets.Packet016SendAiPlayer;
+import networking.packets.Packet017GamePlayerShoot;
+import networking.packets.Packet018PlayerConnected;
 
 import java.io.IOException;
-
 
 public class ServerClient {
     private Client client;
@@ -29,11 +33,12 @@ public class ServerClient {
     private String id;
 
     // Server ip address
-    private static final String SERVER_IP = "192.168.1.200";
+    // Virtual server at 193.40.255.35
+    private static final String SERVER_IP = "193.40.255.35";
 
     //Server ports
-    private static final int TCP_PORT = 54555;
-    private static final int UDP_PORT = 54777;
+    private static final int TCP_PORT = 5201;
+    private static final int UDP_PORT = 5200;
 
 
     /**
@@ -128,6 +133,11 @@ public class ServerClient {
         kryo.register(Packet011PlayerMovementStop.class);
         kryo.register(Packet012UpdatePlayerPosition.class);
         kryo.register(Packet013PlayerHit.class);
+        kryo.register(Packet014PlayerDisconnected.class);
+        kryo.register(Packet015RequestAI.class);
+        kryo.register(Packet016SendAiPlayer.class);
+        kryo.register(Packet017GamePlayerShoot.class);
+        kryo.register(Packet018PlayerConnected.class);
         kryo.register(java.util.Map.class);
         kryo.register(java.util.HashMap.class);
         kryo.register(Double[].class);

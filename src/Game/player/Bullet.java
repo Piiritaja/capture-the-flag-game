@@ -1,28 +1,22 @@
 package Game.player;
 
-import Game.Screen;
 import Game.bots.Bot;
 import Game.bots.BotSpawner;
+import Game.maps.MapLoad;
 import Game.maps.Object;
-import com.esotericsoftware.kryonet.Server;
 import com.esotericsoftware.kryonet.Client;
 import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
 import javafx.animation.PathTransition;
 import javafx.animation.Timeline;
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
-import javafx.scene.shape.Path;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Shape;
 import javafx.util.Duration;
-import networking.ServerClient;
 import networking.packets.Packet009BotHit;
-import org.w3c.dom.css.Rect;
 import networking.packets.Packet013PlayerHit;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -33,6 +27,7 @@ public class Bullet extends Circle {
 
     int x, y, radius;
     Color color;
+    private boolean lethal;
 
     /**
      * Initializes bullet.
@@ -43,13 +38,14 @@ public class Bullet extends Circle {
      * @param radius Bullet radius
      * @param color  Bullet color
      */
-    public Bullet(int x, int y, int radius, Color color) {
+    public Bullet(int x, int y, int radius, Color color, boolean lethal) {
         super(x, y, radius);
         this.x = x;
         this.y = y;
         this.radius = radius;
         this.color = color;
         this.setFill(color);
+        this.lethal = lethal;
     }
 
     /**
@@ -92,7 +88,7 @@ public class Bullet extends Circle {
      * @param client       Client that shoots the bullet.
      */
     public void bulletCollision(List<Player> players, List<Object> objectsOnMap, Group root, BotSpawner botSpawner,
-                                Client client, Player player) {
+                                Client client, Player player, List<Player> deadPlayers, MapLoad mapLoad, int a) {
         Iterator<Bullet> bullets = player.bullets.iterator();
         while (bullets.hasNext()) {
             Bullet bullet = bullets.next();
@@ -111,12 +107,15 @@ public class Bullet extends Circle {
                 Bot bot = botSpawner.botsOnMap.get(i);
                 if (bot.collides(bullet)) {
                     root.getChildren().remove(bullet);
-                    bullets.remove();
-                    bot.lives -= 1;
-                    Packet009BotHit botHit = new Packet009BotHit();
-                    botHit.lives = bot.lives;
-                    botHit.botId = bot.getBotId();
-                    client.sendUDP(botHit);
+                    if (bullet.lethal) {
+                        bullets.remove();
+                        bot.lives -= 1;
+                        Packet009BotHit botHit = new Packet009BotHit();
+                        botHit.lives = bot.lives;
+                        botHit.botId = bot.getBotId();
+                        client.sendUDP(botHit);
+                    }
+
                     if (bot.getBotLives() <= 0) {
                         root.getChildren().remove(bot);
                         botSpawner.botsOnMap.remove(bot);
@@ -124,20 +123,30 @@ public class Bullet extends Circle {
                     }
                 }
             }
-            for (Player p : players) {
+            for (int i = 0; i < players.size(); i++) {
+                Player p = players.get(i);
                 if (bullet.getColor() != p.getColorTypeColor()) {
                     if (p.collides(bullet)) {
-                        Packet013PlayerHit playerHit = new Packet013PlayerHit();
-                        playerHit.playerID = p.getId();
-                        playerHit.playerLives = p.lives - 1;
-                        client.sendUDP(playerHit);
                         root.getChildren().remove(bullet);
                         bullets.remove();
-                        p.lives -= 1;
+                        if (bullet.lethal) {
+                            Packet013PlayerHit playerHit = new Packet013PlayerHit();
+                            playerHit.playerID = p.getId();
+                            playerHit.playerLives = p.lives - 1;
+                            client.sendUDP(playerHit);
+                            p.lives -= 1;
+                        }
+
                         if (p.lives <= 0) {
-                            p.x = 0;
-                            p.y = 0;
+                            if (p.getPickedUpFlag() != null) {
+                                p.dropPickedUpFlag();
+                            }
+                            p.reSpawn(mapLoad, players, deadPlayers);
+                            deadPlayers.add(p);
                             root.getChildren().remove(p);
+                            i--;
+                            a--;
+                            players.remove(p);
                         }
                     }
                 }

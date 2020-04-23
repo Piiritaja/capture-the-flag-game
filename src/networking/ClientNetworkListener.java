@@ -1,6 +1,8 @@
 package networking;
 
 
+import Game.player.AiPlayer;
+import Game.player.GamePlayer;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import javafx.application.Platform;
@@ -17,6 +19,13 @@ import networking.packets.Packet010PlayerMovement;
 import networking.packets.Packet011PlayerMovementStop;
 import networking.packets.Packet012UpdatePlayerPosition;
 import networking.packets.Packet013PlayerHit;
+import networking.packets.Packet014PlayerDisconnected;
+import networking.packets.Packet015RequestAI;
+import networking.packets.Packet016SendAiPlayer;
+import networking.packets.Packet017GamePlayerShoot;
+import networking.packets.Packet018PlayerConnected;
+
+import java.util.List;
 
 public class ClientNetworkListener extends Listener {
     private ServerClient serverClient;
@@ -53,11 +62,12 @@ public class ClientNetworkListener extends Listener {
         System.out.println("You are disconnected!");
 
         // Runnable needed to call to exit the program on java fx application thread.
-        Platform.runLater(() -> this.serverClient.getMenu().exitScreen());
         if (this.serverClient.getMenu().getScreen().getPlayer().getId() != null) {
-            Packet008SendPlayerID sendPlayerId = new Packet008SendPlayerID();
-            sendPlayerId.playerID = this.serverClient.getMenu().getScreen().getPlayer().getId();
-            connection.sendTCP(sendPlayerId);
+            Packet013PlayerHit playerHit = new Packet013PlayerHit();
+            playerHit.playerID = serverClient.getID();
+            playerHit.playerLives = 0;
+            connection.sendTCP(playerHit);
+
         }
 
     }
@@ -103,6 +113,8 @@ public class ClientNetworkListener extends Listener {
                 sendPlayerPosition.yPosition = serverClient.getMenu().getScreen().getPlayer().getY();
                 sendPlayerPosition.battlefield = ((Packet004RequestPlayers) object).battlefield;
                 sendPlayerPosition.id = serverClient.getMenu().getScreen().getPlayer().getId();
+                sendPlayerPosition.pColor = serverClient.getMenu().getScreen().getPlayer().getColor().equals(GamePlayer.playerColor.GREEN) ? 'G' : 'R';
+                sendPlayerPosition.lives = serverClient.getMenu().getScreen().getPlayer().getLives();
                 System.out.println("Received id " + sendPlayerPosition.id);
 
                 connection.sendTCP(sendPlayerPosition);
@@ -116,7 +128,9 @@ public class ClientNetworkListener extends Listener {
                 double playerXPosition = ((Packet005SendPlayerPosition) object).xPosition;
                 double playerYPosition = ((Packet005SendPlayerPosition) object).yPosition;
                 String id = ((Packet005SendPlayerPosition) object).id;
-                Platform.runLater(() -> this.serverClient.getMenu().getScreen().createPlayer(playerXPosition, playerYPosition, id));
+                char playerColor = ((Packet005SendPlayerPosition) object).pColor;
+                int lives = ((Packet005SendPlayerPosition) object).lives;
+                Platform.runLater(() -> this.serverClient.getMenu().getScreen().createPlayer(playerXPosition, playerYPosition, id, playerColor, lives));
                 System.out.println("Created player at:");
                 System.out.println(playerXPosition);
                 System.out.println(playerYPosition);
@@ -125,7 +139,9 @@ public class ClientNetworkListener extends Listener {
 
         } else if (object instanceof Packet006RequestBotsLocation) {
             System.out.println("Received requestBotsLocation packet");
-            if (serverClient.getMenu().getScreen().isInGame() && ((Packet006RequestBotsLocation) object).battlefield == serverClient.getMenu().getScreen().getChosenMap()) {
+            if (serverClient.getMenu().getScreen().isInGame()
+                    && ((Packet006RequestBotsLocation) object).battlefield == serverClient.getMenu().getScreen().getChosenMap()
+                    && serverClient.getMenu().getScreen().isMaster()) {
                 System.out.println("Sending sendBotsLocation packet");
                 Packet007SendBotsLocation sendBots = new Packet007SendBotsLocation();
                 sendBots.locations = serverClient.getMenu().getScreen().getBotLocationsXY();
@@ -147,31 +163,67 @@ public class ClientNetworkListener extends Listener {
 
         } else if (object instanceof Packet008SendPlayerID) {
             System.out.println("Received player id: " + ((Packet008SendPlayerID) object).playerID);
-            this.serverClient.getMenu().getScreen().removePlayerWithId(((Packet008SendPlayerID) object).playerID);
-            System.out.println();
+            Platform.runLater(() -> this.serverClient.getMenu().getScreen().removePlayerWithId(((Packet008SendPlayerID) object).playerID));
         } else if (object instanceof Packet009BotHit) {
             System.out.println("Received BotHit packet: " + ((Packet009BotHit) object).botId);
             Platform.runLater(() -> serverClient.getMenu().getScreen().updateBotLives(((Packet009BotHit) object).botId, ((Packet009BotHit) object).lives));
 
         } else if (object instanceof Packet010PlayerMovement) {
-            System.out.println("Received playerMovement packet");
             Platform.runLater(() -> serverClient.getMenu().getScreen().movePlayerWithId(((Packet010PlayerMovement) object).playerId, ((Packet010PlayerMovement) object).direction));
-            System.out.println("Moved player with id: " + ((Packet010PlayerMovement) object).playerId);
         } else if (object instanceof Packet011PlayerMovementStop) {
-            System.out.println("Received playerMovementStop packet");
             Platform.runLater(() -> serverClient.getMenu().getScreen().stopPlayerWithId(((Packet011PlayerMovementStop) object).playerID, ((Packet011PlayerMovementStop) object).direction));
-            System.out.println("Stopped player with id: " + ((Packet011PlayerMovementStop) object).playerID);
         } else if (object instanceof Packet012UpdatePlayerPosition) {
-            System.out.println("Received updatePlayerPosition packet");
-            Platform.runLater(() -> serverClient.getMenu().getScreen().updatePlayerPosition(
-                    ((Packet012UpdatePlayerPosition) object).id,
-                    (int) (((Packet012UpdatePlayerPosition) object).positionX * serverClient.getMenu().getScreen().getStage().widthProperty().get()),
-                    (int) (((Packet012UpdatePlayerPosition) object).positionY * serverClient.getMenu().getScreen().getStage().heightProperty().get())));
+            if (serverClient.getMenu().getScreen().isInGame()) {
+                Platform.runLater(() -> serverClient.getMenu().getScreen().updatePlayerPosition(
+                        ((Packet012UpdatePlayerPosition) object).id,
+                        (int) (((Packet012UpdatePlayerPosition) object).positionX * serverClient.getMenu().getScreen().getStage().widthProperty().get()),
+                        (int) (((Packet012UpdatePlayerPosition) object).positionY * serverClient.getMenu().getScreen().getStage().heightProperty().get())));
+            }
         } else if (object instanceof Packet013PlayerHit) {
             System.out.println("Received PlayerHit packet");
+            System.out.println("lives: " + ((Packet013PlayerHit) object).playerLives);
             Platform.runLater(() -> serverClient.getMenu().getScreen().updatePlayerLives(((Packet013PlayerHit) object).playerID, ((Packet013PlayerHit) object).playerLives));
-        }
+        } else if (object instanceof Packet014PlayerDisconnected) {
+            System.out.println("Someone disconnected");
+            Platform.runLater(() -> serverClient.getMenu().getScreen().removeDisconnectedPlayer());
+        } else if (object instanceof Packet015RequestAI) {
+            if (this.serverClient.getMenu().getScreen().getChosenMap().equals(((Packet015RequestAI) object).battlefield)
+                    && serverClient.getMenu().getScreen().isInGame()
+                    && serverClient.getMenu().getScreen().isMaster()) {
+                System.out.println("Got ya");
+                List<AiPlayer> players = this.serverClient.getMenu().getScreen().getAiPlayers();
+                for (AiPlayer player : players) {
+                    double x = player.getX();
+                    double y = player.getY();
+                    String id = player.getId();
+                    char color = player.getColor().equals(GamePlayer.playerColor.GREEN) ? 'G' : 'R';
+                    Packet016SendAiPlayer sendAiPlayer = new Packet016SendAiPlayer();
+                    sendAiPlayer.battlefield = this.serverClient.getMenu().getScreen().getChosenMap();
+                    sendAiPlayer.pColor = color;
+                    sendAiPlayer.xPosition = x;
+                    sendAiPlayer.yPosition = y;
+                    sendAiPlayer.id = id;
+                    connection.sendTCP(sendAiPlayer);
 
+                }
+            }
+
+        } else if (object instanceof Packet016SendAiPlayer) {
+            System.out.println("Received Ai packet");
+            GamePlayer.playerColor color = ((Packet016SendAiPlayer) object).pColor == 'G' ? GamePlayer.playerColor.GREEN : GamePlayer.playerColor.RED;
+            Platform.runLater(() -> serverClient.getMenu().getScreen().createAi(color, ((Packet016SendAiPlayer) object).xPosition, ((Packet016SendAiPlayer) object).yPosition, ((Packet016SendAiPlayer) object).id));
+        } else if (object instanceof Packet017GamePlayerShoot) {
+            System.out.println("Received gamePlayerShoot packet");
+            Platform.runLater(() -> serverClient.getMenu().getScreen().shootPlayerWithId(((Packet017GamePlayerShoot) object).playerId, ((Packet017GamePlayerShoot) object).mouseX, ((Packet017GamePlayerShoot) object).mouseY));
+
+        } else if (object instanceof Packet018PlayerConnected) {
+            System.out.println("Received playerConnected packet");
+            Platform.runLater(() -> {
+                if (serverClient.getMenu().getScreen().canTickPlayers()) {
+                    serverClient.getMenu().getScreen().tickPlayers();
+                }
+            });
+        }
     }
 
 }

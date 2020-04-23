@@ -4,6 +4,7 @@ import Game.Screen;
 import Game.bots.Bot;
 import Game.maps.Base;
 import Game.maps.Object;
+import com.esotericsoftware.kryonet.Client;
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
@@ -14,6 +15,8 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import networking.packets.Packet010PlayerMovement;
+import networking.packets.Packet017GamePlayerShoot;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,61 +29,34 @@ import static java.lang.StrictMath.abs;
 /**
  * Player class.
  */
-public class AiPlayer extends ImageView {
-
-    //Constants for player size
-    private static final int PLAYER_WIDTH = 60;
-    private static final int PLAYER_HEIGHT = 60;
-    private static final int PLAYER_FRAME_WIDTH = 282;
-    private static final int PLAYER_FRAME_HEIGHT = 282;
-    private static final int COLUMNS = 4;
-    private static final int COUNT = 4;
-    private static final int OFFSET_X = 0;
-    private static final int OFFSET_Y = 0;
-    SpriteAnimation animation;
+public class AiPlayer extends Player {
 
 
-    //Constants for player model graphics
-    private static final String RED_PLAYER_MAIN_IMAGE = "assets/player/red/still.png";
-    private static final String GREEN_PLAYER_MAIN_IMAGE = "assets/player/green/still.png";
-    private Image image;
-    private Image walkingRightImage;
-    private Image walkingLeftImage;
-    private Image walkingUpImage;
-    private Image walkingDownImage;
-    private Group root;
-
-    // shooting coordinates
-    double shootingRightX;
-    double shootingRightY;
-    double shootingUpX;
-    double shootingUpY;
-    double shootingDownX;
-    double shootingDownY;
-    double shootingLeftX;
-    double shootingLeftY;
-
-
-    public List<Bullet> bullets = new ArrayList<>();
-    int step = 2;
-    public int dx, dy, x, y, width, height;
-    private Player.playerColor color;
-    private double playerLocationXInTiles;
-    private double playerLocationYInTiles;
-    Bullet bullet;
     String[][] objectPlacement;
 
     private Flag flag;
     private AnimationTimer timer;
-    private Circle boundary = new Circle();
+    private Circle collisionBoundary = new Circle();
     private Circle shootingBoundary = new Circle();
+    private Client client;
+    private boolean master;
 
+    //Movement variables
     boolean left = true;
     boolean right = true;
     boolean up = true;
     boolean down = true;
+    int primaryX = 1;
+    int primaryY = 1;
+    private PrimaryMovementDirection primaryMovementDirection;
+    boolean leftFree = true;
+    boolean rightFree = true;
+    double shootingRateTimer = 0;
+    private int shootAndMoveTimer = 0;
 
     private Base base;
+
+    public enum PrimaryMovementDirection {UP, DOWN}
 
 
     /**
@@ -93,60 +69,35 @@ public class AiPlayer extends ImageView {
      * @param dy    Movement y change
      * @param color Player color
      */
-    public AiPlayer(int x, int y, int dx, int dy, Player.playerColor color, Flag flag, Group root, Base base) {
-        if (color.equals(Player.playerColor.GREEN)) {
-            image = new Image(GREEN_PLAYER_MAIN_IMAGE);
-            walkingRightImage = new Image("assets/player/green/walkingRight.png");
-            walkingLeftImage = new Image("assets/player/green/walkingLeft.png");
-            walkingUpImage = new Image("assets/player/green/walkingUp.png");
-            walkingDownImage = new Image("assets/player/green/walkingDown.png");
-        } else if (color.equals(Player.playerColor.RED)) {
-            image = new Image(RED_PLAYER_MAIN_IMAGE);
-            walkingRightImage = new Image("assets/player/red/walkingRight.png");
-            walkingLeftImage = new Image("assets/player/red/walkingLeft.png");
-            walkingUpImage = new Image("assets/player/red/walkingUp.png");
-            walkingDownImage = new Image("assets/player/red/walkingDown.png");
-        } else {
-            image = new Image(RED_PLAYER_MAIN_IMAGE);
-        }
+    public AiPlayer(int x, int y, int dx, int dy, GamePlayer.playerColor color, Flag flag, Group root, Base base, Client client, boolean master) {
+        super(x, y, dx, dy, color);
         this.base = base;
         this.flag = flag;
-        this.setImage(image);
-        this.width = PLAYER_WIDTH;
-        this.height = PLAYER_HEIGHT;
-        this.setFitWidth(PLAYER_WIDTH);
-        this.setFitHeight(PLAYER_HEIGHT);
-        this.setX(x);
-        this.setY(y);
-        this.x = (int) this.getX();
-        this.y = (int) this.getY();
-        this.dx = dx;
-        this.dy = dy;
-        this.color = color;
-        this.setViewport(new Rectangle2D(OFFSET_X, OFFSET_Y, PLAYER_FRAME_WIDTH, PLAYER_FRAME_HEIGHT));
-        animation = new SpriteAnimation(
-                this,
-                Duration.millis(700),
-                COUNT, COLUMNS,
-                OFFSET_X, OFFSET_Y,
-                PLAYER_FRAME_WIDTH, PLAYER_FRAME_HEIGHT
-        );
         //objectPlacement = Object.getObjectPlacements();
         //System.out.println(Arrays.deepToString(objectPlacement));
+        this.client = client;
+        this.master = master;
+
+        final int randomMovementRange = 150;
+        double directionRandomRange = ((randomMovementRange - 1) + 1);
+        int randomDir = (int) (Math.random() * directionRandomRange) + 1;
+        if (randomDir % 2 == 0) {
+            primaryMovementDirection = PrimaryMovementDirection.UP;
+        } else {
+            primaryMovementDirection = PrimaryMovementDirection.DOWN;
+        }
 
         this.root = root;
 
-        boundary.setCenterX(this.getX() + this.getWidth() / 2);
-        boundary.setCenterY(this.getY() + this.getHeight() / 2);
-        root.getChildren().add(boundary);
-        boundary.setFill(Color.YELLOW);
-        boundary.setOpacity(0.3);
+        collisionBoundary.setCenterX(this.getX() + this.getWidth() / 2);
+        collisionBoundary.setCenterY(this.getY() + this.getHeight() / 2);
 
         shootingBoundary.setCenterX(this.getX() + this.getWidth() / 2);
         shootingBoundary.setCenterY(this.getY() + this.getHeight() / 2);
+
+        root.getChildren().add(collisionBoundary);
         root.getChildren().add(shootingBoundary);
-        shootingBoundary.setFill(Color.BLUE);
-        shootingBoundary.setOpacity(0.2);
+
     }
 
     /**
@@ -156,34 +107,75 @@ public class AiPlayer extends ImageView {
      * @param objectsOnMap Objects to check the collision with.
      * @param botsOnMap    Bots to check the collision with.
      */
-    public void tick(List<Object> objectsOnMap, List<Bot> botsOnMap, Stage stage) {
+    public void tick(List<Object> objectsOnMap, List<Bot> botsOnMap, Stage stage, List<Player> players,
+                     List<Player> deadPlayers) {
+        boolean shot = false;
+        shootAndMoveTimer += 5;
         animation.pause();
         this.setImage(image);
         double x = this.getX();
         double y = this.getY();
+
         this.setFitWidth(stage.widthProperty().get() / Screen.getMAP_WIDTH_IN_TILES() * 1.5);
         this.setFitHeight(stage.heightProperty().get() / Screen.getMAP_HEIGHT_IN_TILES() * 1.5);
 
         double boundaryCenterX = x + this.getWidth() / 2;
         double boundaryRadius = this.getHeight() / 2;
         double boundaryCenterY = y + this.getHeight() / 2;
-        boundary.setCenterX(boundaryCenterX);
-        boundary.setCenterY(boundaryCenterY);
-        boundary.setRadius(boundaryRadius);
-        shootingBoundary.setCenterX(boundaryCenterX);
-        shootingBoundary.setCenterY(boundaryCenterY);
-        shootingBoundary.setRadius(boundaryRadius * 3);
-        //Map<String, Integer> nextPos = getNextPos(getPosInTiles(stage));
-        //this.setY(nextPos.get("y") * stage.heightProperty().get() / Screen.getMAP_HEIGHT_IN_TILES());
-        //this.setX(nextPos.get("x") * stage.widthProperty().get() / Screen.getMAP_WIDTH_IN_TILES());
+        setBoundaries(boundaryCenterX, boundaryCenterY, boundaryRadius);
+        if (shootingRateTimer == 0.5) {
+            collisionBoundary.setOpacity(0);
+            shootingBoundary.setOpacity(0);
+        }
 
+        if (shootingRateTimer >= 1) {
+            for (Bot bot : botsOnMap) {
+                if (shootingBoundary.getBoundsInParent().intersects(bot.boundaries().getBoundsInParent())) {
+                    shootBot(bot);
+                    shootingRateTimer = 0.0;
+                    shot = true;
+                }
+            }
+            for (Player player : players) {
+                if ((!player.equals(this))
+                        && (!player.getColor().equals(this.color))
+                        && !deadPlayers.contains(player)
+                        && shootingBoundary.getBoundsInParent().intersects(player.boundaries().getBoundsInParent())) {
+                    shootPlayer(player);
+                    shootingRateTimer = 0.0;
+                    shot = true;
+                }
+            }
+        }
+
+        calculateDirection(x, y);
+        final double shootingRateStep = 0.05;
+        shootingRateTimer += shootingRateStep;
+        if (shot) {
+            shootAndMoveTimer = 0;
+            animation.play();
+        }
+
+        if (shootAndMoveTimer > 100) {
+            move(objectsOnMap, x, y, boundaryCenterX, boundaryCenterY, primaryX, primaryY, leftFree, rightFree);
+        }
+
+
+    }
+
+    /**
+     * Calculates the direction of movement for Ai.
+     *
+     * @param x current X coordinate of Ai
+     * @param y current Y coordinate of Ai.
+     */
+    private void calculateDirection(double x, double y) {
         double destinationX;
         double destinationY;
-        int primaryX = 1;
-        int primaryY = 1;
-        //System.out.println(getPosInTiles(stage).toString());
-        boolean leftFree = true;
-        boolean rightFree = true;
+        primaryX = 1;
+        primaryY = 1;
+        leftFree = true;
+        rightFree = true;
 
         if (!flag.isPickedUp()) {
             destinationX = flag.getX();
@@ -201,7 +193,7 @@ public class AiPlayer extends ImageView {
         } else if (destinationX > x + offset) {
             left = false;
             right = true;
-        //else if (destinationX <= x + offset && destinationX >= x - offset)
+            //else if (destinationX <= x + offset && destinationX >= x - offset)
         } else {
             left = false;
             right = false;
@@ -211,6 +203,7 @@ public class AiPlayer extends ImageView {
             up = true;
             down = false;
         } else if (destinationY > y + offset) {
+            primaryY = 1;
             down = true;
             up = false;
         } else if (!left && !right) {
@@ -221,37 +214,21 @@ public class AiPlayer extends ImageView {
                 System.out.println("pickup");
             }
         }
-        move(objectsOnMap, x, y, boundaryCenterX, boundaryCenterY, primaryX, primaryY, leftFree, rightFree);
-        /*for (Object object : objectsOnMap) {
-            if (object.collides(boundary)) {
-                this.setX(x);
-                this.setY(y);
-            }
-        }*/
-
-        /*
-        for (Bot bot : botsOnMap) {
-            if (bot.getBoundsInParent().intersects(boundary.getBoundsInParent())) {
-                this.setX(x);
-                this.setY(y);
-                shoot(bot);
-            }
-        }*/
-
     }
 
     /**
      * Moves to the given destination.
      * Checks collision.
-     * @param objectsOnMap list of objects (walls) on map
-     * @param x current X coordinate
-     * @param y current Y coordinate
+     *
+     * @param objectsOnMap    list of objects (walls) on map
+     * @param x               current X coordinate
+     * @param y               current Y coordinate
      * @param boundaryCenterX center X coordinate of the collision boundary
      * @param boundaryCenterY center Y coordinate of the collision boundary
-     * @param primaryX primary desired movement direction on X axis
-     * @param primaryY primary desired movemenet direction on Y axis
-     * @param leftFree boolean true if aiPlayer can move left
-     * @param rightFree boolean true if aiPlayer can move right
+     * @param primaryX        primary desired movement direction on X axis
+     * @param primaryY        primary desired movemenet direction on Y axis
+     * @param leftFree        boolean true if aiPlayer can move left
+     * @param rightFree       boolean true if aiPlayer can move right
      */
     private void move(List<Object> objectsOnMap, double x, double y,
                       double boundaryCenterX, double boundaryCenterY,
@@ -261,59 +238,128 @@ public class AiPlayer extends ImageView {
         boolean upFree;
         for (Object object : objectsOnMap) {
             if (left) {
-                boundary.setCenterX(boundaryCenterX - step);
-                if (object.collides(boundary)) {
+                collisionBoundary.setCenterX(boundaryCenterX - step);
+                if (object.collides(collisionBoundary)) {
                     leftFree = false;
                     primaryX = 0;
-                    down = true;
-                    primaryY = 1;
                 }
-                boundary.setCenterX(boundaryCenterX);
+                if (primaryMovementDirection.equals(PrimaryMovementDirection.DOWN)) {
+                    down = true;
+                    up = false;
+                    primaryY = 1;
+                } else {
+                    down = false;
+                    up = true;
+                    primaryY = -1;
+                }
+                collisionBoundary.setCenterX(boundaryCenterX);
             }
             if (right) {
-                boundary.setCenterX(boundaryCenterX + step);
-                if (object.collides(boundary)) {
+                collisionBoundary.setCenterX(boundaryCenterX + step);
+                if (object.collides(collisionBoundary)) {
                     rightFree = false;
                     primaryX = 0;
-                    down = true;
-                    primaryY = 1;
+                    if (primaryMovementDirection.equals(PrimaryMovementDirection.DOWN)) {
+                        down = true;
+                        up = false;
+                        primaryY = 1;
+                    } else {
+                        down = false;
+                        up = true;
+                        primaryY = -1;
+                    }
                 }
-                boundary.setCenterX(boundaryCenterX);
+                collisionBoundary.setCenterX(boundaryCenterX);
             }
             if (down) {
-                boundary.setCenterY(boundaryCenterY + step);
-                if (object.collides(boundary)) {
+                collisionBoundary.setCenterY(boundaryCenterY + step);
+                if (object.collides(collisionBoundary)) {
                     downFree = false;
-                    primaryY = -1;
+                    primaryY = 0;
                     up = true;
                 }
-                boundary.setCenterY(boundaryCenterY);
+                collisionBoundary.setCenterY(boundaryCenterY);
             }
             if (up) {
-                boundary.setCenterY(boundaryCenterY - step);
-                if (object.collides(boundary)) {
+                collisionBoundary.setCenterY(boundaryCenterY - step);
+                if (object.collides(collisionBoundary)) {
                     upFree = false;
                     primaryY = 0;
+                    down = true;
                 }
-                boundary.setCenterY(boundaryCenterY);
+                collisionBoundary.setCenterY(boundaryCenterY);
             }
         }
+        Packet010PlayerMovement playerMovement = new Packet010PlayerMovement();
+        playerMovement.playerId = this.getId();
+
         if ((left && leftFree) || (right && rightFree)) {
             this.setX(x + step * primaryX);
             if (primaryX == -1) {
-                this.setImage(walkingLeftImage);
-            } else {
-                this.setImage(walkingRightImage);
+                playerMovement.direction = 4;
+                movementPositionLeft();
+            } else if (primaryX == 1) {
+                playerMovement.direction = 3;
+                movementPositionRight();
             }
         } else {
             this.setY(y + step * primaryY);
             if (primaryY == -1) {
-                this.setImage(walkingUpImage);
-            } else {
-                this.setImage(walkingDownImage);
+                playerMovement.direction = 1;
+                movementPositionUp();
+            } else if (primaryY == 1) {
+                playerMovement.direction = 2;
+                movementPositionDown();
             }
         }
+        client.sendUDP(playerMovement);
+    }
+
+    public void movementPositionUp() {
+        this.setImage(walkingUpImage);
         animation.play();
+    }
+
+    public void movementPositionDown() {
+        this.setImage(walkingDownImage);
+        animation.play();
+    }
+
+    public void movementPositionLeft() {
+        this.setImage(walkingLeftImage);
+        animation.play();
+    }
+
+    public void movementPositionRight() {
+        this.setImage(walkingRightImage);
+        animation.play();
+    }
+
+
+    /**
+     * Set the collision and bot/player/shooting boundary sizes and positions.
+     *
+     * @param centerX center of the player X / center of the boundary X
+     * @param centerY center of the player Y / center of the boundary Y
+     * @param radius  radius of the collision boundary
+     */
+    private void setBoundaries(double centerX, double centerY, double radius) {
+        collisionBoundary.setCenterX(centerX);
+        collisionBoundary.setCenterY(centerY);
+        collisionBoundary.setRadius(radius);
+        shootingBoundary.setCenterX(centerX);
+        shootingBoundary.setCenterY(centerY);
+        shootingBoundary.setRadius(radius * 4);
+
+        shootingBoundary.setFill(Color.BLUE);
+
+        collisionBoundary.setFill(Color.YELLOW);
+
+        if (shootingRateTimer == 0) {
+            collisionBoundary.setOpacity(0.3);
+            shootingBoundary.setOpacity(0.2);
+        }
+
     }
 
     /**
@@ -321,7 +367,7 @@ public class AiPlayer extends ImageView {
      * If enemy team`s flag is brought to own base then the next round starts.
      */
     public void catchTheFlag() {
-        if (boundary.getBoundsInParent().intersects(flag.getBoundsInParent())) {
+        if (collisionBoundary.getBoundsInParent().intersects(flag.getBoundsInParent())) {
             flag.setX(this.getX());
             flag.setY(this.getY());
         }
@@ -329,101 +375,37 @@ public class AiPlayer extends ImageView {
 
     /**
      * Calculates which way to shoot(UP, DOWN, RIGHT or LEFT).
-     * If called, makes new bullet and adds it to the root and bullets list.
-     * Sets player image in the same direction with bullets.
      */
-    public void shoot(Bot bot) {
+    public void shootBot(Bot bot) {
+        Packet017GamePlayerShoot gamePlayerShoot = new Packet017GamePlayerShoot();
         getGunCoordinates();
-        double botY = bot.getY() + bot.getBotHeight() / 2;
-        double botX = bot.getX() + bot.getBotWidth() / 2;
-        Line lineRight = new Line(shootingRightX, shootingRightY, Math.min(shootingRightX + 500, botX), botY);
-        Line lineLeft = new Line(shootingLeftX, shootingLeftY, Math.max(shootingLeftX - 500, botX), botY);
-        Line lineDown = new Line(shootingDownX, shootingDownY, botX, Math.min(shootingDownY + 500, botY));
-        Line lineUp = new Line(shootingUpX, shootingUpY, botX, Math.max(shootingUpY - 500, botY));
-        double allowedLengthX = abs(getX() - botX);
-        double allowedLengthY = abs(getY() - botY);
-        animation.pause();
-        if (getY() >= botY && botX >= getX() - allowedLengthY && botX <= getX() + allowedLengthY) {
-            this.setImage(walkingUpImage);
-            bullet = new Bullet((int) shootingUpX, (int) shootingUpY, 3, Color.YELLOW);
-            bullet.shoot(lineUp, root, Math.min(500, shootingUpY - botY), bullets);
-        } else if (getY() < botY && botX >= getX() - allowedLengthY && botX <= getX() + allowedLengthY) {
-            this.setImage(walkingDownImage);
-            bullet = new Bullet((int) shootingDownX, (int) shootingDownY, 3, Color.YELLOW);
-            bullet.shoot(lineDown, root, Math.min(500, botY - shootingDownY), bullets);
-        } else if (getX() < botX && botY >= getY() - allowedLengthX && botY <= getY() + allowedLengthX) {
-            this.setImage(walkingRightImage);
-            bullet = new Bullet((int) shootingRightX, (int) shootingRightY, 3, Color.YELLOW);
-            bullet.shoot(lineRight, root, Math.min(500, botX - shootingRightX), bullets);
-        } else if (getX() >= botX && botY >= getY() - allowedLengthX && botY <= getY() + allowedLengthX) {
-            this.setImage(walkingLeftImage);
-            bullet = new Bullet((int) shootingLeftX, (int) shootingLeftY, 3, Color.YELLOW);
-            bullet.shoot(lineLeft, root, Math.min(500, shootingLeftX - botX), bullets);
-        }
-        animation.play();
-        root.getChildren().add(bullet);
-        bullets.add(bullet);
+        double y = bot.getY() + bot.getBotHeight() / 2;
+        double x = bot.getX() + bot.getBotWidth() / 2;
+        gamePlayerShoot.playerId = this.getId();
+        gamePlayerShoot.mouseX = x;
+        gamePlayerShoot.mouseY = y;
+        client.sendUDP(gamePlayerShoot);
+        shoot(x, y, true);
+
     }
 
     /**
-     * Calculates gun X and Y position to know where the bullets come out of.
+     * Calculates which way to shoot(UP, DOWN, RIGHT or LEFT).
      */
-    public void getGunCoordinates() {
-        shootingRightX = getX() + getWidth();
-        shootingRightY = getY() + getHeight() / 1.63;
-        shootingUpX = getX() + getWidth() / 1.63;
-        shootingUpY = getY();
-        shootingDownX = getX() + getWidth() - getWidth() / 1.63;
-        shootingDownY = getY() + getHeight();
-        shootingLeftX = getX();
-        shootingLeftY = getY() + getHeight() - getHeight() / 1.63;
+    public void shootPlayer(Player player) {
+        Packet017GamePlayerShoot gamePlayerShoot = new Packet017GamePlayerShoot();
+        getGunCoordinates();
+        double y = player.getY() + player.getHeight() / 2;
+        double x = player.getX() + player.getWidth() / 2;
+        gamePlayerShoot.playerId = this.getId();
+        gamePlayerShoot.mouseX = x;
+        gamePlayerShoot.mouseY = y;
+        client.sendUDP(gamePlayerShoot);
+        shoot(x, y, true);
     }
 
-    /**
-     * @return The width of this player.
-     */
-    public double getWidth() {
-        return this.getFitWidth();
-    }
 
-    /**
-     * @return The height of this player.
-     */
-    public double getHeight() {
-        return this.getFitHeight();
-    }
 
-    /**
-     * @return The color of this player.
-     */
-    public Player.playerColor getColor() {
-        return color;
-    }
-
-    /**
-     * Set group for this player.
-     *
-     * @param root The group for this player.
-     */
-    public void setRoot(Group root) {
-        this.root = root;
-    }
-
-    public void setPlayerLocationXInTiles(double x) {
-        this.playerLocationXInTiles = x;
-    }
-
-    public void setPlayerLocationYInTiles(double y) {
-        this.playerLocationYInTiles = y;
-    }
-
-    public double getPlayerLocationXInTiles() {
-        return playerLocationXInTiles;
-    }
-
-    public double getPlayerLocationYInTiles() {
-        return playerLocationYInTiles;
-    }
 
     /*
     private Map<String, Integer> getPosInTiles(Stage stage) {

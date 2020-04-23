@@ -17,6 +17,11 @@ import networking.packets.Packet010PlayerMovement;
 import networking.packets.Packet011PlayerMovementStop;
 import networking.packets.Packet012UpdatePlayerPosition;
 import networking.packets.Packet013PlayerHit;
+import networking.packets.Packet014PlayerDisconnected;
+import networking.packets.Packet015RequestAI;
+import networking.packets.Packet016SendAiPlayer;
+import networking.packets.Packet017GamePlayerShoot;
+import networking.packets.Packet018PlayerConnected;
 
 public class ServerListener extends Listener {
     private Server server;
@@ -42,12 +47,13 @@ public class ServerListener extends Listener {
     @Override
     public void connected(Connection c) {
         System.out.println("Someone has connected");
-        System.out.println(this.server.getKryo().getDepth());
         gameServer.setNumberOfConnections(this.gameServer.getNumberOfConnections() + 1);
+        gameServer.setTotalNumberOfConnections(this.gameServer.getTotalNumberOfConnections() + 1);
         Packet001AllowAccess allowAccess = new Packet001AllowAccess();
         allowAccess.allow = true;
-        allowAccess.id = "C" + gameServer.getNumberOfConnections();
+        allowAccess.id = "C" + gameServer.getTotalNumberOfConnections();
         c.sendTCP(allowAccess);
+        System.out.println("created client with id:" + allowAccess.id);
 
     }
 
@@ -60,6 +66,8 @@ public class ServerListener extends Listener {
     public void disconnected(Connection c) {
         System.out.println("Someone has disconnected");
         this.gameServer.setNumberOfConnections(this.gameServer.getNumberOfConnections() - 1);
+        Packet014PlayerDisconnected playerDisconnected = new Packet014PlayerDisconnected();
+        c.sendTCP(playerDisconnected);
     }
 
 
@@ -73,54 +81,44 @@ public class ServerListener extends Listener {
     public void received(Connection connection, Object object) {
 
         if (object instanceof Packet000RequestAccess) {
-            System.out.println("Received requestAccess packet");
             Packet001AllowAccess access = new Packet001AllowAccess();
             access.id = "C" + this.gameServer.getNumberOfConnections();
             access.allow = false;
             connection.sendTCP(access);
         } else if (object instanceof Packet002RequestConnections) {
-            System.out.println("Received requestedConnections packet");
             Packet003SendConnections sendConnections = new Packet003SendConnections();
             sendConnections.connections = this.gameServer.getNumberOfConnections();
             server.sendToAllTCP(sendConnections);
-            System.out.println("Sent sendConnections packet to all clients");
 
         } else if (object instanceof Packet004RequestPlayers) {
-            System.out.println("Received requestPlayers");
             server.sendToAllExceptTCP(connection.getID(), object);
-            System.out.println("Sent requestPlayers packet to all other clients");
         } else if (object instanceof Packet005SendPlayerPosition) {
-            System.out.println("Received sendPlayerPosition packet");
             server.sendToAllExceptTCP(connection.getID(), object);
-            System.out.println("Sent sendPlayerPosition packet to all other clients");
         } else if (object instanceof Packet006RequestBotsLocation) {
-            System.out.println("Received requestBotsLocation packet");
             server.sendToAllExceptTCP(connection.getID(), object);
-            System.out.println("Sent requestBotsLocation packet to all other clients");
         } else if (object instanceof Packet007SendBotsLocation) {
-            System.out.println("Received sendBotsLocation packet");
+            System.out.println("SendBotsLocation");
             server.sendToAllExceptTCP(connection.getID(), object);
-            System.out.println("Sent sendBotsLocation packet to all other clients");
         } else if (object instanceof Packet008SendPlayerID) {
-            System.out.println("Received sendPlayerID packet");
             server.sendToAllExceptTCP(connection.getID(), object);
-            System.out.println("Sent sendPlayerID packet to all other clients");
         } else if (object instanceof Packet009BotHit) {
-            System.out.println("Received botHit packet");
-            System.out.println("Bot id is: " + ((Packet009BotHit) object).botId);
             server.sendToAllExceptTCP(connection.getID(), object);
         } else if (object instanceof Packet010PlayerMovement) {
-            System.out.println("Received playerMovement packet");
             server.sendToAllExceptUDP(connection.getID(), object);
         } else if (object instanceof Packet011PlayerMovementStop) {
-            System.out.println("Received playerMovementStop packet");
             server.sendToAllExceptUDP(connection.getID(), object);
         } else if (object instanceof Packet012UpdatePlayerPosition) {
-            System.out.println("Received updatePlayerPosition packet");
             server.sendToAllExceptUDP(connection.getID(), object);
         } else if (object instanceof Packet013PlayerHit) {
-            System.out.println("Received PlayerHit packet");
             server.sendToAllExceptUDP(connection.getID(), object);
+        } else if (object instanceof Packet015RequestAI) {
+            server.sendToAllExceptTCP(connection.getID(), object);
+        } else if (object instanceof Packet016SendAiPlayer) {
+            server.sendToAllExceptTCP(connection.getID(), object);
+        } else if (object instanceof Packet017GamePlayerShoot) {
+            server.sendToAllExceptUDP(connection.getID(), object);
+        } else if (object instanceof Packet018PlayerConnected) {
+            server.sendToAllTCP(object);
         }
 
     }

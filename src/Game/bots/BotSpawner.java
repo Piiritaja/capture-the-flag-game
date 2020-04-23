@@ -32,7 +32,7 @@ public class BotSpawner {
      * @param bases        Bases that the bot can't be spawned into
      * @param objectsOnMap List of objects that the bots can not spawn into
      */
-    public void spawnBots(int limit, Stage stage, Group group, List<Base> bases, List<Object> objectsOnMap) {
+    public void spawnBots(int limit, Stage stage, Group group, List<Base> bases, List<Object> objectsOnMap, boolean lethal) {
         double maxX = stage.widthProperty().get() - stage.widthProperty().get() / mapWidthInTiles;
         double maxY = stage.heightProperty().get() - stage.heightProperty().get() / mapHeightInTiles;
         for (int i = 0; i < limit; i++) {
@@ -42,7 +42,7 @@ public class BotSpawner {
                 int locationY = location[1];
                 if (botLocations.containsKey(locationX)) {
                     if (botLocations.get(locationX) != locationY && notInBase(locationX, locationY, bases)) {
-                        Bot bot = new Bot(locationX, locationY, 10, stage);
+                        Bot bot = new Bot(locationX, locationY, 10, stage, lethal);
                         if (notColliding(bot, objectsOnMap)) {
                             group.getChildren().add(bot);
                             botsOnMap.add(bot);
@@ -53,7 +53,7 @@ public class BotSpawner {
                     }
                 } else {
                     if (notInBase(locationX, locationY, bases)) {
-                        Bot bot = new Bot(locationX, locationY, 10, stage);
+                        Bot bot = new Bot(locationX, locationY, 10, stage, lethal);
                         if (notColliding(bot, objectsOnMap)) {
                             botLocations.put(locationX, locationY);
                             botsOnMap.add(bot);
@@ -67,8 +67,8 @@ public class BotSpawner {
         }
     }
 
-    public void spawnBotsWithIdAndLocation(int botId, int limit, int xPosition, int yPosition, Stage stage, Group group, List<Base> base, List<Object> objectsOnMap) {
-        Bot bot = new Bot((xPosition),(yPosition), 10, stage);
+    public void spawnBotsWithIdAndLocation(int botId, int limit, int xPosition, int yPosition, Stage stage, Group group, boolean lethal) {
+        Bot bot = new Bot((xPosition), (yPosition), 10, stage, lethal);
         group.getChildren().add(bot);
         botsOnMap.add(bot);
         botLocations.put(xPosition, yPosition);
