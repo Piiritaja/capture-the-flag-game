@@ -519,7 +519,9 @@ public class Screen extends Application {
                     bullet.bulletCollision(players, objectsOnMap, root, botSpawner, client, p, deadPlayers, mapLoad, a);
                     catchTheFlag(p);
                     for (Bot bot : botsOnMap) {
-                        bot.botShooting(p, root);
+                        if (!deadPlayers.contains(p)) {
+                            bot.botShooting(p, root);
+                        }
                     }
                 }
                 //Only this player can tick!
@@ -531,7 +533,7 @@ public class Screen extends Application {
                 if (isMaster()) {
                     for (AiPlayer ai : aiPlayers) {
                         if (!deadPlayers.contains(ai)) {
-                            ai.tick(objectsOnMap, botsOnMap, stage, players);
+                            ai.tick(objectsOnMap, botsOnMap, stage, players, deadPlayers);
                         }
                     }
                 }

@@ -56,7 +56,7 @@ public class AiPlayer extends Player {
 
     private Base base;
 
-    public enum PrimaryMovementDirection { UP, DOWN };
+    public enum PrimaryMovementDirection {UP, DOWN}
 
 
     /**
@@ -186,7 +186,7 @@ public class AiPlayer extends Player {
         } else if (destinationX > x + offset) {
             left = false;
             right = true;
-        //else if (destinationX <= x + offset && destinationX >= x - offset)
+            //else if (destinationX <= x + offset && destinationX >= x - offset)
         } else {
             left = false;
             right = false;
@@ -291,7 +291,7 @@ public class AiPlayer extends Player {
             if (primaryX == -1) {
                 playerMovement.direction = 4;
                 movementPositionLeft();
-            } else if (primaryX == 1){
+            } else if (primaryX == 1) {
                 playerMovement.direction = 3;
                 movementPositionRight();
             }
@@ -300,7 +300,7 @@ public class AiPlayer extends Player {
             if (primaryY == -1) {
                 playerMovement.direction = 1;
                 movementPositionUp();
-            } else if (primaryY == 1){
+            } else if (primaryY == 1) {
                 playerMovement.direction = 2;
                 movementPositionDown();
             }

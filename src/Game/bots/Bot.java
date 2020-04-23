@@ -70,7 +70,7 @@ public class Bot extends ImageView {
      *
      * @return Boundaries as a JavaFx Rectangle
      */
-    private Rectangle boundaries() {
+    public Rectangle boundaries() {
         Rectangle objectBoundaries = new Rectangle();
         objectBoundaries.setX(this.getX() + 5 * botWidth / 16);
         objectBoundaries.setY(this.getY() + 5 * botWidth / 16);
