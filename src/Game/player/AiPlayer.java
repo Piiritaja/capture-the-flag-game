@@ -48,11 +48,15 @@ public class AiPlayer extends Player {
     boolean down = true;
     int primaryX = 1;
     int primaryY = 1;
+    private PrimaryMovementDirection primaryMovementDirection;
     boolean leftFree = true;
     boolean rightFree = true;
-    double shootingUpdateTimer = 0;
+    double shootingRateTimer = 0;
+    private int shootAndMoveTimer = 0;
 
     private Base base;
+
+    public enum PrimaryMovementDirection { UP, DOWN };
 
 
     /**
@@ -74,6 +78,8 @@ public class AiPlayer extends Player {
         this.client = client;
         this.master = master;
 
+        primaryMovementDirection = PrimaryMovementDirection.UP;
+
         this.root = root;
 
         collisionBoundary.setCenterX(this.getX() + this.getWidth() / 2);
@@ -81,6 +87,10 @@ public class AiPlayer extends Player {
 
         shootingBoundary.setCenterX(this.getX() + this.getWidth() / 2);
         shootingBoundary.setCenterY(this.getY() + this.getHeight() / 2);
+
+        root.getChildren().add(collisionBoundary);
+        root.getChildren().add(shootingBoundary);
+
     }
 
     /**
@@ -90,11 +100,15 @@ public class AiPlayer extends Player {
      * @param objectsOnMap Objects to check the collision with.
      * @param botsOnMap    Bots to check the collision with.
      */
-    public void tick(List<Object> objectsOnMap, List<Bot> botsOnMap, Stage stage, List<Player> players) {
+    public void tick(List<Object> objectsOnMap, List<Bot> botsOnMap, Stage stage, List<Player> players,
+                     List<Player> deadPlayers) {
+        boolean shot = false;
+        shootAndMoveTimer += 5;
         animation.pause();
         this.setImage(image);
         double x = this.getX();
         double y = this.getY();
+
         this.setFitWidth(stage.widthProperty().get() / Screen.getMAP_WIDTH_IN_TILES() * 1.5);
         this.setFitHeight(stage.heightProperty().get() / Screen.getMAP_HEIGHT_IN_TILES() * 1.5);
 
@@ -102,27 +116,43 @@ public class AiPlayer extends Player {
         double boundaryRadius = this.getHeight() / 2;
         double boundaryCenterY = y + this.getHeight() / 2;
         setBoundaries(boundaryCenterX, boundaryCenterY, boundaryRadius);
+        if (shootingRateTimer == 0.5) {
+            collisionBoundary.setOpacity(0);
+            shootingBoundary.setOpacity(0);
+        }
+
+        if (shootingRateTimer >= 1) {
+            for (Bot bot : botsOnMap) {
+                if (shootingBoundary.getBoundsInParent().intersects(bot.boundaries().getBoundsInParent())) {
+                    shootBot(bot);
+                    shootingRateTimer = 0.0;
+                    shot = true;
+                }
+            }
+            for (Player player : players) {
+                if ((!player.equals(this))
+                        && (!player.getColor().equals(this.color))
+                        && !deadPlayers.contains(player)
+                        && shootingBoundary.getBoundsInParent().intersects(player.boundaries().getBoundsInParent())) {
+                    shootPlayer(player);
+                    shootingRateTimer = 0.0;
+                    shot = true;
+                }
+            }
+        }
 
         calculateDirection(x, y);
-        final double shootingTimerStep = 0.05;
-        shootingUpdateTimer += shootingTimerStep;
-        move(objectsOnMap, x, y, boundaryCenterX, boundaryCenterY, primaryX, primaryY, leftFree, rightFree);
-        for (Bot bot : botsOnMap) {
-            if (bot.getBoundsInParent().intersects(shootingBoundary.getBoundsInParent()) && shootingUpdateTimer >= 1) {
-                shootBot(bot);
-                shootingUpdateTimer = 0.0;
-            }
-        }
-        for (Player player : players) {
-            if ((!player.equals(this)) && (!player.getColor().equals(this.color)) && shootingUpdateTimer >= 1 &&
-                    player.getBoundsInParent().intersects(shootingBoundary.getBoundsInParent())) {
-                shootPlayer(player);
-                shootingUpdateTimer = 0.0;
-            }
+        final double shootingRateStep = 0.05;
+        shootingRateTimer += shootingRateStep;
+        if (shot) {
+            shootAndMoveTimer = 0;
+            animation.play();
         }
 
-        root.getChildren().remove(collisionBoundary);
-        root.getChildren().removeAll(shootingBoundary);
+        if (shootAndMoveTimer > 100) {
+            move(objectsOnMap, x, y, boundaryCenterX, boundaryCenterY, primaryX, primaryY, leftFree, rightFree);
+        }
+
 
     }
 
@@ -156,7 +186,7 @@ public class AiPlayer extends Player {
         } else if (destinationX > x + offset) {
             left = false;
             right = true;
-            //else if (destinationX <= x + offset && destinationX >= x - offset)
+        //else if (destinationX <= x + offset && destinationX >= x - offset)
         } else {
             left = false;
             right = false;
@@ -166,6 +196,7 @@ public class AiPlayer extends Player {
             up = true;
             down = false;
         } else if (destinationY > y + offset) {
+            primaryY = 1;
             down = true;
             up = false;
         } else if (!left && !right) {
@@ -204,8 +235,15 @@ public class AiPlayer extends Player {
                 if (object.collides(collisionBoundary)) {
                     leftFree = false;
                     primaryX = 0;
+                }
+                if (primaryMovementDirection.equals(PrimaryMovementDirection.DOWN)) {
                     down = true;
+                    up = false;
                     primaryY = 1;
+                } else {
+                    down = false;
+                    up = true;
+                    primaryY = -1;
                 }
                 collisionBoundary.setCenterX(boundaryCenterX);
             }
@@ -214,8 +252,15 @@ public class AiPlayer extends Player {
                 if (object.collides(collisionBoundary)) {
                     rightFree = false;
                     primaryX = 0;
-                    down = true;
-                    primaryY = 1;
+                    if (primaryMovementDirection.equals(PrimaryMovementDirection.DOWN)) {
+                        down = true;
+                        up = false;
+                        primaryY = 1;
+                    } else {
+                        down = false;
+                        up = true;
+                        primaryY = -1;
+                    }
                 }
                 collisionBoundary.setCenterX(boundaryCenterX);
             }
@@ -223,7 +268,7 @@ public class AiPlayer extends Player {
                 collisionBoundary.setCenterY(boundaryCenterY + step);
                 if (object.collides(collisionBoundary)) {
                     downFree = false;
-                    primaryY = -1;
+                    primaryY = 0;
                     up = true;
                 }
                 collisionBoundary.setCenterY(boundaryCenterY);
@@ -233,6 +278,7 @@ public class AiPlayer extends Player {
                 if (object.collides(collisionBoundary)) {
                     upFree = false;
                     primaryY = 0;
+                    down = true;
                 }
                 collisionBoundary.setCenterY(boundaryCenterY);
             }
@@ -245,7 +291,7 @@ public class AiPlayer extends Player {
             if (primaryX == -1) {
                 playerMovement.direction = 4;
                 movementPositionLeft();
-            } else {
+            } else if (primaryX == 1){
                 playerMovement.direction = 3;
                 movementPositionRight();
             }
@@ -254,7 +300,7 @@ public class AiPlayer extends Player {
             if (primaryY == -1) {
                 playerMovement.direction = 1;
                 movementPositionUp();
-            } else {
+            } else if (primaryY == 1){
                 playerMovement.direction = 2;
                 movementPositionDown();
             }
@@ -298,13 +344,14 @@ public class AiPlayer extends Player {
         shootingBoundary.setCenterY(centerY);
         shootingBoundary.setRadius(radius * 4);
 
-        root.getChildren().add(shootingBoundary);
         shootingBoundary.setFill(Color.BLUE);
-        shootingBoundary.setOpacity(0.2);
 
-        root.getChildren().add(collisionBoundary);
         collisionBoundary.setFill(Color.YELLOW);
-        collisionBoundary.setOpacity(0.3);
+
+        if (shootingRateTimer == 0) {
+            collisionBoundary.setOpacity(0.3);
+            shootingBoundary.setOpacity(0.2);
+        }
 
     }
 
