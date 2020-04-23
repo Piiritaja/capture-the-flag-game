@@ -69,6 +69,7 @@ public abstract class Player extends ImageView {
     private double playerLocationXInTiles;
     private double playerLocationYInTiles;
     Bullet bullet;
+    Flag pickedUpFlag = null;
 
 
     public Player(int x, int y, int dx, int dy, GamePlayer.playerColor color) {
@@ -199,6 +200,20 @@ public abstract class Player extends ImageView {
 
     public void setLives(int lives) {
         this.lives = lives;
+    }
+
+    public void pickupFlag(Flag flag) {
+       this.pickedUpFlag = flag;
+       flag.pickUp();
+    }
+
+    public void dropPickedUpFlag() {
+        pickedUpFlag.drop();
+        this.pickedUpFlag = null;
+    }
+
+    public Flag getPickedUpFlag() {
+        return pickedUpFlag;
     }
 
     /**
