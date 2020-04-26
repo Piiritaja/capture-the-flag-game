@@ -129,6 +129,16 @@ public class GamePlayer extends Player {
         this.dead = dead;
     }
 
+    @Override
+    public void setPlayerXStartingPosition(Base greenBase, Base redBase) {
+        this.x = (int) calcPlayerXStartingPosition(greenBase, redBase, color);
+    }
+
+    @Override
+    public void setPlayerYStartingPosition(Base greenBase, Base redBase) {
+        this.y = (int) calcPlayerYStartingPosition(greenBase, redBase, color);
+    }
+
     /**
      * Calculates which way to shoot(UP, DOWN, RIGHT or LEFT).
      * If mouse is clicked, makes new bullet and adds it to the root and bullets list.
