@@ -404,6 +404,16 @@ public class AiPlayer extends Player {
         shoot(x, y, true);
     }
 
+    @Override
+    public void setPlayerXStartingPosition(Base greenBase, Base redBase) {
+        this.setX((int) calcPlayerXStartingPosition(greenBase, redBase, color));
+    }
+
+    @Override
+    public void setPlayerYStartingPosition(Base greenBase, Base redBase) {
+        this.setY((int) calcPlayerYStartingPosition(greenBase, redBase, color));
+    }
+
 
 
 

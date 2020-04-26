@@ -23,6 +23,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import static java.lang.StrictMath.abs;
+import static java.lang.StrictMath.random;
 
 
 public abstract class Player extends ImageView {
@@ -328,9 +329,7 @@ public abstract class Player extends ImageView {
      * @param greenBase base where to put green players
      * @param redBase   base where to put red players
      */
-    public void setPlayerXStartingPosition(Base greenBase, Base redBase) {
-        this.x = (int) calcPlayerXStartingPosition(greenBase, redBase, color);
-    }
+    public abstract void setPlayerXStartingPosition(Base greenBase, Base redBase);
 
     /**
      * Sets player y coordinate when game or new round starts.
@@ -338,9 +337,7 @@ public abstract class Player extends ImageView {
      * @param greenBase base where to put green players
      * @param redBase   base where to put red players
      */
-    public void setPlayerYStartingPosition(Base greenBase, Base redBase) {
-        this.y = (int) calcPlayerYStartingPosition(greenBase, redBase, color);
-    }
+    public abstract void setPlayerYStartingPosition(Base greenBase, Base redBase);
 
     public static double calcPlayerYStartingPosition(Base greenBase, Base redBase, GamePlayer.playerColor color) {
         Random positionPicker = new Random();
