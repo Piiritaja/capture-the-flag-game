@@ -171,6 +171,7 @@ public class Screen extends Application {
         return this.botLocationsXY;
     }
 
+
     /**
      * Setter method for botLocations.
      *
@@ -569,25 +570,32 @@ public class Screen extends Application {
     public void requestNodesFromOtherClients() {
         List<Base> bases = mapLoad.getBases();
         if (botLocationsXY.isEmpty()) {
+            System.out.println("Empty");
             createAi(GamePlayer.playerColor.GREEN);
             createAi(GamePlayer.playerColor.RED);
             botSpawner.spawnBots(4 - botsOnMap.size(), stage, root, bases, mapLoad.getObjectsOnMap(), true);
             botsOnMap = botSpawner.getBotsOnMap();
             master = true;
+            setBotLocationsXY(getBotLocationsXY());
         } else {
             Packet004RequestPlayers requestPlayers = new Packet004RequestPlayers();
             requestPlayers.battlefield = getChosenMap();
             client.sendTCP(requestPlayers);
-            for (Map.Entry<Integer, Double[]> entry : botLocationsXY.entrySet()) {
-                Double[] positions = entry.getValue();
-                int id = entry.getKey();
-                botSpawner.spawnBotsWithIdAndLocation(id, 4, (int) (positions[0] * stage.widthProperty().get()), (int) (positions[1] * stage.heightProperty().get()), stage, root, false);
-                botsOnMap = botSpawner.getBotsOnMap();
-            }
+            spawnBots();
             Packet015RequestAI requestAI = new Packet015RequestAI();
             requestAI.battlefield = this.getChosenMap();
             client.sendTCP(requestAI);
         }
+    }
+
+    public void spawnBots() {
+        for (Map.Entry<Integer, Double[]> entry : botLocationsXY.entrySet()) {
+            Double[] positions = entry.getValue();
+            int id = entry.getKey();
+            botSpawner.spawnBotsWithIdAndLocation(id, 4, (int) (positions[0] * stage.widthProperty().get()), (int) (positions[1] * stage.heightProperty().get()), stage, root, false);
+            botsOnMap = botSpawner.getBotsOnMap();
+        }
+
     }
 
     /**
@@ -779,7 +787,7 @@ public class Screen extends Application {
             root.getChildren().remove(bot);
         }
         botsOnMap.clear();
-        requestNodesFromOtherClients();
+        spawnBots();
         greenFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2);
         redFlag.relocate(greenBase.getRightX() - 50, greenBase.getBottomY() / 2 - redFlag.getHeight());
         redFlag.drop();
