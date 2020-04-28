@@ -482,15 +482,16 @@ public class Screen extends Application {
             }
         });
 
+        if (!client.isConnected() && canTickPlayers()) {
+            tickPlayers();
+        }
+
         stage.setFullScreen(fullScreen);
         stage.show();
 
         // save bot locations
         getBotLocationsOnMap();
         updateScale();
-        if (canTickPlayers()) {
-            tickPlayers();
-        }
         Packet018PlayerConnected playerConnected = new Packet018PlayerConnected();
         client.sendTCP(playerConnected);
 
