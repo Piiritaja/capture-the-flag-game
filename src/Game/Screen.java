@@ -525,6 +525,7 @@ public class Screen extends Application {
                             bot.botShooting(p, root);
                         }
                     }
+                    playersSpawningCorrection(p);
                 }
                 //Only this player can tick!
                 if (player != null) {
@@ -554,6 +555,31 @@ public class Screen extends Application {
             }
         };
         timer.start();
+    }
+
+    /**
+     * If player spawns on wall, finds new location.
+     * @param p Player
+     */
+    public void playersSpawningCorrection(Player p) {
+        if (p.getClass().equals(GamePlayer.class)) {
+            GamePlayer player = (GamePlayer) p;
+            for (Object object : objectsOnMap) {
+                if (object.collides(player)) {
+                    player.setPlayerXStartingPosition(greenBase, redBase);
+                    player.setPlayerYStartingPosition(greenBase, redBase);
+                }
+            }
+        }
+        if (p.getClass().equals(AiPlayer.class)) {
+            AiPlayer ai = (AiPlayer) p;
+            for (Object object : objectsOnMap) {
+                if (object.collides(ai.collisionBoundary)) {
+                    ai.setPlayerXStartingPosition(greenBase, redBase);
+                    ai.setPlayerYStartingPosition(greenBase, redBase);
+                }
+            }
+        }
     }
 
     public void updatePlayerLives(String id, int lives) {
@@ -768,8 +794,8 @@ public class Screen extends Application {
                     greenFlag.relocate(greenBase.getRightX() - 50,
                             greenBase.getBottomY() / 2);
                     greenTeamScore += 1;
-                    player.dropPickedUpFlag();
                     newRound();
+                    player.dropPickedUpFlag();
                 }
             }
         }

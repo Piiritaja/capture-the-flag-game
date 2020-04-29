@@ -36,7 +36,7 @@ public class AiPlayer extends Player {
 
     private Flag flag;
     private AnimationTimer timer;
-    private Circle collisionBoundary = new Circle();
+    public Circle collisionBoundary = new Circle();
     private Circle shootingBoundary = new Circle();
     private Client client;
     private boolean master;
