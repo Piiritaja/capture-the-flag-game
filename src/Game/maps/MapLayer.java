@@ -9,13 +9,13 @@ import javafx.scene.image.ImageView;
  */
 public class MapLayer extends ImageView {
 
-    private double layerWidth;
-    private double layerHeight;
+    private final double layerWidth = 1280;
+    private final double layerHeight = 800;
 
     MapLayer(String imageUrl) {
         Image layerImage = new Image(imageUrl);
-        this.layerWidth = layerImage.getWidth();
-        this.layerHeight = layerImage.getHeight();
+        this.setFitHeight(layerHeight);
+        this.setFitWidth(layerWidth);
         this.setImage(layerImage);
 
     }

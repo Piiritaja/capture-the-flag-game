@@ -30,8 +30,16 @@ public class Object extends ImageView {
     private int height = 32;
     private int row = 1;
     private int column = 1;
-    public static final String WOOD_TEXTURE = "assets/map/objects/wooden.png";
-    public static final String BRICK_TEXTURE = "assets/map/objects/brick2.png";
+    // Textures
+    public static final String WOOD5 = "assets/map/objects/textures/wood5.png";
+    public static final String WOOD6 = "assets/map/objects/textures/wood6.png";
+    public static final String WOOD7 = "assets/map/objects/textures/wood7.png";
+    public static final String WOOD8 = "assets/map/objects/textures/wood8.png";
+    public static final String BRICK1= "assets/map/objects/textures/brick1.png";
+    public static final String BRICK2= "assets/map/objects/textures/brick2.png";
+    public static final String BRICK3= "assets/map/objects/textures/brick3.png";
+    public static final String BRICK4= "assets/map/objects/textures/brick4.png";
+
     public static Battlefield mapType;
     public static int mapWidthInTiles = Screen.getMAP_WIDTH_IN_TILES();
     public static int mapHeightInTiles = Screen.getMAP_HEIGHT_IN_TILES();
@@ -39,6 +47,13 @@ public class Object extends ImageView {
     public Object(String texture) {
         this.setFitWidth(width);
         this.setFitHeight(height);
+        this.setImage(new Image(texture));
+    }
+
+    public Object() {
+    }
+
+    public void setTileTexture(String texture) {
         this.setImage(new Image(texture));
     }
 
@@ -170,29 +185,38 @@ public class Object extends ImageView {
                 column = 0;
                 field = line.split(",");
                 for (String character : field) {
-                    if (character.equals("1")) {
-                        Object tile = new Object(Object.BRICK_TEXTURE);
-                        tile.setRow(row);
-                        tile.setColumn(column);
-                        //tile.setX(stage.widthProperty().get() / mapWidthInTiles * column);
-                        tile.setFitWidth(stage.widthProperty().get() / mapWidthInTiles);
-                        tile.setFitHeight(stage.heightProperty().get() / mapHeightInTiles);
-                        tile.setX(column * mapWidthInTiles);
-                        tile.setY(row * mapHeightInTiles);
-                        root.getChildren().add(tile);
-                        walls.add(tile);
-                    } else if (character.equals("2")) {
-                        Object tile = new Object(Object.WOOD_TEXTURE);
-                        tile.setRow(row);
-                        tile.setColumn(column);
-                        //tile.setX(stage.widthProperty().get() / mapWidthInTiles * column);
-                        tile.setX(column * mapWidthInTiles);
-                        tile.setY(row * mapHeightInTiles);
-                        tile.setFitWidth(stage.widthProperty().get() / mapWidthInTiles);
-                        tile.setFitHeight(stage.heightProperty().get() / mapHeightInTiles);
-                        root.getChildren().add(tile);
-                        walls.add(tile);
+                    if (character.equals("0")) {
+                        column++;
+                        continue;
                     }
+                    Object tile = new Object();
+                    if (character.equals("1")) {
+                        tile.setTileTexture(Object.BRICK1);
+                    } else if (character.equals("2")) {
+                        tile.setTileTexture(Object.BRICK2);
+                    } else if (character.equals("3")) {
+                        tile.setTileTexture(Object.BRICK3);
+                    } else if (character.equals("4")) {
+                        tile.setTileTexture(Object.BRICK4);
+                    } else if (character.equals("5")) {
+                        tile.setTileTexture(Object.WOOD5);
+                    } else if (character.equals("6")) {
+                        tile.setTileTexture(Object.WOOD5);
+                    } else if (character.equals("7")) {
+                        tile.setTileTexture(Object.WOOD7);
+                    } else if (character.equals("8")) {
+                        tile.setTileTexture(Object.WOOD8);
+                    }
+
+                    tile.setRow(row);
+                    tile.setColumn(column);
+                    //tile.setX(stage.widthProperty().get() / mapWidthInTiles * column);
+                    tile.setFitWidth(stage.widthProperty().get() / mapWidthInTiles);
+                    tile.setFitHeight(stage.heightProperty().get() / mapHeightInTiles);
+                    tile.setX(column * mapWidthInTiles);
+                    tile.setY(row * mapHeightInTiles);
+                    root.getChildren().add(tile);
+                    walls.add(tile);
                     column++;
                 }
                 row++;
@@ -202,6 +226,7 @@ public class Object extends ImageView {
         }
         return walls;
     }
+
 
 
     /**
