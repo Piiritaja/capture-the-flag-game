@@ -183,7 +183,6 @@ public class AiPlayer extends Player {
         } else {
             destinationX = base.getRightX() - base.getWidth() / 2;
             destinationY = base.getTopY() + base.getHeight() / 2;
-            catchTheFlag();
         }
         final int offset = 2;
         if (destinationX < x - offset) {
@@ -211,6 +210,7 @@ public class AiPlayer extends Player {
             down = false;
             if (!flag.isPickedUp()) {
                 flag.pickUp();
+                flag.relocate(this.getX(), this.getY());
                 System.out.println("pickup");
             }
         }
@@ -362,16 +362,6 @@ public class AiPlayer extends Player {
 
     }
 
-    /**
-     * Player can catch the enemy team`s flag if intersects with it and bring to his base.
-     * If enemy team`s flag is brought to own base then the next round starts.
-     */
-    public void catchTheFlag() {
-        if (collisionBoundary.getBoundsInParent().intersects(flag.getBoundsInParent())) {
-            flag.setX(this.getX());
-            flag.setY(this.getY());
-        }
-    }
 
     /**
      * Calculates which way to shoot(UP, DOWN, RIGHT or LEFT).
