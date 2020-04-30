@@ -40,8 +40,8 @@ public abstract class Player extends ImageView {
 
 
     //Constants for player model graphics
-    static final String RED_PLAYER_MAIN_IMAGE = "assets/player/red/still.png";
-    static final String GREEN_PLAYER_MAIN_IMAGE = "assets/player/green/still.png";
+    static final String RED_PLAYER_MAIN_IMAGE = "/player/red/still.png";
+    static final String GREEN_PLAYER_MAIN_IMAGE = "/player/green/still.png";
     Image image;
     Image walkingRightImage;
     Image walkingLeftImage;
@@ -75,17 +75,17 @@ public abstract class Player extends ImageView {
 
     public Player(int x, int y, int dx, int dy, GamePlayer.playerColor color) {
         if (color.equals(GamePlayer.playerColor.GREEN)) {
-            image = new Image(GREEN_PLAYER_MAIN_IMAGE);
-            walkingRightImage = new Image("assets/player/green/walkingRight.png");
-            walkingLeftImage = new Image("assets/player/green/walkingLeft.png");
-            walkingUpImage = new Image("assets/player/green/walkingUp.png");
-            walkingDownImage = new Image("assets/player/green/walkingDown.png");
+            image = new Image(Player.class.getResourceAsStream(GREEN_PLAYER_MAIN_IMAGE));
+            walkingRightImage = new Image(Player.class.getResourceAsStream("/player/green/walkingRight.png"));
+            walkingLeftImage = new Image(Player.class.getResourceAsStream("/player/green/walkingLeft.png"));
+            walkingUpImage = new Image(Player.class.getResourceAsStream("/player/green/walkingUp.png"));
+            walkingDownImage = new Image(Player.class.getResourceAsStream("/player/green/walkingDown.png"));
         } else if (color.equals(GamePlayer.playerColor.RED)) {
             image = new Image(RED_PLAYER_MAIN_IMAGE);
-            walkingRightImage = new Image("assets/player/red/walkingRight.png");
-            walkingLeftImage = new Image("assets/player/red/walkingLeft.png");
-            walkingUpImage = new Image("assets/player/red/walkingUp.png");
-            walkingDownImage = new Image("assets/player/red/walkingDown.png");
+            walkingRightImage = new Image(Player.class.getResourceAsStream("/player/red/walkingRight.png"));
+            walkingLeftImage = new Image(Player.class.getResourceAsStream("/player/red/walkingLeft.png"));
+            walkingUpImage = new Image(Player.class.getResourceAsStream("/player/red/walkingUp.png"));
+            walkingDownImage = new Image(Player.class.getResourceAsStream("/player/red/walkingDown.png"));
         } else {
             image = new Image(RED_PLAYER_MAIN_IMAGE);
         }

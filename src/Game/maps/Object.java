@@ -16,6 +16,8 @@ import javafx.stage.Stage;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,14 +33,14 @@ public class Object extends ImageView {
     private int row = 1;
     private int column = 1;
     // Textures
-    public static final String WOOD5 = "assets/map/objects/textures/wood5.png";
-    public static final String WOOD6 = "assets/map/objects/textures/wood6.png";
-    public static final String WOOD7 = "assets/map/objects/textures/wood7.png";
-    public static final String WOOD8 = "assets/map/objects/textures/wood8.png";
-    public static final String BRICK1= "assets/map/objects/textures/brick1.png";
-    public static final String BRICK2= "assets/map/objects/textures/brick2.png";
-    public static final String BRICK3= "assets/map/objects/textures/brick3.png";
-    public static final String BRICK4= "assets/map/objects/textures/brick4.png";
+    public static final String WOOD5 = "/map/objects/textures/wood5.png";
+    public static final String WOOD6 = "/map/objects/textures/wood6.png";
+    public static final String WOOD7 = "/map/objects/textures/wood7.png";
+    public static final String WOOD8 = "/map/objects/textures/wood8.png";
+    public static final String BRICK1= "/map/objects/textures/brick1.png";
+    public static final String BRICK2= "/map/objects/textures/brick2.png";
+    public static final String BRICK3= "/map/objects/textures/brick3.png";
+    public static final String BRICK4= "/map/objects/textures/brick4.png";
 
     public static Battlefield mapType;
     public static int mapWidthInTiles = Screen.getMAP_WIDTH_IN_TILES();
@@ -54,7 +56,7 @@ public class Object extends ImageView {
     }
 
     public void setTileTexture(String texture) {
-        this.setImage(new Image(texture));
+        this.setImage(new Image(Object.class.getResourceAsStream(texture)));
     }
 
     /**
@@ -180,7 +182,8 @@ public class Object extends ImageView {
         String[] field;
         List<Object> walls = new ArrayList<>();
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(objectCsv));
+            InputStream csvFile = Object.class.getResourceAsStream(objectCsv);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(csvFile));
             while ((line = reader.readLine()) != null) {
                 column = 0;
                 field = line.split(",");
@@ -201,7 +204,7 @@ public class Object extends ImageView {
                     } else if (character.equals("5")) {
                         tile.setTileTexture(Object.WOOD5);
                     } else if (character.equals("6")) {
-                        tile.setTileTexture(Object.WOOD5);
+                        tile.setTileTexture(Object.WOOD6);
                     } else if (character.equals("7")) {
                         tile.setTileTexture(Object.WOOD7);
                     } else if (character.equals("8")) {
@@ -238,9 +241,9 @@ public class Object extends ImageView {
     private static String setCsv(Battlefield map) {
         switch (map) {
             case MAP1:
-                return "src/assets/map/objects/map1walls.csv";
+                return "/map/objects/map1walls.csv";
             case MAP2:
-                return "src/assets/map/objects/map2walls.csv";
+                return "/map/objects/map2walls.csv";
         }
         return null;
     }
