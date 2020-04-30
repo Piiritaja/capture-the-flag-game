@@ -27,7 +27,11 @@ import networking.packets.Packet019UpdateScore;
 import networking.packets.Packet020RequestScores;
 import networking.packets.Packet021SendScores;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
+
+
 import java.io.IOException;
+import java.time.LocalTime;
 
 
 public class GameServer {
@@ -39,6 +43,7 @@ public class GameServer {
     private int totalNumberOfConnections;
     private int redTeamScore;
     private int greenTeamScore;
+    private LocalTime time = LocalTime.now();
 
     //Server ports
     private static final int TCP_PORT = 5201;
@@ -101,12 +106,13 @@ public class GameServer {
     }
 
     public void updateTeamScores(String team, int score) {
-        if (team.equals("G")) {
-            greenTeamScore = score;
-        } else if (team.equals("R")) {
-            redTeamScore = score;
+        if (SECONDS.between(LocalTime.now(), time) > 10) {
+            if (team.equals("G")) {
+                greenTeamScore = score;
+            } else if (team.equals("R")) {
+                redTeamScore = score;
+            }
         }
-
     }
 
     public int getRedTeamScore() {
