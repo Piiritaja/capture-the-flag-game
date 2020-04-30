@@ -37,7 +37,7 @@ public class ServerClient {
 
     // Server ip address
     // Virtual server at 193.40.255.35
-    private static final String SERVER_IP = "193.40.255.35";
+    private static final String SERVER_IP = "192.168.1.200";
 
     //Server ports
     private static final int TCP_PORT = 5201;
