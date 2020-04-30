@@ -41,6 +41,7 @@ import networking.packets.Packet008SendPlayerID;
 import networking.packets.Packet012UpdatePlayerPosition;
 import networking.packets.Packet015RequestAI;
 import networking.packets.Packet018PlayerConnected;
+import networking.packets.Packet019UpdateScore;
 
 import java.util.List;
 import java.util.Map;
@@ -559,6 +560,7 @@ public class Screen extends Application {
 
     /**
      * If player spawns on wall, finds new location.
+     *
      * @param p Player
      */
     public void playersSpawningCorrection(Player p) {
