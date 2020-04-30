@@ -178,6 +178,7 @@ public class AiPlayer extends Player {
         rightFree = true;
         double baseMiddleX = base.getRightX() - base.getWidth() / 2;
 
+        // If the flag is already picked up and the AI is in it's home base, it moves up and down in it's home base
         final double baseMovementOffset = 80;
         if (collisionBoundary.getBoundsInParent().intersects(base.getBoundsInParent())
                 && (x >= baseMiddleX - baseMovementOffset && x <= baseMiddleX + baseMovementOffset)
@@ -207,6 +208,7 @@ public class AiPlayer extends Player {
             }
             return;
         }
+
         if (!flag.isPickedUp()) {
             destinationX = flag.getX();
             destinationY = flag.getY();
