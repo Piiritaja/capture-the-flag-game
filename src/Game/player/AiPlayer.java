@@ -176,12 +176,44 @@ public class AiPlayer extends Player {
         primaryY = 1;
         leftFree = true;
         rightFree = true;
+        double baseMiddleX = base.getRightX() - base.getWidth() / 2;
+
+        // If the flag is already picked up and the AI is in it's home base, it moves up and down in it's home base
+        final double baseMovementOffset = 80;
+        if (collisionBoundary.getBoundsInParent().intersects(base.getBoundsInParent())
+                && (x >= baseMiddleX - baseMovementOffset && x <= baseMiddleX + baseMovementOffset)
+                && flag.isPickedUp()) {
+            if (primaryMovementDirection.equals(PrimaryMovementDirection.UP) && y <= base.getTopY() + baseMovementOffset) {
+                down = true;
+                primaryY = 1;
+                up = false;
+                primaryMovementDirection = PrimaryMovementDirection.DOWN;
+            } else if (primaryMovementDirection.equals(PrimaryMovementDirection.DOWN)
+                    && y >= base.getBottomY() - baseMovementOffset) {
+                up = true;
+                down = false;
+                primaryY = -1;
+                primaryMovementDirection = PrimaryMovementDirection.UP;
+            } else {
+                if (primaryMovementDirection.equals(PrimaryMovementDirection.UP)) {
+                    primaryY = -1;
+                    up = true;
+                    down = false;
+                } else {
+                    primaryY = 1;
+                    primaryMovementDirection = PrimaryMovementDirection.DOWN;
+                    down = true;
+                    up = false;
+                }
+            }
+            return;
+        }
 
         if (!flag.isPickedUp()) {
             destinationX = flag.getX();
             destinationY = flag.getY();
         } else {
-            destinationX = base.getRightX() - base.getWidth() / 2;
+            destinationX = baseMiddleX;
             destinationY = base.getTopY() + base.getHeight() / 2;
         }
         final int offset = 2;
