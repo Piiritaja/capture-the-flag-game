@@ -56,7 +56,6 @@ sourceSets {
 
 
 mainClassName = 'Launcher'
-libsDirName = 'src/jar'
 
 jar {
     manifest {
