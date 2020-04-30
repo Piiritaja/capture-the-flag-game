@@ -24,6 +24,7 @@ import networking.packets.Packet015RequestAI;
 import networking.packets.Packet016SendAiPlayer;
 import networking.packets.Packet017GamePlayerShoot;
 import networking.packets.Packet018PlayerConnected;
+import networking.packets.Packet021SendScores;
 
 import java.util.List;
 
@@ -223,6 +224,9 @@ public class ClientNetworkListener extends Listener {
                     serverClient.getMenu().getScreen().tickPlayers();
                 }
             });
+
+        } else if (object instanceof Packet021SendScores) {
+            serverClient.getMenu().getScreen().setScores(((Packet021SendScores) object).redScore, ((Packet021SendScores) object).greenScore);
         }
     }
 

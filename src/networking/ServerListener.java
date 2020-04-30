@@ -22,6 +22,9 @@ import networking.packets.Packet015RequestAI;
 import networking.packets.Packet016SendAiPlayer;
 import networking.packets.Packet017GamePlayerShoot;
 import networking.packets.Packet018PlayerConnected;
+import networking.packets.Packet019UpdateScore;
+import networking.packets.Packet020RequestScores;
+import networking.packets.Packet021SendScores;
 
 public class ServerListener extends Listener {
     private Server server;
@@ -119,6 +122,12 @@ public class ServerListener extends Listener {
             server.sendToAllExceptUDP(connection.getID(), object);
         } else if (object instanceof Packet018PlayerConnected) {
             server.sendToAllTCP(object);
+        } else if (object instanceof Packet019UpdateScore) {
+            gameServer.updateTeamScores(((Packet019UpdateScore) object).team, ((Packet019UpdateScore) object).score);
+            Packet021SendScores sendScores = new Packet021SendScores();
+            sendScores.greenScore = gameServer.getGreenTeamScore();
+            sendScores.redScore = gameServer.getRedTeamScore();
+            server.sendToAllTCP(sendScores);
         }
 
     }

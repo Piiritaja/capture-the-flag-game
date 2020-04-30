@@ -200,6 +200,13 @@ public class Screen extends Application {
     private Flag redFlag;
 
 
+    public void setScores(int redScore, int greenScore) {
+        this.redTeamScore = redScore;
+        this.greenTeamScore = greenScore;
+        scoreBoard();
+        System.out.println("Set scores");
+    }
+
     public static int getMAP_WIDTH_IN_TILES() {
         return MAP_WIDTH_IN_TILES;
     }
@@ -781,6 +788,11 @@ public class Screen extends Application {
                 } else {
                     redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
                     redTeamScore += 1;
+                    Packet019UpdateScore updateScore = new Packet019UpdateScore();
+                    updateScore.team = "R";
+                    updateScore.score = redTeamScore;
+                    updateScore.map = this.chosenMap;
+                    client.sendTCP(updateScore);
                     newRound();
                     player.dropPickedUpFlag();
                 }
@@ -796,6 +808,11 @@ public class Screen extends Application {
                     greenFlag.relocate(greenBase.getRightX() - 50,
                             greenBase.getBottomY() / 2);
                     greenTeamScore += 1;
+                    Packet019UpdateScore updateScore = new Packet019UpdateScore();
+                    updateScore.team = "G";
+                    updateScore.score = greenTeamScore;
+                    updateScore.map = this.chosenMap;
+                    client.sendTCP(updateScore);
                     newRound();
                     player.dropPickedUpFlag();
                 }

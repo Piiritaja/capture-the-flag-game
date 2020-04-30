@@ -24,6 +24,8 @@ import networking.packets.Packet016SendAiPlayer;
 import networking.packets.Packet017GamePlayerShoot;
 import networking.packets.Packet018PlayerConnected;
 import networking.packets.Packet019UpdateScore;
+import networking.packets.Packet020RequestScores;
+import networking.packets.Packet021SendScores;
 
 import java.io.IOException;
 
@@ -35,6 +37,8 @@ public class GameServer {
     private ServerListener serverListener;
     private int numberOfConnections;
     private int totalNumberOfConnections;
+    private int redTeamScore;
+    private int greenTeamScore;
 
     //Server ports
     private static final int TCP_PORT = 5201;
@@ -96,6 +100,24 @@ public class GameServer {
 
     }
 
+    public void updateTeamScores(String team, int score) {
+        if (team.equals("G")) {
+            greenTeamScore = score;
+        } else if (team.equals("R")) {
+            redTeamScore = score;
+        }
+
+    }
+
+    public int getRedTeamScore() {
+        return this.greenTeamScore;
+
+    }
+
+    public int getGreenTeamScore() {
+        return this.redTeamScore;
+    }
+
 
     /**
      * Register packets for server listener.
@@ -123,6 +145,8 @@ public class GameServer {
         kryo.register(Packet017GamePlayerShoot.class);
         kryo.register(Packet018PlayerConnected.class);
         kryo.register(Packet019UpdateScore.class);
+        kryo.register(Packet020RequestScores.class);
+        kryo.register(Packet021SendScores.class);
         kryo.register(java.util.Map.class);
         kryo.register(java.util.HashMap.class);
         kryo.register(Double[].class);
