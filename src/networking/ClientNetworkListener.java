@@ -226,7 +226,7 @@ public class ClientNetworkListener extends Listener {
             });
 
         } else if (object instanceof Packet021SendScores) {
-            serverClient.getMenu().getScreen().setScores(((Packet021SendScores) object).redScore, ((Packet021SendScores) object).greenScore);
+            Platform.runLater(() -> serverClient.getMenu().getScreen().setScores(((Packet021SendScores) object).redScore, ((Packet021SendScores) object).greenScore));
         }
     }
 
