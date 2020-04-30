@@ -110,12 +110,12 @@ public class GameServer {
     }
 
     public int getRedTeamScore() {
-        return this.greenTeamScore;
+        return this.redTeamScore;
 
     }
 
     public int getGreenTeamScore() {
-        return this.redTeamScore;
+        return this.greenTeamScore;
     }
 
 
