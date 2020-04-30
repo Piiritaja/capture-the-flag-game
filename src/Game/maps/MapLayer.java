@@ -13,7 +13,7 @@ public class MapLayer extends ImageView {
     private final double layerHeight = 800;
 
     MapLayer(String imageUrl) {
-        Image layerImage = new Image(imageUrl);
+        Image layerImage = new Image(MapLayer.class.getResourceAsStream(imageUrl));
         this.setFitHeight(layerHeight);
         this.setFitWidth(layerWidth);
         this.setImage(layerImage);

@@ -125,7 +125,7 @@ public class MapLoad {
      * @param stage JavaFx Stage that is used in the main window.
      */
     public void loadMap2(Group root, Stage stage) {
-        floorImagePath = "assets/map/2teams/map2/floor.png";
+        floorImagePath = "/map/2teams/map2/floor.png";
         // floor.png is 1280x800
         mapToLoad = Battlefield.MAP2;
         loadMap(root, stage);
@@ -139,7 +139,7 @@ public class MapLoad {
      * @param stage JavaFx Stage that is used in the main window.
      */
     public void loadMap1(Group root, Stage stage) {
-        floorImagePath = "assets/map/2teams/map1/floor.png";
+        floorImagePath = "/map/2teams/map1/floor.png";
         mapToLoad = Battlefield.MAP1;
         loadMap(root, stage);
     }
