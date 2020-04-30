@@ -17,9 +17,6 @@ import javafx.stage.StageStyle;
 import networking.ServerClient;
 import networking.packets.Packet006RequestBotsLocation;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -93,16 +90,8 @@ public class Menu extends Application {
         Button button3 = new Button("Full screen mode");
 
         ImageView imageViewCtf = new ImageView();
-        try {
-            FileInputStream inputCtfImage = new FileInputStream("src/assets/pngwave.png");
-            Image ctfImage = new Image(inputCtfImage);
-            imageViewCtf.setImage(ctfImage);
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+        Image ctfImage = new Image(Menu.class.getResourceAsStream("/pngwave.png"));
+        imageViewCtf.setImage(ctfImage);
 
         imageViewCtf.setFitWidth(IMAGE_WIDTH);
         imageViewCtf.setFitHeight(IMAGE_HEIGHT);
@@ -285,21 +274,13 @@ public class Menu extends Application {
      * @return Team colors as ImageView items.
      */
     private List<ImageView> loadTeamColors() {
+        Image teamGreenImage = new Image(Menu.class.getResourceAsStream("/misc/green_team_circle.png"));
+        ImageView teamGreenImageView = new ImageView(teamGreenImage);
 
-        try {
-            FileInputStream teamGreenInputStream = new FileInputStream("src/assets/misc/green_team_circle.png");
-            Image teamGreenImage = new Image(teamGreenInputStream);
-            ImageView teamGreenImageView = new ImageView(teamGreenImage);
+        Image teamRedImage = new Image(Menu.class.getResourceAsStream("/misc/red_team_circle.png"));
+        ImageView teamRedImageView = new ImageView(teamRedImage);
 
-            FileInputStream teamRedInputStream = new FileInputStream("src/assets/misc/red_team_circle.png");
-            Image teamRedImage = new Image(teamRedInputStream);
-            ImageView teamRedImageView = new ImageView(teamRedImage);
-
-            return Arrays.asList(teamGreenImageView, teamRedImageView);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
+        return Arrays.asList(teamGreenImageView, teamRedImageView);
 
 
     }
@@ -363,46 +344,28 @@ public class Menu extends Application {
      */
     public List<ImageView> loadMapImages() {
 
-        try {
-            FileInputStream map1InputStream = new FileInputStream("src/assets/map/2teams/map1/testmap1.png");
-            Image map1Image = new Image(map1InputStream);
-            ImageView map1ImageView = new ImageView(map1Image);
+        Image map1Image = new Image(Menu.class.getResourceAsStream("/map/2teams/map1/testmap1.png"));
+        ImageView map1ImageView = new ImageView(map1Image);
 
-            FileInputStream map2InputStream = new FileInputStream("src/assets/map/2teams/map2/map2.png");
-            Image map2Image = new Image(map2InputStream);
-            ImageView map2ImageView = new ImageView(map2Image);
-            return Arrays.asList(map1ImageView, map2ImageView);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
+        Image map2Image = new Image(Menu.class.getResourceAsStream("/map/2teams/map2/map2.png"));
+        ImageView map2ImageView = new ImageView(map2Image);
+        return Arrays.asList(map1ImageView, map2ImageView);
 
 
     }
 
     public List<ImageView> loadPlayerNumbers() {
-        try {
-            FileInputStream map1InputStream = new FileInputStream("src/assets/misc/1Player.png");
-            Image map1Image = new Image(map1InputStream);
-            ImageView map1ImageView = new ImageView(map1Image);
+        Image map1Image = new Image(Menu.class.getResourceAsStream("/misc/1Player.png"));
+        ImageView map1ImageView = new ImageView(map1Image);
+        Image map2Image = new Image(Menu.class.getResourceAsStream("/misc/2players.png"));
+        ImageView map2ImageView = new ImageView(map2Image);
 
-            FileInputStream map2InputStream = new FileInputStream("src/assets/misc/2players.png");
-            Image map2Image = new Image(map2InputStream);
-            ImageView map2ImageView = new ImageView(map2Image);
+        Image map3Image = new Image(Menu.class.getResourceAsStream("/misc/3players.png"));
+        ImageView map3ImageView = new ImageView(map3Image);
 
-            FileInputStream map3InputStream = new FileInputStream("src/assets/misc/3players.png");
-            Image map3Image = new Image(map3InputStream);
-            ImageView map3ImageView = new ImageView(map3Image);
-
-            FileInputStream map4InputStream = new FileInputStream("src/assets/misc/4players.png");
-            Image map4Image = new Image(map4InputStream);
-            ImageView map4ImageView = new ImageView(map4Image);
-            return Arrays.asList(map1ImageView, map2ImageView, map3ImageView, map4ImageView);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
+        Image map4Image = new Image(Menu.class.getResourceAsStream("/misc/4players.png"));
+        ImageView map4ImageView = new ImageView(map4Image);
+        return Arrays.asList(map1ImageView, map2ImageView, map3ImageView, map4ImageView);
     }
 
     /**
@@ -431,7 +394,7 @@ public class Menu extends Application {
         this.mainStage = primaryStage;
 
         Scene scene = setUpPrimaryScene();
-        scene.getStylesheets().add("assets/button-style.css");
+        scene.getStylesheets().add(Menu.class.getResource("/buttonStyle.css").toExternalForm());
         mainStage.setScene(scene);
         configurePrimaryStage();
 

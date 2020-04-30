@@ -1,10 +1,12 @@
 plugins {
+    id 'java'
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.0.8'
 }
 
-sourceCompatibility = 11
+sourceCompatibility = 8
 
+version = '1.0.0'
 
 repositories {
     mavenCentral()
@@ -15,21 +17,52 @@ repositories {
 
 javafx {
     version = "11"
-    modules = ['javafx.controls']
+    modules = ['javafx.controls', 'javafx.graphics', 'javafx.base', 'javafx.media']
+}
+
+def currentOS = org.gradle.internal.os.OperatingSystem.current()
+def platform
+if (currentOS.isWindows()) {
+    platform = 'win'
+} else if (currentOS.isLinux()) {
+    platform = 'linux'
+} else if (currentOS.isMacOsX()) {
+    platform = 'mac'
 }
 
 dependencies {
     compile group: 'kryonet', name: 'kryonet-all', version: '2.21'
-
+    compile "org.openjfx:javafx-base:11:${platform}"
+    compile "org.openjfx:javafx-graphics:11:${platform}"
+    compile "org.openjfx:javafx-controls:11:${platform}"
+    compile "org.openjfx:javafx-media:11:${platform}"
+    testCompile "org.testfx:testfx-core:4.0.16-alpha"
+    testCompile 'org.junit.jupiter:junit-jupiter-api:5.5.1'
+    testCompile "org.testfx:testfx-junit5:4.0.16-alpha"
+    testCompile group: 'org.hamcrest', name: 'hamcrest', version: '2.1'
+    testCompile group: 'org.assertj', name: 'assertj-core', version: '3.13.2'
 }
 
 sourceSets {
-    main.java.srcDir "src"
+    main {
+        java {
+            srcDir("src")
+        }
+        resources {
+            srcDir("src/assets")
+        }
+    }
 }
+
+
+mainClassName = 'Launcher'
 
 jar {
-    from configurations.compile.collect { zipTree it }
-    manifest.attributes "Main-Class": "networking.GameServer"
+    manifest {
+        attributes ("Implementation-Title": "Gradle",
+                'Main-Class': 'Launcher')
+    }
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }
-
-mainClassName = 'networking.GameServer'
