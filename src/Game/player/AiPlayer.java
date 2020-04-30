@@ -36,7 +36,7 @@ public class AiPlayer extends Player {
 
     private Flag flag;
     private AnimationTimer timer;
-    private Circle collisionBoundary = new Circle();
+    public Circle collisionBoundary = new Circle();
     private Circle shootingBoundary = new Circle();
     private Client client;
     private boolean master;
@@ -176,14 +176,45 @@ public class AiPlayer extends Player {
         primaryY = 1;
         leftFree = true;
         rightFree = true;
+        double baseMiddleX = base.getRightX() - base.getWidth() / 2;
+
+        // If the flag is already picked up and the AI is in it's home base, it moves up and down in it's home base
+        final double baseMovementOffset = 80;
+        if (collisionBoundary.getBoundsInParent().intersects(base.getBoundsInParent())
+                && (x >= baseMiddleX - baseMovementOffset && x <= baseMiddleX + baseMovementOffset)
+                && flag.isPickedUp()) {
+            if (primaryMovementDirection.equals(PrimaryMovementDirection.UP) && y <= base.getTopY() + baseMovementOffset) {
+                down = true;
+                primaryY = 1;
+                up = false;
+                primaryMovementDirection = PrimaryMovementDirection.DOWN;
+            } else if (primaryMovementDirection.equals(PrimaryMovementDirection.DOWN)
+                    && y >= base.getBottomY() - baseMovementOffset) {
+                up = true;
+                down = false;
+                primaryY = -1;
+                primaryMovementDirection = PrimaryMovementDirection.UP;
+            } else {
+                if (primaryMovementDirection.equals(PrimaryMovementDirection.UP)) {
+                    primaryY = -1;
+                    up = true;
+                    down = false;
+                } else {
+                    primaryY = 1;
+                    primaryMovementDirection = PrimaryMovementDirection.DOWN;
+                    down = true;
+                    up = false;
+                }
+            }
+            return;
+        }
 
         if (!flag.isPickedUp()) {
             destinationX = flag.getX();
             destinationY = flag.getY();
         } else {
-            destinationX = base.getRightX() - base.getWidth() / 2;
+            destinationX = baseMiddleX;
             destinationY = base.getTopY() + base.getHeight() / 2;
-            catchTheFlag();
         }
         final int offset = 2;
         if (destinationX < x - offset) {
@@ -211,6 +242,7 @@ public class AiPlayer extends Player {
             down = false;
             if (!flag.isPickedUp()) {
                 flag.pickUp();
+                flag.relocate(this.getX(), this.getY());
                 System.out.println("pickup");
             }
         }
@@ -362,16 +394,6 @@ public class AiPlayer extends Player {
 
     }
 
-    /**
-     * Player can catch the enemy team`s flag if intersects with it and bring to his base.
-     * If enemy team`s flag is brought to own base then the next round starts.
-     */
-    public void catchTheFlag() {
-        if (collisionBoundary.getBoundsInParent().intersects(flag.getBoundsInParent())) {
-            flag.setX(this.getX());
-            flag.setY(this.getY());
-        }
-    }
 
     /**
      * Calculates which way to shoot(UP, DOWN, RIGHT or LEFT).

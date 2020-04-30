@@ -390,7 +390,15 @@ public class Menu extends Application {
             FileInputStream map2InputStream = new FileInputStream("src/assets/misc/2players.png");
             Image map2Image = new Image(map2InputStream);
             ImageView map2ImageView = new ImageView(map2Image);
-            return Arrays.asList(map1ImageView, map2ImageView);
+
+            FileInputStream map3InputStream = new FileInputStream("src/assets/misc/3players.png");
+            Image map3Image = new Image(map3InputStream);
+            ImageView map3ImageView = new ImageView(map3Image);
+
+            FileInputStream map4InputStream = new FileInputStream("src/assets/misc/4players.png");
+            Image map4Image = new Image(map4InputStream);
+            ImageView map4ImageView = new ImageView(map4Image);
+            return Arrays.asList(map1ImageView, map2ImageView, map3ImageView, map4ImageView);
         } catch (IOException e) {
             e.printStackTrace();
             return new ArrayList<>();

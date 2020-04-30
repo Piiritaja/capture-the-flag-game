@@ -41,6 +41,7 @@ import networking.packets.Packet008SendPlayerID;
 import networking.packets.Packet012UpdatePlayerPosition;
 import networking.packets.Packet015RequestAI;
 import networking.packets.Packet018PlayerConnected;
+import networking.packets.Packet019UpdateScore;
 
 import java.util.List;
 import java.util.Map;
@@ -525,6 +526,7 @@ public class Screen extends Application {
                             bot.botShooting(p, root);
                         }
                     }
+                    playersSpawningCorrection(p);
                 }
                 //Only this player can tick!
                 if (player != null) {
@@ -554,6 +556,32 @@ public class Screen extends Application {
             }
         };
         timer.start();
+    }
+
+    /**
+     * If player spawns on wall, finds new location.
+     *
+     * @param p Player
+     */
+    public void playersSpawningCorrection(Player p) {
+        if (p.getClass().equals(GamePlayer.class)) {
+            GamePlayer player = (GamePlayer) p;
+            for (Object object : objectsOnMap) {
+                if (object.collides(player)) {
+                    player.setPlayerXStartingPosition(greenBase, redBase);
+                    player.setPlayerYStartingPosition(greenBase, redBase);
+                }
+            }
+        }
+        if (p.getClass().equals(AiPlayer.class)) {
+            AiPlayer ai = (AiPlayer) p;
+            for (Object object : objectsOnMap) {
+                if (object.collides(ai.collisionBoundary)) {
+                    ai.setPlayerXStartingPosition(greenBase, redBase);
+                    ai.setPlayerYStartingPosition(greenBase, redBase);
+                }
+            }
+        }
     }
 
     public void updatePlayerLives(String id, int lives) {
@@ -748,7 +776,7 @@ public class Screen extends Application {
                 if (player.getPickedUpFlag() == null && !redFlag.isPickedUp()) {
                     player.pickupFlag(redFlag);
                 }
-                if (player.getX() > redBase.getRightX() - redBase.getRightX() / 5) {
+                if (!player.getBoundsInParent().intersects(redBase.getBoundsInParent())) {
                     redFlag.relocate(player.getX() + 10, player.getY() + 10);
                 } else {
                     redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
@@ -762,14 +790,14 @@ public class Screen extends Application {
                 if (player.getPickedUpFlag() == null && !greenFlag.isPickedUp()) {
                     player.pickupFlag(greenFlag);
                 }
-                if (player.getX() < greenBase.getLeftX()) {
+                if (!player.getBoundsInParent().intersects(greenBase.getBoundsInParent())) {
                     greenFlag.relocate(player.getX() + 10, player.getY() + 10);
                 } else {
                     greenFlag.relocate(greenBase.getRightX() - 50,
                             greenBase.getBottomY() / 2);
                     greenTeamScore += 1;
-                    player.dropPickedUpFlag();
                     newRound();
+                    player.dropPickedUpFlag();
                 }
             }
         }
@@ -780,6 +808,8 @@ public class Screen extends Application {
      * Sets new score, sets all players, bots and flags to starting position.
      */
     public void newRound() {
+        System.out.println(greenFlag.isPickedUp());
+        System.out.println(redFlag.isPickedUp());
         root.getChildren().remove(stack);
         scoreBoard();
         timer.stop();
@@ -796,6 +826,9 @@ public class Screen extends Application {
         deadPlayers.clear();
         player.setDead(false);
         for (Player p : players) {
+            if (player.getPickedUpFlag() != null) {
+                player.dropPickedUpFlag();
+            }
             Timeline playtime = new Timeline(
                     new KeyFrame(Duration.seconds(0), event -> p.setPlayerXStartingPosition(greenBase, redBase)),
                     new KeyFrame(Duration.seconds(0), event -> p.setPlayerYStartingPosition(greenBase, redBase)),
