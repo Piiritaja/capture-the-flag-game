@@ -106,12 +106,13 @@ public class GameServer {
     }
 
     public void updateTeamScores(String team, int score) {
-        if (SECONDS.between(LocalTime.now(), time) > 10) {
+        if (SECONDS.between(LocalTime.now(), time) > 5) {
             if (team.equals("G")) {
                 greenTeamScore = score;
             } else if (team.equals("R")) {
                 redTeamScore = score;
             }
+            time = LocalTime.now();
         }
     }
 
