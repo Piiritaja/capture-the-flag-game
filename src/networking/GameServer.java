@@ -43,12 +43,15 @@ public class GameServer {
     private int totalNumberOfConnections;
     private int redTeamScore;
     private int greenTeamScore;
-    private LocalTime time = LocalTime.now();
+    private LocalTime time;
 
     //Server ports
     private static final int TCP_PORT = 5201;
     private static final int UDP_PORT = 5200;
 
+    public void setTime() {
+        time = LocalTime.now();
+    }
 
     /**
      * Save the number of connected clients to a variable.
@@ -84,6 +87,7 @@ public class GameServer {
         this.server = new Server();
         this.serverListener = new ServerListener(this.server, this);
         setUpServer();
+        setTime();
 
     }
 
