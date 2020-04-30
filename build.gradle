@@ -4,7 +4,7 @@ plugins {
     id 'org.openjfx.javafxplugin' version '0.0.8'
 }
 
-sourceCompatibility = 11
+sourceCompatibility = 8
 
 version = '1.0.0'
 
@@ -36,6 +36,11 @@ dependencies {
     compile "org.openjfx:javafx-graphics:11:${platform}"
     compile "org.openjfx:javafx-controls:11:${platform}"
     compile "org.openjfx:javafx-media:11:${platform}"
+    testCompile "org.testfx:testfx-core:4.0.16-alpha"
+    testCompile 'org.junit.jupiter:junit-jupiter-api:5.5.1'
+    testCompile "org.testfx:testfx-junit5:4.0.16-alpha"
+    testCompile group: 'org.hamcrest', name: 'hamcrest', version: '2.1'
+    testCompile group: 'org.assertj', name: 'assertj-core', version: '3.13.2'
 }
 
 sourceSets {
@@ -51,6 +56,7 @@ sourceSets {
 
 
 mainClassName = 'Launcher'
+libsDirName = 'src/jar'
 
 jar {
     manifest {
