@@ -1,5 +1,5 @@
 package networking.packets;
 
-public class Packet008SendPlayerID extends Packet {
+public class Packet008SendPlayerID {
     public String playerID = "";
 }

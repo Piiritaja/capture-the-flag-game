@@ -3,12 +3,12 @@ package Game.player;
 import Game.maps.Base;
 import Game.maps.MapLoad;
 import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Path;
@@ -19,8 +19,11 @@ import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static java.lang.StrictMath.abs;
+import static java.lang.StrictMath.random;
 
 
 public abstract class Player extends ImageView {
@@ -44,7 +47,7 @@ public abstract class Player extends ImageView {
     Image walkingLeftImage;
     Image walkingUpImage;
     Image walkingDownImage;
-    AnchorPane root;
+    Group root;
     public int lives;
     boolean dead = false;
     public Timeline playerDead = new Timeline();
@@ -172,7 +175,7 @@ public abstract class Player extends ImageView {
      *
      * @param root The group for this player.
      */
-    public void setRoot(AnchorPane root) {
+    public void setRoot(Group root) {
         this.root = root;
     }
 
@@ -201,8 +204,8 @@ public abstract class Player extends ImageView {
     }
 
     public void pickupFlag(Flag flag) {
-        this.pickedUpFlag = flag;
-        flag.pickUp();
+       this.pickedUpFlag = flag;
+       flag.pickUp();
     }
 
     public void dropPickedUpFlag() {

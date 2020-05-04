@@ -6,7 +6,6 @@ import Game.player.Player;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Path;
@@ -118,7 +117,7 @@ public class Bot extends ImageView {
      * @param player player that`s in radius.
      * @param root   main group.
      */
-    public void botShooting(Player player, AnchorPane root) {
+    public void botShooting(Player player, Group root) {
         time += 0.05;
         double lineStartingX = getX();
         double lineStartingY = getY();

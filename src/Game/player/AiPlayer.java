@@ -10,7 +10,6 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
@@ -70,7 +69,7 @@ public class AiPlayer extends Player {
      * @param dy    Movement y change
      * @param color Player color
      */
-    public AiPlayer(int x, int y, int dx, int dy, GamePlayer.playerColor color, Flag flag, AnchorPane root, Base base, Client client, boolean master) {
+    public AiPlayer(int x, int y, int dx, int dy, GamePlayer.playerColor color, Flag flag, Group root, Base base, Client client, boolean master) {
         super(x, y, dx, dy, color);
         this.base = base;
         this.flag = flag;
