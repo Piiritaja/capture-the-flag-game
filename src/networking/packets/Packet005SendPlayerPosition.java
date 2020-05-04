@@ -2,7 +2,7 @@ package networking.packets;
 
 import Game.maps.Battlefield;
 
-public class Packet005SendPlayerPosition {
+public class Packet005SendPlayerPosition extends Packet {
     public char pColor;
     public double xPosition;
     public double yPosition;

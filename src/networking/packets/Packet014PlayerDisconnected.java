@@ -1,4 +1,4 @@
 package networking.packets;
 
-public class Packet014PlayerDisconnected {
+public class Packet014PlayerDisconnected extends Packet {
 }

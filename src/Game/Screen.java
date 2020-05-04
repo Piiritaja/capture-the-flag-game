@@ -18,9 +18,13 @@ import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Group;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -28,6 +32,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
@@ -37,11 +42,12 @@ import javafx.util.Duration;
 import networking.ServerClient;
 import networking.packets.Packet004RequestPlayers;
 import networking.packets.Packet005SendPlayerPosition;
+import networking.packets.Packet007SendBotsLocation;
 import networking.packets.Packet008SendPlayerID;
 import networking.packets.Packet012UpdatePlayerPosition;
 import networking.packets.Packet015RequestAI;
 import networking.packets.Packet018PlayerConnected;
-import networking.packets.Packet019UpdateScore;
+import networking.packets.Packet024RemoveGameWithId;
 
 import java.util.List;
 import java.util.Map;
@@ -50,10 +56,12 @@ import java.util.UUID;
 
 public class Screen extends Application {
 
+    private static final String ID_LABEL_INFO = "Waiting for players to connect...\n %d/%d\n Your game id: %s";
+
     Bullet bullet = new Bullet(0, 0, 3, Color.GREEN, true);
 
     private GamePlayer player;
-    private Group root;
+    private AnchorPane root;
     private MapLoad mapLoad;
     private Base greenBase;
     private Base redBase;
@@ -71,6 +79,8 @@ public class Screen extends Application {
     int step = 2;
     List<Base> bases;
     private int playerCount;
+    private String gameId;
+    private Label idLabel;
 
     // map size constants
     private static final int MAP_WIDTH_IN_TILES = 40;
@@ -100,15 +110,24 @@ public class Screen extends Application {
     public Screen(ServerClient serverclient) {
         this.serverclient = serverclient;
         this.client = serverclient.getClient();
-        this.root = new Group();
+        this.root = new AnchorPane();
         this.inGame = false;
         this.mapLoad = new MapLoad();
         this.botSpawner = new BotSpawner();
         this.botsOnMap = new ArrayList<>();
         this.master = false;
         this.playerCount = 1;
+        this.gameId = UUID.randomUUID().toString().substring(0, 4);
+        this.idLabel = new Label();
 
+    }
 
+    public String getGameId() {
+        return this.gameId;
+    }
+
+    public void setGameId(String id) {
+        this.gameId = id;
     }
 
     public Map<Integer, Double[]> getBotLocations() {
@@ -146,7 +165,7 @@ public class Screen extends Application {
         return this.player;
     }
 
-    public Group getRoot() {
+    public AnchorPane getRoot() {
         return this.root;
     }
 
@@ -188,7 +207,7 @@ public class Screen extends Application {
     int greenTeamScore = 0;
 
     Battlefield chosenMap = Battlefield.EMPTY;
-    GamePlayer.playerColor color = GamePlayer.playerColor.RED;
+    GamePlayer.playerColor color;
 
 
     //Constants for player object
@@ -236,7 +255,6 @@ public class Screen extends Application {
         player.setRoot(root);
         player.setId(serverclient.getID());
         players.add(player);
-        System.out.println("Created player with id: " + player.getId());
     }
 
     /**
@@ -264,7 +282,6 @@ public class Screen extends Application {
         players.add(otherPlayer);
         otherPlayer.setLives(lives);
         otherPlayer.setLives(lives);
-        System.out.println("Created opponent with id: " + otherPlayer.getId());
         updateScale();
     }
 
@@ -405,7 +422,6 @@ public class Screen extends Application {
 
     @Override
     public void start(Stage stage) {
-        System.out.println(getPlayerCount());
         inGame = true;
         boolean fullScreen = stage.isFullScreen();
         this.stage = stage;
@@ -438,7 +454,7 @@ public class Screen extends Application {
         Packet005SendPlayerPosition positionPacket = new Packet005SendPlayerPosition();
         positionPacket.xPosition = player.getX();
         positionPacket.yPosition = player.getY();
-        positionPacket.battlefield = getChosenMap();
+        positionPacket.gameId = this.getGameId();
         positionPacket.id = player.getId();
         char colorChar = color.equals(GamePlayer.playerColor.GREEN) ? 'G' : 'R';
         positionPacket.pColor = colorChar;
@@ -457,7 +473,7 @@ public class Screen extends Application {
             public void handle(ActionEvent event) {
                 if (player != null) {
                     Packet012UpdatePlayerPosition updatePlayerPosition = new Packet012UpdatePlayerPosition();
-                    updatePlayerPosition.id = player.getId();
+                    updatePlayerPosition.PlayerId = player.getId();
                     updatePlayerPosition.positionY = (player.getY() / stage.heightProperty().get());
                     updatePlayerPosition.positionX = (player.getX() / stage.widthProperty().get());
                     client.sendUDP(updatePlayerPosition);
@@ -465,7 +481,7 @@ public class Screen extends Application {
                 if (isMaster()) {
                     for (AiPlayer aiPlayer : aiPlayers) {
                         Packet012UpdatePlayerPosition updateAiPosition = new Packet012UpdatePlayerPosition();
-                        updateAiPosition.id = aiPlayer.getId();
+                        updateAiPosition.PlayerId = aiPlayer.getId();
                         updateAiPosition.positionX = (aiPlayer.getX() / stage.widthProperty().get());
                         updateAiPosition.positionY = (aiPlayer.getY() / stage.heightProperty().get());
                         client.sendUDP(updateAiPosition);
@@ -487,6 +503,10 @@ public class Screen extends Application {
         if (!client.isConnected() && canTickPlayers()) {
             tickPlayers();
         }
+        root.getChildren().add(idLabel);
+        if (!canTickPlayers()) {
+            updateGameLabel();
+        }
 
         stage.setFullScreen(fullScreen);
         stage.show();
@@ -495,25 +515,42 @@ public class Screen extends Application {
         getBotLocationsOnMap();
         updateScale();
         Packet018PlayerConnected playerConnected = new Packet018PlayerConnected();
+        playerConnected.gameId = getGameId();
         client.sendTCP(playerConnected);
 
     }
 
-    public boolean canTickPlayers() {
+    public void updateGameLabel() {
+        idLabel.setText(String.format(ID_LABEL_INFO, getConnectedPlayerCount(), playerCount, getGameId()));
+        idLabel.setFont(Font.font("Arial", FontWeight.EXTRA_BOLD, (stage.widthProperty().get() - 10) / 20));
+        idLabel.setMaxWidth(Double.MAX_VALUE);
+        idLabel.setAlignment(Pos.CENTER);
+        idLabel.setTextAlignment(TextAlignment.CENTER);
+        AnchorPane.setLeftAnchor(idLabel, 0.0);
+        AnchorPane.setRightAnchor(idLabel, 0.0);
+
+    }
+
+    public int getConnectedPlayerCount() {
         int count = 0;
         for (Player p : players) {
             if (p instanceof GamePlayer) {
                 count++;
             }
         }
-        if (count == getPlayerCount()) {
-            return true;
-        }
-        return false;
+        return count;
+    }
+
+    public boolean canTickPlayers() {
+        return getConnectedPlayerCount() == getPlayerCount();
 
     }
 
     public void tickPlayers() {
+        root.getChildren().remove(idLabel);
+        Packet024RemoveGameWithId removeGameWithId = new Packet024RemoveGameWithId();
+        removeGameWithId.gameId = gameId;
+        client.sendTCP(removeGameWithId);
         timer = new AnimationTimer() {
             @Override
             public void handle(long l) {
@@ -564,12 +601,12 @@ public class Screen extends Application {
      * @param p Player
      */
     public void playersSpawningCorrection(Player p) {
-        if (p.getClass().equals(GamePlayer.class)) {
-            GamePlayer player = (GamePlayer) p;
+        if (p instanceof GamePlayer) {
+            GamePlayer pp = (GamePlayer) p;
             for (Object object : objectsOnMap) {
-                if (object.collides(player)) {
-                    player.setPlayerXStartingPosition(greenBase, redBase);
-                    player.setPlayerYStartingPosition(greenBase, redBase);
+                if (object.collides(pp)) {
+                    pp.setPlayerXStartingPosition(greenBase, redBase);
+                    pp.setPlayerYStartingPosition(greenBase, redBase);
                 }
             }
         }
@@ -598,20 +635,23 @@ public class Screen extends Application {
     public void requestNodesFromOtherClients() {
         List<Base> bases = mapLoad.getBases();
         if (botLocationsXY.isEmpty()) {
-            System.out.println("Empty");
             createAi(GamePlayer.playerColor.GREEN);
             createAi(GamePlayer.playerColor.RED);
             botSpawner.spawnBots(4 - botsOnMap.size(), stage, root, bases, mapLoad.getObjectsOnMap(), true);
             botsOnMap = botSpawner.getBotsOnMap();
             master = true;
             setBotLocationsXY(getBotLocationsXY());
+            Packet007SendBotsLocation sendBotsLocation = new Packet007SendBotsLocation();
+            sendBotsLocation.gameId = getGameId();
+            sendBotsLocation.locations = getBotLocationsXY();
+            client.sendTCP(sendBotsLocation);
         } else {
             Packet004RequestPlayers requestPlayers = new Packet004RequestPlayers();
-            requestPlayers.battlefield = getChosenMap();
+            requestPlayers.gameId = getGameId();
             client.sendTCP(requestPlayers);
             spawnBots();
             Packet015RequestAI requestAI = new Packet015RequestAI();
-            requestAI.battlefield = this.getChosenMap();
+            requestAI.gameId = this.getGameId();
             client.sendTCP(requestAI);
         }
     }
@@ -638,7 +678,6 @@ public class Screen extends Application {
             Bot bot = botsOnMap.get(i);
             if (bot.getBotId() == botId) {
                 bot.lives = botLives;
-                System.out.println("new bot lives: " + bot.lives);
                 if (bot.lives == 0) {
                     botSpawner.botsOnMap.remove(bot);
                     root.getChildren().remove(bot);
@@ -688,16 +727,13 @@ public class Screen extends Application {
             if (cPlayer.getId().equals(id)) {
                 root.getChildren().remove(cPlayer);
                 playerToRemove = cPlayer;
-                System.out.println("Removed a player");
 
             }
         }
 
         if (playerToRemove != null) {
-            System.out.println(players.contains(playerToRemove));
             players.remove(playerToRemove);
             deadPlayers.remove(playerToRemove);
-            System.out.println("Removed a player from players list");
         }
     }
 
@@ -808,8 +844,6 @@ public class Screen extends Application {
      * Sets new score, sets all players, bots and flags to starting position.
      */
     public void newRound() {
-        System.out.println(greenFlag.isPickedUp());
-        System.out.println(redFlag.isPickedUp());
         root.getChildren().remove(stack);
         scoreBoard();
         timer.stop();

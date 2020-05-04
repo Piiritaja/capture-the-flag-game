@@ -7,6 +7,7 @@ import Game.bots.Bot;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
@@ -173,7 +174,7 @@ public class Object extends ImageView {
      * @param map   Objects are loaded according to the chosen map
      * @return List of objects added to the map
      */
-    public static List<Object> addObjectsToGroup(Group root, Stage stage, Battlefield map) {
+    public static List<Object> addObjectsToGroup(AnchorPane root, Stage stage, Battlefield map) {
         mapType = map;
         String line;
         String objectCsv = setCsv(map);
