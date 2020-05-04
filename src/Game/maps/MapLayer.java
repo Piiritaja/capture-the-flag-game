@@ -3,6 +3,7 @@ package Game.maps;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 
 /**
  * Class for loading the base of the map.
@@ -25,7 +26,7 @@ public class MapLayer extends ImageView {
      *
      * @param root Group that the layer is added to
      */
-    void addToGroup(Group root) {
+    void addToGroup(AnchorPane root) {
         root.getChildren().add(this);
     }
 
