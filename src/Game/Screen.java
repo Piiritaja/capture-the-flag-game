@@ -48,7 +48,6 @@ import networking.packets.Packet012UpdatePlayerPosition;
 import networking.packets.Packet015RequestAI;
 import networking.packets.Packet018PlayerConnected;
 import networking.packets.Packet024RemoveGameWithId;
-import networking.packets.Packet025Score;
 
 import java.util.List;
 import java.util.Map;
@@ -816,7 +815,10 @@ public class Screen extends Application {
                 if (!player.getBoundsInParent().intersects(redBase.getBoundsInParent())) {
                     redFlag.relocate(player.getX() + 10, player.getY() + 10);
                 } else {
-                    flagCaptured(player);
+                    redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
+                    redTeamScore += 1;
+                    newRound();
+                    player.dropPickedUpFlag();
                 }
             }
         } else {
@@ -827,55 +829,14 @@ public class Screen extends Application {
                 if (!player.getBoundsInParent().intersects(greenBase.getBoundsInParent())) {
                     greenFlag.relocate(player.getX() + 10, player.getY() + 10);
                 } else {
-                    flagCaptured(player);
+                    greenFlag.relocate(greenBase.getRightX() - 50,
+                            greenBase.getBottomY() / 2);
+                    greenTeamScore += 1;
+                    newRound();
+                    player.dropPickedUpFlag();
                 }
             }
         }
-    }
-
-    public void flagCaptured(Player player) {
-        if (player instanceof AiPlayer && !isMaster()) {
-            return;
-        }
-        String team;
-        int score;
-        if (player.getColor() == GamePlayer.playerColor.RED) {
-            redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
-            redTeamScore += 1;
-            score = redTeamScore;
-            team = "R";
-        } else {
-            greenFlag.relocate(greenBase.getRightX() - 50,
-                    greenBase.getBottomY() / 2);
-            greenTeamScore += 1;
-            score = greenTeamScore;
-            team = "G";
-        }
-        if (client.isConnected()) {
-            Packet025Score packet025Score = new Packet025Score();
-            packet025Score.team = team;
-            packet025Score.gameId = gameId;
-            packet025Score.score = score;
-            client.sendTCP(packet025Score);
-        }
-        newRound();
-        player.dropPickedUpFlag();
-
-
-    }
-
-    public void score(String team, int score) {
-        if (team.equals("G")) {
-            greenTeamScore = score;
-        } else if (team.equals("R")) {
-            redTeamScore = score;
-        }
-
-        for (Player p : players) {
-            p.dropPickedUpFlag();
-        }
-        newRound();
-
     }
 
     /**
@@ -916,7 +877,6 @@ public class Screen extends Application {
         }
         updateScale();
     }
-
 
     /**
      * Makes scoreboard.

@@ -206,9 +206,7 @@ public abstract class Player extends ImageView {
     }
 
     public void dropPickedUpFlag() {
-        if (pickedUpFlag != null) {
-            pickedUpFlag.drop();
-        }
+        pickedUpFlag.drop();
         this.pickedUpFlag = null;
     }
 

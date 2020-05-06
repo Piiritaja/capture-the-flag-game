@@ -5,16 +5,27 @@ import Game.maps.Base;
 import Game.maps.Object;
 import com.esotericsoftware.kryonet.Client;
 import javafx.event.EventHandler;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Group;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.Path;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
+import javafx.util.Duration;
 import networking.packets.Packet010PlayerMovement;
 import networking.packets.Packet011PlayerMovementStop;
 import networking.packets.Packet017GamePlayerShoot;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 
 import static java.lang.StrictMath.abs;
 
