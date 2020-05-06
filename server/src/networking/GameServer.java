@@ -1,7 +1,6 @@
 package networking;
 
 
-import Game.maps.Battlefield;
 import com.esotericsoftware.kryonet.Server;
 import com.esotericsoftware.kryo.Kryo;
 import networking.packets.Packet000RequestAccess;
@@ -29,6 +28,7 @@ import networking.packets.Packet021RequestGames;
 import networking.packets.Packet022JoinGame;
 import networking.packets.Packet023RequestGame;
 import networking.packets.Packet024RemoveGameWithId;
+import networking.packets.Packet025Score;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -137,6 +137,13 @@ public class GameServer {
 
     }
 
+    public void clearData() {
+        this.gameMaps = new HashMap<>();
+        this.playerCounts = new HashMap<>();
+        this.botLocations = new HashMap<>();
+        this.server = new Server();
+    }
+
 
     /**
      * Register packets for server listener.
@@ -169,6 +176,7 @@ public class GameServer {
         kryo.register(Packet022JoinGame.class);
         kryo.register(Packet023RequestGame.class);
         kryo.register(Packet024RemoveGameWithId.class);
+        kryo.register(Packet025Score.class);
         kryo.register(java.util.Map.class);
         kryo.register(java.util.HashMap.class);
         kryo.register(Double[].class);
