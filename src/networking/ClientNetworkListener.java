@@ -27,6 +27,7 @@ import networking.packets.Packet018PlayerConnected;
 import networking.packets.Packet021RequestGames;
 import networking.packets.Packet022JoinGame;
 import networking.packets.Packet023RequestGame;
+import networking.packets.Packet025Score;
 
 import java.util.List;
 
@@ -211,6 +212,11 @@ public class ClientNetworkListener extends Listener {
             Platform.runLater(() -> this.serverClient.getMenu().joinGame());
         } else if (object instanceof Packet023RequestGame) {
             Platform.runLater(() -> this.serverClient.getMenu().displayGame(((Packet023RequestGame) object).gameId, ((Packet023RequestGame) object).mapIndex, ((Packet023RequestGame) object).playerCount));
+        } else if (object instanceof Packet025Score) {
+            if (((Packet025Score) object).gameId.equals(this.serverClient.getMenu().getScreen().getGameId())) {
+                Platform.runLater(() -> this.serverClient.getMenu().getScreen().score(((Packet025Score) object).team, ((Packet025Score) object).score));
+            }
+
         }
     }
 
