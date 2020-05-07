@@ -29,6 +29,7 @@ import networking.packets.Packet022JoinGame;
 import networking.packets.Packet023RequestGame;
 import networking.packets.Packet024RemoveGameWithId;
 import networking.packets.Packet025Score;
+import networking.packets.Packet026FlagCaptured;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -177,6 +178,7 @@ public class GameServer {
         kryo.register(Packet023RequestGame.class);
         kryo.register(Packet024RemoveGameWithId.class);
         kryo.register(Packet025Score.class);
+        kryo.register(Packet026FlagCaptured.class);
         kryo.register(java.util.Map.class);
         kryo.register(java.util.HashMap.class);
         kryo.register(Double[].class);
