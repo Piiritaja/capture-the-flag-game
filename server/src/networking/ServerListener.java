@@ -28,6 +28,7 @@ import networking.packets.Packet022JoinGame;
 import networking.packets.Packet023RequestGame;
 import networking.packets.Packet024RemoveGameWithId;
 import networking.packets.Packet025Score;
+import networking.packets.Packet026FlagCaptured;
 
 public class ServerListener extends Listener {
     private Server server;
@@ -174,6 +175,8 @@ public class ServerListener extends Listener {
             this.gameServer.removeGameInstances(((Packet024RemoveGameWithId) object).gameId);
         } else if (object instanceof Packet025Score) {
             server.sendToAllTCP(object);
+        } else if (object instanceof Packet026FlagCaptured){
+            server.sendToAllExceptTCP(connection.getID(),object);
         }
     }
 }

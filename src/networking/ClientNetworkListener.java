@@ -28,6 +28,7 @@ import networking.packets.Packet021RequestGames;
 import networking.packets.Packet022JoinGame;
 import networking.packets.Packet023RequestGame;
 import networking.packets.Packet025Score;
+import networking.packets.Packet026FlagCaptured;
 
 import java.util.List;
 
@@ -217,6 +218,10 @@ public class ClientNetworkListener extends Listener {
                 Platform.runLater(() -> this.serverClient.getMenu().getScreen().score(((Packet025Score) object).team, ((Packet025Score) object).score));
             }
 
+        } else if (object instanceof Packet026FlagCaptured) {
+            if (((Packet026FlagCaptured) object).gameId.equals(serverClient.getMenu().getScreen().getGameId())) {
+                Platform.runLater(() -> serverClient.getMenu().getScreen().captureFlag(((Packet026FlagCaptured) object).PlayerId));
+            }
         }
     }
 
