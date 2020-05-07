@@ -5,27 +5,17 @@ import Game.maps.Base;
 import Game.maps.Object;
 import com.esotericsoftware.kryonet.Client;
 import javafx.event.EventHandler;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.Group;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
-import javafx.scene.shape.Path;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Shape;
-import javafx.util.Duration;
+import javafx.stage.Stage;
 import networking.packets.Packet010PlayerMovement;
 import networking.packets.Packet011PlayerMovementStop;
 import networking.packets.Packet017GamePlayerShoot;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 
 import static java.lang.StrictMath.abs;
 
@@ -65,8 +55,8 @@ public class GamePlayer extends Player {
      * @param dy    Movement y change
      * @param color Player color
      */
-    public GamePlayer(int x, int y, int dx, int dy, playerColor color, Client client) {
-        super(x, y, dx, dy, color);
+    public GamePlayer(int x, int y, int dx, int dy, playerColor color, Client client, Stage stage) {
+        super(x, y, dx, dy, color,stage);
         this.client = client;
 
     }
@@ -129,6 +119,16 @@ public class GamePlayer extends Player {
         this.dead = dead;
     }
 
+    @Override
+    public void setPlayerXStartingPosition(Base greenBase, Base redBase) {
+        this.x = (int) calcPlayerXStartingPosition(greenBase, redBase, color);
+    }
+
+    @Override
+    public void setPlayerYStartingPosition(Base greenBase, Base redBase) {
+        this.y = (int) calcPlayerYStartingPosition(greenBase, redBase, color);
+    }
+
     /**
      * Calculates which way to shoot(UP, DOWN, RIGHT or LEFT).
      * If mouse is clicked, makes new bullet and adds it to the root and bullets list.
@@ -140,8 +140,8 @@ public class GamePlayer extends Player {
             double mouseX = mouseEvent.getX();
             if (Objects.equals(mouseEvent.getEventType(), MouseEvent.MOUSE_CLICKED)) {
                 Packet017GamePlayerShoot gamePlayerShoot = new Packet017GamePlayerShoot();
-                gamePlayerShoot.mouseX = mouseX;
-                gamePlayerShoot.mouseY = mouseY;
+                gamePlayerShoot.mouseX = mouseX /stage.widthProperty().get();
+                gamePlayerShoot.mouseY = mouseY / stage.heightProperty().get();
                 gamePlayerShoot.playerId = this.getId();
                 client.sendUDP(gamePlayerShoot);
                 shoot(mouseX, mouseY, true);

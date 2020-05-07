@@ -1,13 +1,18 @@
 package Game;
 
+import Game.maps.Battlefield;
 import com.esotericsoftware.kryonet.Client;
 import javafx.application.Application;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -15,13 +20,19 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import networking.ServerClient;
-import networking.packets.Packet006RequestBotsLocation;
+import networking.packets.Packet020CreateGame;
+import networking.packets.Packet022JoinGame;
+import networking.packets.Packet023RequestGame;
+
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Menu extends Application {
     private Stage mainStage;
@@ -30,6 +41,8 @@ public class Menu extends Application {
     private int currentConnections;
     private ServerClient serverClient;
     private Client client;
+
+    private Map<String, Battlefield> availableMaps;
 
     // Constants for ctf image
     private static final int IMAGE_WIDTH = 600;
@@ -44,6 +57,10 @@ public class Menu extends Application {
     private static final String NOT_CHOSEN_OPACITY = "-fx-opacity: 50%";
     private static final String CHOSEN_OPACITY = "-fx-opacity: 100%";
 
+    // Map images
+    private static final String MAP1_IMAGE_SRC = "/map/2teams/map1/testmap1.png";
+    private static final String MAP2_IMAGE_SRC = "/map/2teams/map2/map2.png";
+
     private Text usersOnlineText = new Text(10, 50, "Offline mode");
 
     /**
@@ -55,6 +72,7 @@ public class Menu extends Application {
         this.serverClient = new ServerClient(this);
         this.client = this.serverClient.getClient();
         this.screen = new Screen(this.serverClient);
+        this.availableMaps = new HashMap<>();
 
     }
 
@@ -88,33 +106,28 @@ public class Menu extends Application {
      * @return scene that was created in the method.
      */
     public Scene setUpPrimaryScene() {
-        Button button1 = new Button("Choose game mode");
+        Button button1 = new Button("Create a game");
+        Button button4 = new Button("Join a game");
         Button button2 = new Button("Quit");
         Button button3 = new Button("Full screen mode");
 
         ImageView imageViewCtf = new ImageView();
-        try {
-            FileInputStream inputCtfImage = new FileInputStream("src/assets/pngwave.png");
-            Image ctfImage = new Image(inputCtfImage);
-            imageViewCtf.setImage(ctfImage);
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+        Image ctfImage = new Image(Menu.class.getResourceAsStream("/pngwave.png"));
+        imageViewCtf.setImage(ctfImage);
 
         imageViewCtf.setFitWidth(IMAGE_WIDTH);
         imageViewCtf.setFitHeight(IMAGE_HEIGHT);
         button1.getStyleClass().add("button");
         button2.getStyleClass().add("button");
         button3.getStyleClass().add("Button");
-        VBox vbox = new VBox(imageViewCtf, button1, button3, button2, this.usersOnlineText);
+        button4.getStyleClass().add("Button");
+        VBox vbox = new VBox(imageViewCtf, button1, button4, button3, button2, this.usersOnlineText);
         vbox.getStyleClass().add(CONTAINER_CLASS);
 
         button1.setOnAction(actionEvent -> gameChooser());
         button2.setOnAction(actionEvent -> exitScreen());
         button3.setOnAction(actionEvent -> toggleFullScreen());
+        button4.setOnAction(actionEvent -> joinGameScreen());
 
         return new Scene(vbox);
     }
@@ -167,9 +180,7 @@ public class Menu extends Application {
         Text t = new Text(10, 50, "Choose a map");
         Group root = new Group();
         Button playButton = new Button("start game");
-        Button joinButton = new Button("Join a game");
         playButton.setOnAction(actionEvent -> startScreen());
-        joinButton.setOnAction(actionEvent -> joinGame());
 
         this.mainStage.getScene().setRoot(root);
         List<ImageView> images = loadMapImages();
@@ -200,14 +211,14 @@ public class Menu extends Application {
 
         setPlayerNumberEffect(playerNumbers, playerNumbersHBox);
 
-        HBox teamPickerHbox = new HBox();
-        teamPickerHbox.getStyleClass().add(CONTAINER_CLASS);
+        HBox teamPickerHBox = new HBox();
+        teamPickerHBox.getStyleClass().add(CONTAINER_CLASS);
 
-        setTeamPickEffect(teamColors, teamPickerHbox);
-        setImagesToScale(teamColors, teamPickerHbox);
+        setTeamPickEffect(teamColors, teamPickerHBox);
+        setImagesToScale(teamColors, teamPickerHBox);
         setImagesToScale(playerNumbers, playerNumbersHBox);
 
-        VBox vbox = new VBox(t, hbox, teamPickerTitle, teamPickerHbox, playerCount, playerNumbersHBox, playButton, joinButton);
+        VBox vbox = new VBox(t, hbox, teamPickerTitle, teamPickerHBox, playerCount, playerNumbersHBox, playButton);
         vbox.getStyleClass().add(CONTAINER_CLASS);
         root.getChildren().add(vbox);
 
@@ -223,10 +234,107 @@ public class Menu extends Application {
             startScreen();
             return;
         }
-        Packet006RequestBotsLocation requestBotsLocation = new Packet006RequestBotsLocation();
-        requestBotsLocation.battlefield = this.screen.getChosenMap();
-        client.sendTCP(requestBotsLocation);
         startScreen();
+    }
+
+    public void prepGame(String id) {
+        if (screen.color == null) {
+            return;
+        }
+        this.screen.setGameId(id);
+        Packet022JoinGame joinGame = new Packet022JoinGame();
+        joinGame.gameId = this.screen.getGameId();
+        client.sendTCP(joinGame);
+    }
+
+
+    public void joinGameScreen() {
+        TextField textField = new TextField();
+        textField.setPromptText("Enter game id");
+        Button searchButton = new Button();
+        Label label = new Label();
+        label.setText("Enter game id");
+        searchButton.setText("Search");
+        GridPane grid = new GridPane();
+        VBox vBox = new VBox(label, textField, searchButton);
+        vBox.getStyleClass().add(CONTAINER_CLASS);
+        grid.setAlignment(Pos.CENTER);
+        grid.getChildren().add(vBox);
+        mainStage.getScene().setRoot(grid);
+        searchButton.setOnAction(actionEvent -> searchGameWithId(textField.getText()));
+
+    }
+
+    public void searchGameWithId(String id) {
+        Packet023RequestGame requestGame = new Packet023RequestGame();
+        requestGame.gameId = id;
+        client.sendTCP(requestGame);
+
+    }
+
+    public void displayGame(String gameId, int mapIndex, int playerCount) {
+        ImageView mapImage = getMapImage(mapIndex);
+        scaleImage(mapImage);
+        GridPane grid = new GridPane();
+        grid.setAlignment(Pos.CENTER);
+        VBox vBox = new VBox();
+        Label gameIdLabel = new Label("Game id: " + gameId);
+        Label playerCountLabel = new Label(playerCount + " player game");
+        Label pickTeaLabel = new Label("Pick a team");
+        List<ImageView> teamColors = loadTeamColors();
+        HBox teamColorsHBox = new HBox();
+        setTeamPickEffect(teamColors, teamColorsHBox);
+        teamColorsHBox.getStyleClass().add(CONTAINER_CLASS);
+        Button joinGameButton = new Button("Join game");
+        vBox.getStyleClass().add(CONTAINER_CLASS);
+        vBox.getChildren().add(mapImage);
+        vBox.getChildren().add(gameIdLabel);
+        vBox.getChildren().add(playerCountLabel);
+        vBox.getChildren().add(pickTeaLabel);
+        vBox.getChildren().add(teamColorsHBox);
+        vBox.getChildren().add(joinGameButton);
+        grid.getChildren().add(vBox);
+        mainStage.getScene().setRoot(grid);
+        joinGameButton.setOnAction(actionEvent -> prepGame(gameId));
+
+    }
+
+    public ImageView getMapImage(int mapIndex) {
+        String location = mapIndex == 0 ? MAP1_IMAGE_SRC : MAP2_IMAGE_SRC;
+        try {
+            InputStream inputStream = Menu.class.getResourceAsStream(location);
+            Image image = new Image(inputStream);
+            ImageView imageView = new ImageView(image);
+            return imageView;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ImageView();
+        }
+    }
+
+    public Map<ImageView, String> loadMaps() {
+        Map<ImageView, String> images = new HashMap<>();
+        for (Map.Entry<String, Battlefield> entry : availableMaps.entrySet()) {
+            String key = entry.getKey();
+            Battlefield battlefield = entry.getValue();
+            Label label = new Label();
+            label.setText(key);
+            String imageLocation;
+            try {
+                if (battlefield.equals(Battlefield.MAP1)) {
+                    imageLocation = MAP1_IMAGE_SRC;
+                } else {
+                    imageLocation = MAP2_IMAGE_SRC;
+                }
+                FileInputStream fileInputStream = new FileInputStream(imageLocation);
+                Image image = new Image(fileInputStream);
+                ImageView imageView = new ImageView(image);
+                images.put(imageView, key);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return images;
     }
 
 
@@ -234,6 +342,14 @@ public class Menu extends Application {
      * Method to go from the Choose map screen to Game screen.
      */
     public void startScreen() {
+        if (screen.color == null) {
+            return;
+        }
+        Packet020CreateGame createGame = new Packet020CreateGame();
+        createGame.gameId = screen.getGameId();
+        createGame.battlefield = screen.getChosenMap();
+        createGame.playerCount = screen.getPlayerCount();
+        client.sendTCP(createGame);
         screen.start(mainStage);
     }
 
@@ -285,21 +401,13 @@ public class Menu extends Application {
      * @return Team colors as ImageView items.
      */
     private List<ImageView> loadTeamColors() {
+        Image teamGreenImage = new Image(Menu.class.getResourceAsStream("/misc/green_team_circle.png"));
+        ImageView teamGreenImageView = new ImageView(teamGreenImage);
 
-        try {
-            FileInputStream teamGreenInputStream = new FileInputStream("src/assets/misc/green_team_circle.png");
-            Image teamGreenImage = new Image(teamGreenInputStream);
-            ImageView teamGreenImageView = new ImageView(teamGreenImage);
+        Image teamRedImage = new Image(Menu.class.getResourceAsStream("/misc/red_team_circle.png"));
+        ImageView teamRedImageView = new ImageView(teamRedImage);
 
-            FileInputStream teamRedInputStream = new FileInputStream("src/assets/misc/red_team_circle.png");
-            Image teamRedImage = new Image(teamRedInputStream);
-            ImageView teamRedImageView = new ImageView(teamRedImage);
-
-            return Arrays.asList(teamGreenImageView, teamRedImageView);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
+        return Arrays.asList(teamGreenImageView, teamRedImageView);
 
 
     }
@@ -311,8 +419,8 @@ public class Menu extends Application {
     private void setImagePickEffect(List<ImageView> images, HBox hbox) {
         for (ImageView image : images) {
             hbox.getChildren().add(image);
-            image.setFitHeight(mainStage.getHeight() / 4);
-            image.setFitWidth(mainStage.getWidth() / 4);
+            image.setFitHeight(mainStage.getHeight() / 3.5);
+            image.setFitWidth(mainStage.getWidth() / 3.5);
             image.setPreserveRatio(true);
             image.setStyle(NOT_CHOSEN_OPACITY);
             image.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
@@ -350,10 +458,14 @@ public class Menu extends Application {
         for (ImageView image : images) {
             hbox.getChildren().remove(image);
             hbox.getChildren().add(image);
-            image.setFitHeight(mainStage.getHeight() / 4);
-            image.setFitWidth(mainStage.getWidth() / 4);
-            image.setPreserveRatio(true);
+            scaleImage(image);
         }
+    }
+
+    public void scaleImage(ImageView image) {
+        image.setFitHeight(mainStage.getHeight() / 4);
+        image.setFitWidth(mainStage.getWidth() / 4);
+        image.setPreserveRatio(true);
     }
 
     /**
@@ -363,38 +475,32 @@ public class Menu extends Application {
      */
     public List<ImageView> loadMapImages() {
 
-        try {
-            FileInputStream map1InputStream = new FileInputStream("src/assets/map/2teams/map1/testmap1.png");
-            Image map1Image = new Image(map1InputStream);
-            ImageView map1ImageView = new ImageView(map1Image);
+        Image map1Image = new Image(Menu.class.getResourceAsStream(MAP1_IMAGE_SRC));
+        ImageView map1ImageView = new ImageView(map1Image);
 
-            FileInputStream map2InputStream = new FileInputStream("src/assets/map/2teams/map2/map2.png");
-            Image map2Image = new Image(map2InputStream);
-            ImageView map2ImageView = new ImageView(map2Image);
-            return Arrays.asList(map1ImageView, map2ImageView);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
+        Image map2Image = new Image(Menu.class.getResourceAsStream(MAP2_IMAGE_SRC));
+        ImageView map2ImageView = new ImageView(map2Image);
+        return Arrays.asList(map1ImageView, map2ImageView);
 
 
     }
 
     public List<ImageView> loadPlayerNumbers() {
-        try {
-            FileInputStream map1InputStream = new FileInputStream("src/assets/misc/1Player.png");
-            Image map1Image = new Image(map1InputStream);
-            ImageView map1ImageView = new ImageView(map1Image);
+        Image map1Image = new Image(Menu.class.getResourceAsStream("/misc/1Player.png"));
+        ImageView map1ImageView = new ImageView(map1Image);
+        Image map2Image = new Image(Menu.class.getResourceAsStream("/misc/2players.png"));
+        ImageView map2ImageView = new ImageView(map2Image);
 
-            FileInputStream map2InputStream = new FileInputStream("src/assets/misc/2players.png");
-            Image map2Image = new Image(map2InputStream);
-            ImageView map2ImageView = new ImageView(map2Image);
-            return Arrays.asList(map1ImageView, map2ImageView);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
+        Image map3Image = new Image(Menu.class.getResourceAsStream("/misc/3players.png"));
+        ImageView map3ImageView = new ImageView(map3Image);
+
+        Image map4Image = new Image(Menu.class.getResourceAsStream("/misc/4players.png"));
+        ImageView map4ImageView = new ImageView(map4Image);
+        return Arrays.asList(map1ImageView, map2ImageView, map3ImageView, map4ImageView);
+    }
+
+    public void setAvailableMaps(Map<String, Battlefield> counts) {
+        this.availableMaps = counts;
     }
 
     /**
@@ -423,7 +529,7 @@ public class Menu extends Application {
         this.mainStage = primaryStage;
 
         Scene scene = setUpPrimaryScene();
-        scene.getStylesheets().add("assets/button-style.css");
+        scene.getStylesheets().add(Menu.class.getResource("/buttonStyle.css").toExternalForm());
         mainStage.setScene(scene);
         configurePrimaryStage();
 

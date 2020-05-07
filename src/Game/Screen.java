@@ -18,9 +18,13 @@ import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Group;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -28,6 +32,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
@@ -37,10 +42,14 @@ import javafx.util.Duration;
 import networking.ServerClient;
 import networking.packets.Packet004RequestPlayers;
 import networking.packets.Packet005SendPlayerPosition;
+import networking.packets.Packet007SendBotsLocation;
 import networking.packets.Packet008SendPlayerID;
 import networking.packets.Packet012UpdatePlayerPosition;
 import networking.packets.Packet015RequestAI;
 import networking.packets.Packet018PlayerConnected;
+import networking.packets.Packet024RemoveGameWithId;
+import networking.packets.Packet025Score;
+import networking.packets.Packet026FlagCaptured;
 
 import java.util.List;
 import java.util.Map;
@@ -49,10 +58,12 @@ import java.util.UUID;
 
 public class Screen extends Application {
 
+    private static final String ID_LABEL_INFO = "Waiting for players to connect...\n %d/%d\n Your game id: %s";
+
     Bullet bullet = new Bullet(0, 0, 3, Color.GREEN, true);
 
     private GamePlayer player;
-    private Group root;
+    private AnchorPane root;
     private MapLoad mapLoad;
     private Base greenBase;
     private Base redBase;
@@ -70,6 +81,8 @@ public class Screen extends Application {
     int step = 2;
     List<Base> bases;
     private int playerCount;
+    private String gameId;
+    private Label idLabel;
 
     // map size constants
     private static final int MAP_WIDTH_IN_TILES = 40;
@@ -99,15 +112,24 @@ public class Screen extends Application {
     public Screen(ServerClient serverclient) {
         this.serverclient = serverclient;
         this.client = serverclient.getClient();
-        this.root = new Group();
+        this.root = new AnchorPane();
         this.inGame = false;
         this.mapLoad = new MapLoad();
         this.botSpawner = new BotSpawner();
         this.botsOnMap = new ArrayList<>();
         this.master = false;
         this.playerCount = 1;
+        this.gameId = UUID.randomUUID().toString().substring(0, 4);
+        this.idLabel = new Label();
 
+    }
 
+    public String getGameId() {
+        return this.gameId;
+    }
+
+    public void setGameId(String id) {
+        this.gameId = id;
     }
 
     public Map<Integer, Double[]> getBotLocations() {
@@ -145,7 +167,7 @@ public class Screen extends Application {
         return this.player;
     }
 
-    public Group getRoot() {
+    public AnchorPane getRoot() {
         return this.root;
     }
 
@@ -171,6 +193,7 @@ public class Screen extends Application {
         return this.botLocationsXY;
     }
 
+
     /**
      * Setter method for botLocations.
      *
@@ -186,7 +209,7 @@ public class Screen extends Application {
     int greenTeamScore = 0;
 
     Battlefield chosenMap = Battlefield.EMPTY;
-    GamePlayer.playerColor color = GamePlayer.playerColor.RED;
+    GamePlayer.playerColor color;
 
 
     //Constants for player object
@@ -229,12 +252,12 @@ public class Screen extends Application {
                 0,
                 0,
                 color.equals(GamePlayer.playerColor.GREEN) ? GamePlayer.playerColor.GREEN : GamePlayer.playerColor.RED,
-                client
+                client,
+                stage
         );
         player.setRoot(root);
         player.setId(serverclient.getID());
         players.add(player);
-        System.out.println("Created player with id: " + player.getId());
     }
 
     /**
@@ -252,7 +275,8 @@ public class Screen extends Application {
                 0,
                 0,
                 playerColor,
-                client
+                client,
+                stage
         );
         otherPlayer.setPlayerLocationXInTiles(stage.widthProperty().get() / otherPlayer.getX());
         otherPlayer.setPlayerLocationYInTiles(stage.heightProperty().get() / otherPlayer.getY());
@@ -262,7 +286,6 @@ public class Screen extends Application {
         players.add(otherPlayer);
         otherPlayer.setLives(lives);
         otherPlayer.setLives(lives);
-        System.out.println("Created opponent with id: " + otherPlayer.getId());
         updateScale();
     }
 
@@ -285,7 +308,7 @@ public class Screen extends Application {
     public void shootPlayerWithId(String id, double mouseX, double mouseY) {
         for (Player p : players) {
             if (p.getId().equals(id)) {
-                p.shoot(mouseX, mouseY, false);
+                p.shoot(mouseX * stage.widthProperty().get(), mouseY * stage.heightProperty().get(), false);
             }
         }
     }
@@ -374,7 +397,8 @@ public class Screen extends Application {
                 root,
                 base,
                 client,
-                isMaster()
+                isMaster(),
+                stage
         );
         ai.setId(id);
         root.getChildren().add(ai);
@@ -403,7 +427,6 @@ public class Screen extends Application {
 
     @Override
     public void start(Stage stage) {
-        System.out.println(getPlayerCount());
         inGame = true;
         boolean fullScreen = stage.isFullScreen();
         this.stage = stage;
@@ -436,7 +459,7 @@ public class Screen extends Application {
         Packet005SendPlayerPosition positionPacket = new Packet005SendPlayerPosition();
         positionPacket.xPosition = player.getX();
         positionPacket.yPosition = player.getY();
-        positionPacket.battlefield = getChosenMap();
+        positionPacket.gameId = this.getGameId();
         positionPacket.id = player.getId();
         char colorChar = color.equals(GamePlayer.playerColor.GREEN) ? 'G' : 'R';
         positionPacket.pColor = colorChar;
@@ -455,7 +478,7 @@ public class Screen extends Application {
             public void handle(ActionEvent event) {
                 if (player != null) {
                     Packet012UpdatePlayerPosition updatePlayerPosition = new Packet012UpdatePlayerPosition();
-                    updatePlayerPosition.id = player.getId();
+                    updatePlayerPosition.PlayerId = player.getId();
                     updatePlayerPosition.positionY = (player.getY() / stage.heightProperty().get());
                     updatePlayerPosition.positionX = (player.getX() / stage.widthProperty().get());
                     client.sendUDP(updatePlayerPosition);
@@ -463,7 +486,7 @@ public class Screen extends Application {
                 if (isMaster()) {
                     for (AiPlayer aiPlayer : aiPlayers) {
                         Packet012UpdatePlayerPosition updateAiPosition = new Packet012UpdatePlayerPosition();
-                        updateAiPosition.id = aiPlayer.getId();
+                        updateAiPosition.PlayerId = aiPlayer.getId();
                         updateAiPosition.positionX = (aiPlayer.getX() / stage.widthProperty().get());
                         updateAiPosition.positionY = (aiPlayer.getY() / stage.heightProperty().get());
                         client.sendUDP(updateAiPosition);
@@ -482,35 +505,57 @@ public class Screen extends Application {
             }
         });
 
+        if (!client.isConnected() && canTickPlayers()) {
+            tickPlayers();
+        }
+        root.getChildren().add(idLabel);
+        if (!canTickPlayers()) {
+            updateGameLabel();
+        }
+
         stage.setFullScreen(fullScreen);
         stage.show();
 
         // save bot locations
         getBotLocationsOnMap();
         updateScale();
-        if (canTickPlayers()) {
-            tickPlayers();
-        }
         Packet018PlayerConnected playerConnected = new Packet018PlayerConnected();
+        playerConnected.gameId = getGameId();
         client.sendTCP(playerConnected);
 
     }
 
-    public boolean canTickPlayers() {
+    public void updateGameLabel() {
+        idLabel.setText(String.format(ID_LABEL_INFO, getConnectedPlayerCount(), playerCount, getGameId()));
+        idLabel.setFont(Font.font("Arial", FontWeight.EXTRA_BOLD, (stage.widthProperty().get() - 10) / 20));
+        idLabel.setMaxWidth(Double.MAX_VALUE);
+        idLabel.setAlignment(Pos.CENTER);
+        idLabel.setTextAlignment(TextAlignment.CENTER);
+        AnchorPane.setLeftAnchor(idLabel, 0.0);
+        AnchorPane.setRightAnchor(idLabel, 0.0);
+
+    }
+
+    public int getConnectedPlayerCount() {
         int count = 0;
         for (Player p : players) {
             if (p instanceof GamePlayer) {
                 count++;
             }
         }
-        if (count == getPlayerCount()) {
-            return true;
-        }
-        return false;
+        return count;
+    }
+
+    public boolean canTickPlayers() {
+        return getConnectedPlayerCount() == getPlayerCount();
 
     }
 
     public void tickPlayers() {
+        root.getChildren().remove(idLabel);
+        Packet024RemoveGameWithId removeGameWithId = new Packet024RemoveGameWithId();
+        removeGameWithId.gameId = gameId;
+        client.sendTCP(removeGameWithId);
         timer = new AnimationTimer() {
             @Override
             public void handle(long l) {
@@ -523,6 +568,7 @@ public class Screen extends Application {
                             bot.botShooting(p, root);
                         }
                     }
+                    playersSpawningCorrection(p);
                 }
                 //Only this player can tick!
                 if (player != null) {
@@ -554,12 +600,42 @@ public class Screen extends Application {
         timer.start();
     }
 
+    /**
+     * If player spawns on wall, finds new location.
+     *
+     * @param p Player
+     */
+    public void playersSpawningCorrection(Player p) {
+        if (p instanceof GamePlayer) {
+            GamePlayer pp = (GamePlayer) p;
+            for (Object object : objectsOnMap) {
+                if (object.collides(pp)) {
+                    pp.setPlayerXStartingPosition(greenBase, redBase);
+                    pp.setPlayerYStartingPosition(greenBase, redBase);
+                }
+            }
+        }
+        if (p.getClass().equals(AiPlayer.class)) {
+            AiPlayer ai = (AiPlayer) p;
+            for (Object object : objectsOnMap) {
+                if (object.collides(ai.collisionBoundary)) {
+                    ai.setPlayerXStartingPosition(greenBase, redBase);
+                    ai.setPlayerYStartingPosition(greenBase, redBase);
+                }
+            }
+        }
+    }
+
     public void updatePlayerLives(String id, int lives) {
         for (Player p : players) {
             if (p.getId().equals(id)) {
                 p.setLives(lives);
                 if (lives <= 0) {
+                    p.reSpawn(mapLoad, players, deadPlayers);
+                    deadPlayers.add(p);
                     root.getChildren().remove(p);
+                    players.remove(p);
+                    p.dropPickedUpFlag();
                 }
             }
         }
@@ -573,20 +649,30 @@ public class Screen extends Application {
             botSpawner.spawnBots(4 - botsOnMap.size(), stage, root, bases, mapLoad.getObjectsOnMap(), true);
             botsOnMap = botSpawner.getBotsOnMap();
             master = true;
+            setBotLocationsXY(getBotLocationsXY());
+            Packet007SendBotsLocation sendBotsLocation = new Packet007SendBotsLocation();
+            sendBotsLocation.gameId = getGameId();
+            sendBotsLocation.locations = getBotLocationsXY();
+            client.sendTCP(sendBotsLocation);
         } else {
             Packet004RequestPlayers requestPlayers = new Packet004RequestPlayers();
-            requestPlayers.battlefield = getChosenMap();
+            requestPlayers.gameId = getGameId();
             client.sendTCP(requestPlayers);
-            for (Map.Entry<Integer, Double[]> entry : botLocationsXY.entrySet()) {
-                Double[] positions = entry.getValue();
-                int id = entry.getKey();
-                botSpawner.spawnBotsWithIdAndLocation(id, 4, (int) (positions[0] * stage.widthProperty().get()), (int) (positions[1] * stage.heightProperty().get()), stage, root, false);
-                botsOnMap = botSpawner.getBotsOnMap();
-            }
+            spawnBots();
             Packet015RequestAI requestAI = new Packet015RequestAI();
-            requestAI.battlefield = this.getChosenMap();
+            requestAI.gameId = this.getGameId();
             client.sendTCP(requestAI);
         }
+    }
+
+    public void spawnBots() {
+        for (Map.Entry<Integer, Double[]> entry : botLocationsXY.entrySet()) {
+            Double[] positions = entry.getValue();
+            int id = entry.getKey();
+            botSpawner.spawnBotsWithIdAndLocation(id, 4, (int) (positions[0] * stage.widthProperty().get()), (int) (positions[1] * stage.heightProperty().get()), stage, root, false);
+            botsOnMap = botSpawner.getBotsOnMap();
+        }
+
     }
 
     /**
@@ -601,7 +687,6 @@ public class Screen extends Application {
             Bot bot = botsOnMap.get(i);
             if (bot.getBotId() == botId) {
                 bot.lives = botLives;
-                System.out.println("new bot lives: " + bot.lives);
                 if (bot.lives == 0) {
                     botSpawner.botsOnMap.remove(bot);
                     root.getChildren().remove(bot);
@@ -651,16 +736,13 @@ public class Screen extends Application {
             if (cPlayer.getId().equals(id)) {
                 root.getChildren().remove(cPlayer);
                 playerToRemove = cPlayer;
-                System.out.println("Removed a player");
 
             }
         }
 
         if (playerToRemove != null) {
-            System.out.println(players.contains(playerToRemove));
             players.remove(playerToRemove);
             deadPlayers.remove(playerToRemove);
-            System.out.println("Removed a player from players list");
         }
     }
 
@@ -729,6 +811,21 @@ public class Screen extends Application {
         }
     }
 
+    public void captureFlag(String playerId) {
+        for (Player p : players) {
+            if (p.getId().equals(playerId)) {
+                if (p.getColor().equals(GamePlayer.playerColor.RED)) {
+                    p.pickupFlag(redFlag);
+                    redFlag.relocate(p.getX() + 10, p.getY() + 10);
+                } else {
+                    p.pickupFlag(greenFlag);
+                    greenFlag.relocate(p.getX() + 10, p.getY() + 10);
+
+                }
+            }
+        }
+    }
+
     /**
      * Player can catch the enemy team`s flag if intersects with it and bring to his base.
      * If enemy team`s flag is brought to own base then the next round starts.
@@ -738,32 +835,78 @@ public class Screen extends Application {
             if (player.getBoundsInParent().intersects(redFlag.getBoundsInParent())) {
                 if (player.getPickedUpFlag() == null && !redFlag.isPickedUp()) {
                     player.pickupFlag(redFlag);
+                    Packet026FlagCaptured flagCaptured = new Packet026FlagCaptured();
+                    flagCaptured.PlayerId = player.getId();
+                    flagCaptured.gameId = getGameId();
+                    client.sendTCP(flagCaptured);
                 }
-                if (player.getX() > redBase.getRightX() - redBase.getRightX() / 5) {
+                if (!player.getBoundsInParent().intersects(redBase.getBoundsInParent())) {
                     redFlag.relocate(player.getX() + 10, player.getY() + 10);
                 } else {
-                    redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
-                    redTeamScore += 1;
-                    newRound();
-                    player.dropPickedUpFlag();
+                    flagCaptured(player);
                 }
             }
         } else {
             if (player.getBoundsInParent().intersects(greenFlag.getBoundsInParent())) {
                 if (player.getPickedUpFlag() == null && !greenFlag.isPickedUp()) {
                     player.pickupFlag(greenFlag);
+                    Packet026FlagCaptured flagCaptured = new Packet026FlagCaptured();
+                    flagCaptured.PlayerId = player.getId();
+                    flagCaptured.gameId = getGameId();
+                    client.sendTCP(flagCaptured);
                 }
-                if (player.getX() < greenBase.getLeftX()) {
+                if (!player.getBoundsInParent().intersects(greenBase.getBoundsInParent())) {
                     greenFlag.relocate(player.getX() + 10, player.getY() + 10);
                 } else {
-                    greenFlag.relocate(greenBase.getRightX() - 50,
-                            greenBase.getBottomY() / 2);
-                    greenTeamScore += 1;
-                    player.dropPickedUpFlag();
-                    newRound();
+                    flagCaptured(player);
                 }
             }
         }
+    }
+
+    public void flagCaptured(Player player) {
+        if (player instanceof AiPlayer && !isMaster()) {
+            return;
+        }
+        String team;
+        int score;
+        if (player.getColor() == GamePlayer.playerColor.RED) {
+            redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
+            redTeamScore += 1;
+            score = redTeamScore;
+            team = "R";
+        } else {
+            greenFlag.relocate(greenBase.getRightX() - 50,
+                    greenBase.getBottomY() / 2);
+            greenTeamScore += 1;
+            score = greenTeamScore;
+            team = "G";
+        }
+        if (client.isConnected()) {
+            Packet025Score packet025Score = new Packet025Score();
+            packet025Score.team = team;
+            packet025Score.gameId = gameId;
+            packet025Score.score = score;
+            client.sendTCP(packet025Score);
+        }
+        newRound();
+        player.dropPickedUpFlag();
+
+
+    }
+
+    public void score(String team, int score) {
+        if (team.equals("G")) {
+            greenTeamScore = score;
+        } else if (team.equals("R")) {
+            redTeamScore = score;
+        }
+
+        for (Player p : players) {
+            p.dropPickedUpFlag();
+        }
+        newRound();
+
     }
 
     /**
@@ -778,7 +921,7 @@ public class Screen extends Application {
             root.getChildren().remove(bot);
         }
         botsOnMap.clear();
-        requestNodesFromOtherClients();
+        spawnBots();
         greenFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2);
         redFlag.relocate(greenBase.getRightX() - 50, greenBase.getBottomY() / 2 - redFlag.getHeight());
         redFlag.drop();
@@ -787,6 +930,9 @@ public class Screen extends Application {
         deadPlayers.clear();
         player.setDead(false);
         for (Player p : players) {
+            if (player.getPickedUpFlag() != null) {
+                player.dropPickedUpFlag();
+            }
             Timeline playtime = new Timeline(
                     new KeyFrame(Duration.seconds(0), event -> p.setPlayerXStartingPosition(greenBase, redBase)),
                     new KeyFrame(Duration.seconds(0), event -> p.setPlayerYStartingPosition(greenBase, redBase)),
@@ -801,6 +947,7 @@ public class Screen extends Application {
         }
         updateScale();
     }
+
 
     /**
      * Makes scoreboard.

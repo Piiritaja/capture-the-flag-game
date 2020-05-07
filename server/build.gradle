@@ -1,0 +1,35 @@
+plugins {
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.8'
+}
+
+sourceCompatibility = 11
+
+
+repositories {
+    mavenCentral()
+    maven { url "https://clojars.org/repo" }
+
+}
+
+
+javafx {
+    version = "11"
+    modules = ['javafx.controls']
+}
+
+dependencies {
+    compile group: 'kryonet', name: 'kryonet-all', version: '2.21'
+
+}
+
+sourceSets {
+    main.java.srcDir "src"
+}
+
+jar {
+    from configurations.compile.collect { zipTree it }
+    manifest.attributes "Main-Class": "networking.GameServer"
+}
+
+mainClassName = 'networking.GameServer'

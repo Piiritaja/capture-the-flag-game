@@ -3,6 +3,7 @@ package Game.bots;
 import Game.maps.Base;
 import Game.maps.Object;
 import javafx.scene.Group;
+import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ public class BotSpawner {
      * @param bases        Bases that the bot can't be spawned into
      * @param objectsOnMap List of objects that the bots can not spawn into
      */
-    public void spawnBots(int limit, Stage stage, Group group, List<Base> bases, List<Object> objectsOnMap, boolean lethal) {
+    public void spawnBots(int limit, Stage stage, AnchorPane group, List<Base> bases, List<Object> objectsOnMap, boolean lethal) {
         double maxX = stage.widthProperty().get() - stage.widthProperty().get() / mapWidthInTiles;
         double maxY = stage.heightProperty().get() - stage.heightProperty().get() / mapHeightInTiles;
         for (int i = 0; i < limit; i++) {
@@ -67,7 +68,7 @@ public class BotSpawner {
         }
     }
 
-    public void spawnBotsWithIdAndLocation(int botId, int limit, int xPosition, int yPosition, Stage stage, Group group, boolean lethal) {
+    public void spawnBotsWithIdAndLocation(int botId, int limit, int xPosition, int yPosition, Stage stage, AnchorPane group, boolean lethal) {
         Bot bot = new Bot((xPosition), (yPosition), 10, stage, lethal);
         group.getChildren().add(bot);
         botsOnMap.add(bot);

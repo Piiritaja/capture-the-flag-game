@@ -6,6 +6,7 @@ import Game.player.Player;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Path;
@@ -25,12 +26,12 @@ public class Bot extends ImageView {
     private static final int SHOOTING_LENGTH = 200;
     private double botWidth;
     private double botHeight;
-    private static final Image BOT_STILL_IMAGE_DOWN = new Image("assets/bot/down.png");
-    private static final Image BOT_WALK_IMAGE_1 = new Image("assets/bot/walk1.png");
+    private static final Image BOT_STILL_IMAGE_DOWN = new Image(Bot.class.getResourceAsStream("/bot/down.png"));
+    private static final Image BOT_WALK_IMAGE_1 = new Image(Bot.class.getResourceAsStream("/bot/walk1.png"));
     //private static final Image BOT_WALK_IMAGE_2 = new Image("assets/bot/walk2.png");
-    private static final Image BOT_STILL_IMAGE_LEFT = new Image("assets/bot/left.png");
-    private static final Image BOT_STILL_IMAGE_RIGHT = new Image("assets/bot/right.png");
-    private static final Image BOT_STILL_IMAGE_UP = new Image("assets/bot/up.png");
+    private static final Image BOT_STILL_IMAGE_LEFT = new Image(Bot.class.getResourceAsStream("/bot/left.png"));
+    private static final Image BOT_STILL_IMAGE_RIGHT = new Image(Bot.class.getResourceAsStream("/bot/right.png"));
+    private static final Image BOT_STILL_IMAGE_UP = new Image(Bot.class.getResourceAsStream("/bot/up.png"));
     private int botId;
     double time = 0;
     Bullet bullet;
@@ -117,7 +118,7 @@ public class Bot extends ImageView {
      * @param player player that`s in radius.
      * @param root   main group.
      */
-    public void botShooting(Player player, Group root) {
+    public void botShooting(Player player, AnchorPane root) {
         time += 0.05;
         double lineStartingX = getX();
         double lineStartingY = getY();

@@ -7,6 +7,7 @@ import Game.bots.Bot;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
@@ -16,6 +17,8 @@ import javafx.stage.Stage;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,8 +33,16 @@ public class Object extends ImageView {
     private int height = 32;
     private int row = 1;
     private int column = 1;
-    public static final String WOOD_TEXTURE = "assets/map/objects/wooden.png";
-    public static final String BRICK_TEXTURE = "assets/map/objects/brick2.png";
+    // Textures
+    public static final String WOOD5 = "/map/objects/textures/wood5.png";
+    public static final String WOOD6 = "/map/objects/textures/wood6.png";
+    public static final String WOOD7 = "/map/objects/textures/wood7.png";
+    public static final String WOOD8 = "/map/objects/textures/wood8.png";
+    public static final String BRICK1= "/map/objects/textures/brick1.png";
+    public static final String BRICK2= "/map/objects/textures/brick2.png";
+    public static final String BRICK3= "/map/objects/textures/brick3.png";
+    public static final String BRICK4= "/map/objects/textures/brick4.png";
+
     public static Battlefield mapType;
     public static int mapWidthInTiles = Screen.getMAP_WIDTH_IN_TILES();
     public static int mapHeightInTiles = Screen.getMAP_HEIGHT_IN_TILES();
@@ -40,6 +51,13 @@ public class Object extends ImageView {
         this.setFitWidth(width);
         this.setFitHeight(height);
         this.setImage(new Image(texture));
+    }
+
+    public Object() {
+    }
+
+    public void setTileTexture(String texture) {
+        this.setImage(new Image(Object.class.getResourceAsStream(texture)));
     }
 
     /**
@@ -156,7 +174,7 @@ public class Object extends ImageView {
      * @param map   Objects are loaded according to the chosen map
      * @return List of objects added to the map
      */
-    public static List<Object> addObjectsToGroup(Group root, Stage stage, Battlefield map) {
+    public static List<Object> addObjectsToGroup(AnchorPane root, Stage stage, Battlefield map) {
         mapType = map;
         String line;
         String objectCsv = setCsv(map);
@@ -165,34 +183,44 @@ public class Object extends ImageView {
         String[] field;
         List<Object> walls = new ArrayList<>();
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(objectCsv));
+            InputStream csvFile = Object.class.getResourceAsStream(objectCsv);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(csvFile));
             while ((line = reader.readLine()) != null) {
                 column = 0;
                 field = line.split(",");
                 for (String character : field) {
-                    if (character.equals("1")) {
-                        Object tile = new Object(Object.BRICK_TEXTURE);
-                        tile.setRow(row);
-                        tile.setColumn(column);
-                        //tile.setX(stage.widthProperty().get() / mapWidthInTiles * column);
-                        tile.setFitWidth(stage.widthProperty().get() / mapWidthInTiles);
-                        tile.setFitHeight(stage.heightProperty().get() / mapHeightInTiles);
-                        tile.setX(column * mapWidthInTiles);
-                        tile.setY(row * mapHeightInTiles);
-                        root.getChildren().add(tile);
-                        walls.add(tile);
-                    } else if (character.equals("2")) {
-                        Object tile = new Object(Object.WOOD_TEXTURE);
-                        tile.setRow(row);
-                        tile.setColumn(column);
-                        //tile.setX(stage.widthProperty().get() / mapWidthInTiles * column);
-                        tile.setX(column * mapWidthInTiles);
-                        tile.setY(row * mapHeightInTiles);
-                        tile.setFitWidth(stage.widthProperty().get() / mapWidthInTiles);
-                        tile.setFitHeight(stage.heightProperty().get() / mapHeightInTiles);
-                        root.getChildren().add(tile);
-                        walls.add(tile);
+                    if (character.equals("0")) {
+                        column++;
+                        continue;
                     }
+                    Object tile = new Object();
+                    if (character.equals("1")) {
+                        tile.setTileTexture(Object.BRICK1);
+                    } else if (character.equals("2")) {
+                        tile.setTileTexture(Object.BRICK2);
+                    } else if (character.equals("3")) {
+                        tile.setTileTexture(Object.BRICK3);
+                    } else if (character.equals("4")) {
+                        tile.setTileTexture(Object.BRICK4);
+                    } else if (character.equals("5")) {
+                        tile.setTileTexture(Object.WOOD5);
+                    } else if (character.equals("6")) {
+                        tile.setTileTexture(Object.WOOD6);
+                    } else if (character.equals("7")) {
+                        tile.setTileTexture(Object.WOOD7);
+                    } else if (character.equals("8")) {
+                        tile.setTileTexture(Object.WOOD8);
+                    }
+
+                    tile.setRow(row);
+                    tile.setColumn(column);
+                    //tile.setX(stage.widthProperty().get() / mapWidthInTiles * column);
+                    tile.setFitWidth(stage.widthProperty().get() / mapWidthInTiles);
+                    tile.setFitHeight(stage.heightProperty().get() / mapHeightInTiles);
+                    tile.setX(column * mapWidthInTiles);
+                    tile.setY(row * mapHeightInTiles);
+                    root.getChildren().add(tile);
+                    walls.add(tile);
                     column++;
                 }
                 row++;
@@ -204,6 +232,7 @@ public class Object extends ImageView {
     }
 
 
+
     /**
      * Method used to set the correct .csv file for object loading.
      *
@@ -213,9 +242,9 @@ public class Object extends ImageView {
     private static String setCsv(Battlefield map) {
         switch (map) {
             case MAP1:
-                return "src/assets/map/objects/map1walls.csv";
+                return "/map/objects/map1walls.csv";
             case MAP2:
-                return "src/assets/map/objects/map2walls.csv";
+                return "/map/objects/map2walls.csv";
         }
         return null;
     }

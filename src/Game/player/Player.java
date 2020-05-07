@@ -3,24 +3,23 @@ package Game.player;
 import Game.maps.Base;
 import Game.maps.MapLoad;
 import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import static java.lang.StrictMath.abs;
 
@@ -39,14 +38,14 @@ public abstract class Player extends ImageView {
 
 
     //Constants for player model graphics
-    static final String RED_PLAYER_MAIN_IMAGE = "assets/player/red/still.png";
-    static final String GREEN_PLAYER_MAIN_IMAGE = "assets/player/green/still.png";
+    static final String RED_PLAYER_MAIN_IMAGE = "/player/red/still.png";
+    static final String GREEN_PLAYER_MAIN_IMAGE = "/player/green/still.png";
     Image image;
     Image walkingRightImage;
     Image walkingLeftImage;
     Image walkingUpImage;
     Image walkingDownImage;
-    Group root;
+    AnchorPane root;
     public int lives;
     boolean dead = false;
     public Timeline playerDead = new Timeline();
@@ -70,24 +69,26 @@ public abstract class Player extends ImageView {
     private double playerLocationYInTiles;
     Bullet bullet;
     Flag pickedUpFlag = null;
+    Stage stage;
 
 
-    public Player(int x, int y, int dx, int dy, GamePlayer.playerColor color) {
+    public Player(int x, int y, int dx, int dy, GamePlayer.playerColor color, Stage stage) {
         if (color.equals(GamePlayer.playerColor.GREEN)) {
-            image = new Image(GREEN_PLAYER_MAIN_IMAGE);
-            walkingRightImage = new Image("assets/player/green/walkingRight.png");
-            walkingLeftImage = new Image("assets/player/green/walkingLeft.png");
-            walkingUpImage = new Image("assets/player/green/walkingUp.png");
-            walkingDownImage = new Image("assets/player/green/walkingDown.png");
+            image = new Image(Player.class.getResourceAsStream(GREEN_PLAYER_MAIN_IMAGE));
+            walkingRightImage = new Image(Player.class.getResourceAsStream("/player/green/walkingRight.png"));
+            walkingLeftImage = new Image(Player.class.getResourceAsStream("/player/green/walkingLeft.png"));
+            walkingUpImage = new Image(Player.class.getResourceAsStream("/player/green/walkingUp.png"));
+            walkingDownImage = new Image(Player.class.getResourceAsStream("/player/green/walkingDown.png"));
         } else if (color.equals(GamePlayer.playerColor.RED)) {
             image = new Image(RED_PLAYER_MAIN_IMAGE);
-            walkingRightImage = new Image("assets/player/red/walkingRight.png");
-            walkingLeftImage = new Image("assets/player/red/walkingLeft.png");
-            walkingUpImage = new Image("assets/player/red/walkingUp.png");
-            walkingDownImage = new Image("assets/player/red/walkingDown.png");
+            walkingRightImage = new Image(Player.class.getResourceAsStream("/player/red/walkingRight.png"));
+            walkingLeftImage = new Image(Player.class.getResourceAsStream("/player/red/walkingLeft.png"));
+            walkingUpImage = new Image(Player.class.getResourceAsStream("/player/red/walkingUp.png"));
+            walkingDownImage = new Image(Player.class.getResourceAsStream("/player/red/walkingDown.png"));
         } else {
             image = new Image(RED_PLAYER_MAIN_IMAGE);
         }
+        this.stage = stage;
         this.setImage(image);
         this.width = PLAYER_WIDTH;
         this.height = PLAYER_HEIGHT;
@@ -174,7 +175,7 @@ public abstract class Player extends ImageView {
      *
      * @param root The group for this player.
      */
-    public void setRoot(Group root) {
+    public void setRoot(AnchorPane root) {
         this.root = root;
     }
 
@@ -203,12 +204,14 @@ public abstract class Player extends ImageView {
     }
 
     public void pickupFlag(Flag flag) {
-       this.pickedUpFlag = flag;
-       flag.pickUp();
+        this.pickedUpFlag = flag;
+        flag.pickUp();
     }
 
     public void dropPickedUpFlag() {
-        pickedUpFlag.drop();
+        if (pickedUpFlag != null) {
+            pickedUpFlag.drop();
+        }
         this.pickedUpFlag = null;
     }
 
@@ -328,9 +331,7 @@ public abstract class Player extends ImageView {
      * @param greenBase base where to put green players
      * @param redBase   base where to put red players
      */
-    public void setPlayerXStartingPosition(Base greenBase, Base redBase) {
-        this.x = (int) calcPlayerXStartingPosition(greenBase, redBase, color);
-    }
+    public abstract void setPlayerXStartingPosition(Base greenBase, Base redBase);
 
     /**
      * Sets player y coordinate when game or new round starts.
@@ -338,9 +339,7 @@ public abstract class Player extends ImageView {
      * @param greenBase base where to put green players
      * @param redBase   base where to put red players
      */
-    public void setPlayerYStartingPosition(Base greenBase, Base redBase) {
-        this.y = (int) calcPlayerYStartingPosition(greenBase, redBase, color);
-    }
+    public abstract void setPlayerYStartingPosition(Base greenBase, Base redBase);
 
     public static double calcPlayerYStartingPosition(Base greenBase, Base redBase, GamePlayer.playerColor color) {
         Random positionPicker = new Random();

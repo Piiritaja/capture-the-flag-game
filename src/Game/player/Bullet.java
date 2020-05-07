@@ -9,6 +9,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.PathTransition;
 import javafx.animation.Timeline;
 import javafx.scene.Group;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
@@ -58,7 +59,7 @@ public class Bullet extends Circle {
      * @param distance How far bullet travels.
      * @param bullets  List of bullets.
      */
-    public void shoot(Line line, Group root, double distance, List<Bullet> bullets) {
+    public void shoot(Line line, AnchorPane root, double distance, List<Bullet> bullets) {
         PathTransition transition = new PathTransition();
         transition.setNode(this);
         if (distance > 0) {
@@ -87,7 +88,7 @@ public class Bullet extends Circle {
      * @param botSpawner   Calculates bots on map.
      * @param client       Client that shoots the bullet.
      */
-    public void bulletCollision(List<Player> players, List<Object> objectsOnMap, Group root, BotSpawner botSpawner,
+    public void bulletCollision(List<Player> players, List<Object> objectsOnMap, AnchorPane root, BotSpawner botSpawner,
                                 Client client, Player player, List<Player> deadPlayers, MapLoad mapLoad, int a) {
         Iterator<Bullet> bullets = player.bullets.iterator();
         while (bullets.hasNext()) {

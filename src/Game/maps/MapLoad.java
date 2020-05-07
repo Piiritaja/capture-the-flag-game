@@ -3,6 +3,7 @@ package Game.maps;
 import Game.Screen;
 import Game.player.Flag;
 import javafx.scene.Group;
+import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ public class MapLoad {
      * @param root:  JavaFx Group that is used in the main window
      * @param stage: JavaFx Stage that is used in the main window
      */
-    private void loadMap(Group root, Stage stage) {
+    private void loadMap(AnchorPane root, Stage stage) {
         floor = new MapLayer(floorImagePath);
         // floor.png is 1280x800
         floor.addToGroup(root);
@@ -124,8 +125,8 @@ public class MapLoad {
      * @param root: JavaFx Group root that is used in the main window.
      * @param stage JavaFx Stage that is used in the main window.
      */
-    public void loadMap2(Group root, Stage stage) {
-        floorImagePath = "assets/map/2teams/map2/floor.png";
+    public void loadMap2(AnchorPane root, Stage stage) {
+        floorImagePath = "/map/2teams/map2/floor.png";
         // floor.png is 1280x800
         mapToLoad = Battlefield.MAP2;
         loadMap(root, stage);
@@ -138,8 +139,8 @@ public class MapLoad {
      * @param root: JavaFx Group root that is used in the main window.
      * @param stage JavaFx Stage that is used in the main window.
      */
-    public void loadMap1(Group root, Stage stage) {
-        floorImagePath = "assets/map/2teams/map1/floor.png";
+    public void loadMap1(AnchorPane root, Stage stage) {
+        floorImagePath = "/map/2teams/map1/floor.png";
         mapToLoad = Battlefield.MAP1;
         loadMap(root, stage);
     }

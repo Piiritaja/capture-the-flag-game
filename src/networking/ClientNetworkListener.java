@@ -24,6 +24,11 @@ import networking.packets.Packet015RequestAI;
 import networking.packets.Packet016SendAiPlayer;
 import networking.packets.Packet017GamePlayerShoot;
 import networking.packets.Packet018PlayerConnected;
+import networking.packets.Packet021RequestGames;
+import networking.packets.Packet022JoinGame;
+import networking.packets.Packet023RequestGame;
+import networking.packets.Packet025Score;
+import networking.packets.Packet026FlagCaptured;
 
 import java.util.List;
 
@@ -94,78 +99,56 @@ public class ClientNetworkListener extends Listener {
             System.out.println();
 
         } else if (object instanceof Packet003SendConnections) {
-            System.out.println("Received sendConnections packet");
             int connections = ((Packet003SendConnections) object).connections;
             if (connections == 1) {
-                System.out.println("No other clients connected");
             } else {
-                System.out.println(String.format("%d other clients connected", connections - 1));
 
             }
             this.serverClient.getMenu().setNumberOfCurrentConnections(connections);
-            System.out.println();
         } else if (object instanceof Packet004RequestPlayers) {
-            System.out.println("Received requestPlayers");
-            if (serverClient.getMenu().getScreen().isInGame() && serverClient.getMenu().getScreen().getChosenMap() == ((Packet004RequestPlayers) object).battlefield) {
+            if (serverClient.getMenu().getScreen().isInGame() && serverClient.getMenu().getScreen().getGameId().equals(((Packet004RequestPlayers) object).gameId)) {
                 Packet005SendPlayerPosition sendPlayerPosition = new Packet005SendPlayerPosition();
 
+                sendPlayerPosition.gameId = serverClient.getMenu().getScreen().getGameId();
                 sendPlayerPosition.xPosition = serverClient.getMenu().getScreen().getPlayer().getX();
                 sendPlayerPosition.yPosition = serverClient.getMenu().getScreen().getPlayer().getY();
                 sendPlayerPosition.battlefield = ((Packet004RequestPlayers) object).battlefield;
                 sendPlayerPosition.id = serverClient.getMenu().getScreen().getPlayer().getId();
                 sendPlayerPosition.pColor = serverClient.getMenu().getScreen().getPlayer().getColor().equals(GamePlayer.playerColor.GREEN) ? 'G' : 'R';
                 sendPlayerPosition.lives = serverClient.getMenu().getScreen().getPlayer().getLives();
-                System.out.println("Received id " + sendPlayerPosition.id);
 
                 connection.sendTCP(sendPlayerPosition);
-                System.out.println("Sent sendPlayers");
-                System.out.println();
             }
 
         } else if (object instanceof Packet005SendPlayerPosition) {
-            System.out.println("Received sendPlayerPosition packet");
-            if (this.serverClient.getMenu().getScreen().isInGame() && ((Packet005SendPlayerPosition) object).battlefield == this.serverClient.getMenu().getScreen().getChosenMap()) {
+            if (this.serverClient.getMenu().getScreen().isInGame() && ((Packet005SendPlayerPosition) object).gameId.equals(this.serverClient.getMenu().getScreen().getGameId())) {
                 double playerXPosition = ((Packet005SendPlayerPosition) object).xPosition;
                 double playerYPosition = ((Packet005SendPlayerPosition) object).yPosition;
                 String id = ((Packet005SendPlayerPosition) object).id;
                 char playerColor = ((Packet005SendPlayerPosition) object).pColor;
                 int lives = ((Packet005SendPlayerPosition) object).lives;
                 Platform.runLater(() -> this.serverClient.getMenu().getScreen().createPlayer(playerXPosition, playerYPosition, id, playerColor, lives));
-                System.out.println("Created player at:");
-                System.out.println(playerXPosition);
-                System.out.println(playerYPosition);
-                System.out.println();
             }
 
         } else if (object instanceof Packet006RequestBotsLocation) {
-            System.out.println("Received requestBotsLocation packet");
             if (serverClient.getMenu().getScreen().isInGame()
-                    && ((Packet006RequestBotsLocation) object).battlefield == serverClient.getMenu().getScreen().getChosenMap()
+                    && ((Packet006RequestBotsLocation) object).gameId.equals(serverClient.getMenu().getScreen().getGameId())
                     && serverClient.getMenu().getScreen().isMaster()) {
-                System.out.println("Sending sendBotsLocation packet");
                 Packet007SendBotsLocation sendBots = new Packet007SendBotsLocation();
                 sendBots.locations = serverClient.getMenu().getScreen().getBotLocationsXY();
-                sendBots.battlefield = ((Packet006RequestBotsLocation) object).battlefield;
+                sendBots.gameId = ((Packet006RequestBotsLocation) object).gameId;
                 connection.sendTCP(sendBots);
-                System.out.println("Sent sendBotsLocation packet");
-                System.out.println();
+
             }
 
         } else if (object instanceof Packet007SendBotsLocation) {
-            System.out.println("Received sendBotsLocation packet");
-            System.out.println(((Packet007SendBotsLocation) object).battlefield);
-            System.out.println(this.serverClient.getMenu().getScreen().getChosenMap());
-            if (((Packet007SendBotsLocation) object).battlefield == serverClient.getMenu().getScreen().getChosenMap()) {
+            if (((Packet007SendBotsLocation) object).gameId.equals(serverClient.getMenu().getScreen().getGameId())) {
                 serverClient.getMenu().getScreen().setBotLocationsXY(((Packet007SendBotsLocation) object).locations);
-                System.out.println("Set bots location");
-                System.out.println();
             }
 
         } else if (object instanceof Packet008SendPlayerID) {
-            System.out.println("Received player id: " + ((Packet008SendPlayerID) object).playerID);
             Platform.runLater(() -> this.serverClient.getMenu().getScreen().removePlayerWithId(((Packet008SendPlayerID) object).playerID));
         } else if (object instanceof Packet009BotHit) {
-            System.out.println("Received BotHit packet: " + ((Packet009BotHit) object).botId);
             Platform.runLater(() -> serverClient.getMenu().getScreen().updateBotLives(((Packet009BotHit) object).botId, ((Packet009BotHit) object).lives));
 
         } else if (object instanceof Packet010PlayerMovement) {
@@ -175,22 +158,18 @@ public class ClientNetworkListener extends Listener {
         } else if (object instanceof Packet012UpdatePlayerPosition) {
             if (serverClient.getMenu().getScreen().isInGame()) {
                 Platform.runLater(() -> serverClient.getMenu().getScreen().updatePlayerPosition(
-                        ((Packet012UpdatePlayerPosition) object).id,
+                        ((Packet012UpdatePlayerPosition) object).PlayerId,
                         (int) (((Packet012UpdatePlayerPosition) object).positionX * serverClient.getMenu().getScreen().getStage().widthProperty().get()),
                         (int) (((Packet012UpdatePlayerPosition) object).positionY * serverClient.getMenu().getScreen().getStage().heightProperty().get())));
             }
         } else if (object instanceof Packet013PlayerHit) {
-            System.out.println("Received PlayerHit packet");
-            System.out.println("lives: " + ((Packet013PlayerHit) object).playerLives);
             Platform.runLater(() -> serverClient.getMenu().getScreen().updatePlayerLives(((Packet013PlayerHit) object).playerID, ((Packet013PlayerHit) object).playerLives));
         } else if (object instanceof Packet014PlayerDisconnected) {
-            System.out.println("Someone disconnected");
             Platform.runLater(() -> serverClient.getMenu().getScreen().removeDisconnectedPlayer());
         } else if (object instanceof Packet015RequestAI) {
-            if (this.serverClient.getMenu().getScreen().getChosenMap().equals(((Packet015RequestAI) object).battlefield)
+            if (this.serverClient.getMenu().getScreen().getGameId().equals(((Packet015RequestAI) object).gameId)
                     && serverClient.getMenu().getScreen().isInGame()
                     && serverClient.getMenu().getScreen().isMaster()) {
-                System.out.println("Got ya");
                 List<AiPlayer> players = this.serverClient.getMenu().getScreen().getAiPlayers();
                 for (AiPlayer player : players) {
                     double x = player.getX();
@@ -198,7 +177,7 @@ public class ClientNetworkListener extends Listener {
                     String id = player.getId();
                     char color = player.getColor().equals(GamePlayer.playerColor.GREEN) ? 'G' : 'R';
                     Packet016SendAiPlayer sendAiPlayer = new Packet016SendAiPlayer();
-                    sendAiPlayer.battlefield = this.serverClient.getMenu().getScreen().getChosenMap();
+                    sendAiPlayer.gameId = this.serverClient.getMenu().getScreen().getGameId();
                     sendAiPlayer.pColor = color;
                     sendAiPlayer.xPosition = x;
                     sendAiPlayer.yPosition = y;
@@ -209,20 +188,40 @@ public class ClientNetworkListener extends Listener {
             }
 
         } else if (object instanceof Packet016SendAiPlayer) {
-            System.out.println("Received Ai packet");
             GamePlayer.playerColor color = ((Packet016SendAiPlayer) object).pColor == 'G' ? GamePlayer.playerColor.GREEN : GamePlayer.playerColor.RED;
             Platform.runLater(() -> serverClient.getMenu().getScreen().createAi(color, ((Packet016SendAiPlayer) object).xPosition, ((Packet016SendAiPlayer) object).yPosition, ((Packet016SendAiPlayer) object).id));
         } else if (object instanceof Packet017GamePlayerShoot) {
-            System.out.println("Received gamePlayerShoot packet");
             Platform.runLater(() -> serverClient.getMenu().getScreen().shootPlayerWithId(((Packet017GamePlayerShoot) object).playerId, ((Packet017GamePlayerShoot) object).mouseX, ((Packet017GamePlayerShoot) object).mouseY));
 
         } else if (object instanceof Packet018PlayerConnected) {
-            System.out.println("Received playerConnected packet");
-            Platform.runLater(() -> {
-                if (serverClient.getMenu().getScreen().canTickPlayers()) {
-                    serverClient.getMenu().getScreen().tickPlayers();
-                }
-            });
+            if (((Packet018PlayerConnected) object).gameId.equals(serverClient.getMenu().getScreen().getGameId())) {
+                Platform.runLater(() -> {
+                    if (serverClient.getMenu().getScreen().canTickPlayers()) {
+                        serverClient.getMenu().getScreen().tickPlayers();
+                    } else {
+                        serverClient.getMenu().getScreen().updateGameLabel();
+                    }
+                });
+            }
+
+        } else if (object instanceof Packet021RequestGames) {
+            this.serverClient.getMenu().setAvailableMaps(((Packet021RequestGames) object).maps);
+        } else if (object instanceof Packet022JoinGame) {
+            this.serverClient.getMenu().getScreen().setMap(((Packet022JoinGame) object).mapIndex);
+            this.serverClient.getMenu().getScreen().setPlayerCount(((Packet022JoinGame) object).gameCount);
+            this.serverClient.getMenu().getScreen().setBotLocationsXY(((Packet022JoinGame) object).bots);
+            Platform.runLater(() -> this.serverClient.getMenu().joinGame());
+        } else if (object instanceof Packet023RequestGame) {
+            Platform.runLater(() -> this.serverClient.getMenu().displayGame(((Packet023RequestGame) object).gameId, ((Packet023RequestGame) object).mapIndex, ((Packet023RequestGame) object).playerCount));
+        } else if (object instanceof Packet025Score) {
+            if (((Packet025Score) object).gameId.equals(this.serverClient.getMenu().getScreen().getGameId())) {
+                Platform.runLater(() -> this.serverClient.getMenu().getScreen().score(((Packet025Score) object).team, ((Packet025Score) object).score));
+            }
+
+        } else if (object instanceof Packet026FlagCaptured) {
+            if (((Packet026FlagCaptured) object).gameId.equals(serverClient.getMenu().getScreen().getGameId())) {
+                Platform.runLater(() -> serverClient.getMenu().getScreen().captureFlag(((Packet026FlagCaptured) object).PlayerId));
+            }
         }
     }
 

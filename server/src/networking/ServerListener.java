@@ -22,6 +22,13 @@ import networking.packets.Packet015RequestAI;
 import networking.packets.Packet016SendAiPlayer;
 import networking.packets.Packet017GamePlayerShoot;
 import networking.packets.Packet018PlayerConnected;
+import networking.packets.Packet020CreateGame;
+import networking.packets.Packet021RequestGames;
+import networking.packets.Packet022JoinGame;
+import networking.packets.Packet023RequestGame;
+import networking.packets.Packet024RemoveGameWithId;
+import networking.packets.Packet025Score;
+import networking.packets.Packet026FlagCaptured;
 
 public class ServerListener extends Listener {
     private Server server;
@@ -67,7 +74,10 @@ public class ServerListener extends Listener {
         System.out.println("Someone has disconnected");
         this.gameServer.setNumberOfConnections(this.gameServer.getNumberOfConnections() - 1);
         Packet014PlayerDisconnected playerDisconnected = new Packet014PlayerDisconnected();
-        c.sendTCP(playerDisconnected);
+        server.sendToAllTCP(playerDisconnected);
+        if (this.gameServer.getNumberOfConnections() == 0) {
+            this.gameServer.clearData();
+        }
     }
 
 
@@ -95,10 +105,15 @@ public class ServerListener extends Listener {
         } else if (object instanceof Packet005SendPlayerPosition) {
             server.sendToAllExceptTCP(connection.getID(), object);
         } else if (object instanceof Packet006RequestBotsLocation) {
-            server.sendToAllExceptTCP(connection.getID(), object);
+            if (gameServer.getBotLocations().containsKey(((Packet006RequestBotsLocation) object).gameId)) {
+                Packet007SendBotsLocation sendBotsLocation = new Packet007SendBotsLocation();
+                sendBotsLocation.locations = gameServer.getBotLocations().get(((Packet006RequestBotsLocation) object).gameId);
+                connection.sendTCP(sendBotsLocation);
+            } else {
+                System.out.println("no such game");
+            }
         } else if (object instanceof Packet007SendBotsLocation) {
-            System.out.println("SendBotsLocation");
-            server.sendToAllExceptTCP(connection.getID(), object);
+            gameServer.setBotLocations(((Packet007SendBotsLocation) object).gameId, ((Packet007SendBotsLocation) object).locations);
         } else if (object instanceof Packet008SendPlayerID) {
             server.sendToAllExceptTCP(connection.getID(), object);
         } else if (object instanceof Packet009BotHit) {
@@ -119,7 +134,49 @@ public class ServerListener extends Listener {
             server.sendToAllExceptUDP(connection.getID(), object);
         } else if (object instanceof Packet018PlayerConnected) {
             server.sendToAllTCP(object);
-        }
+        } else if (object instanceof Packet020CreateGame) {
+            System.out.println(((Packet020CreateGame) object).gameId);
+            System.out.println(((Packet020CreateGame) object).battlefield);
+            System.out.println(((Packet020CreateGame) object).playerCount);
+            gameServer.createGame(((Packet020CreateGame) object).gameId, ((Packet020CreateGame) object).battlefield, ((Packet020CreateGame) object).playerCount);
+        } else if (object instanceof Packet021RequestGames) {
+            ((Packet021RequestGames) object).playerCounts = gameServer.getPlayerCounts();
+            ((Packet021RequestGames) object).maps = gameServer.getGameMaps();
+            connection.sendTCP(object);
+            System.out.println("Received requestGames");
+        } else if (object instanceof Packet022JoinGame) {
+            if (gameServer.getBotLocations().containsKey(((Packet022JoinGame) object).gameId)) {
+                System.out.println("Found the id");
+                ((Packet022JoinGame) object).gameCount = gameServer.getPlayerCounts().get(((Packet022JoinGame) object).gameId);
+                ((Packet022JoinGame) object).bots = gameServer.getBotLocations().get(((Packet022JoinGame) object).gameId);
+                Battlefield map = gameServer.getGameMaps().get(((Packet022JoinGame) object).gameId);
+                if (map.equals(Battlefield.MAP1)) {
+                    ((Packet022JoinGame) object).mapIndex = 0;
+                } else {
+                    ((Packet022JoinGame) object).mapIndex = 1;
+                }
+                connection.sendTCP(object);
 
+            }
+        } else if (object instanceof Packet023RequestGame) {
+            if (gameServer.getBotLocations().containsKey(((Packet023RequestGame) object).gameId)) {
+                Battlefield map = gameServer.getGameMaps().get(((Packet023RequestGame) object).gameId);
+                int mapIndex;
+                if (map.equals(Battlefield.MAP1)) {
+                    mapIndex = 0;
+                } else {
+                    mapIndex = 1;
+                }
+                ((Packet023RequestGame) object).mapIndex = mapIndex;
+                ((Packet023RequestGame) object).playerCount = gameServer.getPlayerCounts().get(((Packet023RequestGame) object).gameId);
+                connection.sendTCP(object);
+            }
+        } else if (object instanceof Packet024RemoveGameWithId) {
+            this.gameServer.removeGameInstances(((Packet024RemoveGameWithId) object).gameId);
+        } else if (object instanceof Packet025Score) {
+            server.sendToAllTCP(object);
+        } else if (object instanceof Packet026FlagCaptured){
+            server.sendToAllExceptTCP(connection.getID(),object);
+        }
     }
 }

@@ -1,7 +1,6 @@
 package networking;
 
 
-import Game.maps.Battlefield;
 import com.esotericsoftware.kryonet.Server;
 import com.esotericsoftware.kryo.Kryo;
 import networking.packets.Packet000RequestAccess;
@@ -23,8 +22,18 @@ import networking.packets.Packet015RequestAI;
 import networking.packets.Packet016SendAiPlayer;
 import networking.packets.Packet017GamePlayerShoot;
 import networking.packets.Packet018PlayerConnected;
+import networking.packets.Packet019UpdateScore;
+import networking.packets.Packet020CreateGame;
+import networking.packets.Packet021RequestGames;
+import networking.packets.Packet022JoinGame;
+import networking.packets.Packet023RequestGame;
+import networking.packets.Packet024RemoveGameWithId;
+import networking.packets.Packet025Score;
+import networking.packets.Packet026FlagCaptured;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class GameServer {
@@ -34,10 +43,35 @@ public class GameServer {
     private ServerListener serverListener;
     private int numberOfConnections;
     private int totalNumberOfConnections;
+    private Map<String, Battlefield> gameMaps;
+    private Map<String, Integer> playerCounts;
+    private Map<String, Map<Integer, Double[]>> botLocations;
 
     //Server ports
     private static final int TCP_PORT = 5201;
     private static final int UDP_PORT = 5200;
+
+    public void setBotLocations(String id, Map<Integer, Double[]> locations) {
+        botLocations.put(id, locations);
+    }
+
+    public Map<String, Map<Integer, Double[]>> getBotLocations() {
+        return this.botLocations;
+    }
+
+    public Map<String, Battlefield> getGameMaps() {
+        return gameMaps;
+    }
+
+    public Map<String, Integer> getPlayerCounts() {
+        return playerCounts;
+    }
+
+    public void removeGameInstances(String id) {
+        botLocations.remove(id);
+        playerCounts.remove(id);
+        gameMaps.remove(id);
+    }
 
 
     /**
@@ -71,6 +105,9 @@ public class GameServer {
      * Set up server and initializes server listener.
      */
     public GameServer() {
+        this.gameMaps = new HashMap<>();
+        this.playerCounts = new HashMap<>();
+        this.botLocations = new HashMap<>();
         this.server = new Server();
         this.serverListener = new ServerListener(this.server, this);
         setUpServer();
@@ -93,6 +130,19 @@ public class GameServer {
             e.printStackTrace();
         }
 
+    }
+
+    public void createGame(String id, Battlefield map, int playerCount) {
+        gameMaps.put(id, map);
+        playerCounts.put(id, playerCount);
+
+    }
+
+    public void clearData() {
+        this.gameMaps = new HashMap<>();
+        this.playerCounts = new HashMap<>();
+        this.botLocations = new HashMap<>();
+        this.server = new Server();
     }
 
 
@@ -121,6 +171,14 @@ public class GameServer {
         kryo.register(Packet016SendAiPlayer.class);
         kryo.register(Packet017GamePlayerShoot.class);
         kryo.register(Packet018PlayerConnected.class);
+        kryo.register(Packet019UpdateScore.class);
+        kryo.register(Packet020CreateGame.class);
+        kryo.register(Packet021RequestGames.class);
+        kryo.register(Packet022JoinGame.class);
+        kryo.register(Packet023RequestGame.class);
+        kryo.register(Packet024RemoveGameWithId.class);
+        kryo.register(Packet025Score.class);
+        kryo.register(Packet026FlagCaptured.class);
         kryo.register(java.util.Map.class);
         kryo.register(java.util.HashMap.class);
         kryo.register(Double[].class);
