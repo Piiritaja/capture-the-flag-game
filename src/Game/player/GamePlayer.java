@@ -9,6 +9,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 import networking.packets.Packet010PlayerMovement;
 import networking.packets.Packet011PlayerMovementStop;
 import networking.packets.Packet017GamePlayerShoot;
@@ -54,8 +55,8 @@ public class GamePlayer extends Player {
      * @param dy    Movement y change
      * @param color Player color
      */
-    public GamePlayer(int x, int y, int dx, int dy, playerColor color, Client client) {
-        super(x, y, dx, dy, color);
+    public GamePlayer(int x, int y, int dx, int dy, playerColor color, Client client, Stage stage) {
+        super(x, y, dx, dy, color,stage);
         this.client = client;
 
     }
@@ -139,8 +140,8 @@ public class GamePlayer extends Player {
             double mouseX = mouseEvent.getX();
             if (Objects.equals(mouseEvent.getEventType(), MouseEvent.MOUSE_CLICKED)) {
                 Packet017GamePlayerShoot gamePlayerShoot = new Packet017GamePlayerShoot();
-                gamePlayerShoot.mouseX = mouseX;
-                gamePlayerShoot.mouseY = mouseY;
+                gamePlayerShoot.mouseX = mouseX /stage.widthProperty().get();
+                gamePlayerShoot.mouseY = mouseY / stage.heightProperty().get();
                 gamePlayerShoot.playerId = this.getId();
                 client.sendUDP(gamePlayerShoot);
                 shoot(mouseX, mouseY, true);

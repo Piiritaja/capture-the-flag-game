@@ -70,8 +70,8 @@ public class AiPlayer extends Player {
      * @param dy    Movement y change
      * @param color Player color
      */
-    public AiPlayer(int x, int y, int dx, int dy, GamePlayer.playerColor color, Flag flag, AnchorPane root, Base base, Client client, boolean master) {
-        super(x, y, dx, dy, color);
+    public AiPlayer(int x, int y, int dx, int dy, GamePlayer.playerColor color, Flag flag, AnchorPane root, Base base, Client client, boolean master, Stage stage) {
+        super(x, y, dx, dy, color, stage);
         this.base = base;
         this.flag = flag;
         //objectPlacement = Object.getObjectPlacements();
@@ -405,8 +405,8 @@ public class AiPlayer extends Player {
         double y = bot.getY() + bot.getBotHeight() / 2;
         double x = bot.getX() + bot.getBotWidth() / 2;
         gamePlayerShoot.playerId = this.getId();
-        gamePlayerShoot.mouseX = x;
-        gamePlayerShoot.mouseY = y;
+        gamePlayerShoot.mouseX = x / stage.widthProperty().get();
+        gamePlayerShoot.mouseY = y / stage.heightProperty().get();
         client.sendUDP(gamePlayerShoot);
         shoot(x, y, true);
 
