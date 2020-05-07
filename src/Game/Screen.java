@@ -251,7 +251,8 @@ public class Screen extends Application {
                 0,
                 0,
                 color.equals(GamePlayer.playerColor.GREEN) ? GamePlayer.playerColor.GREEN : GamePlayer.playerColor.RED,
-                client
+                client,
+                stage
         );
         player.setRoot(root);
         player.setId(serverclient.getID());
@@ -273,7 +274,8 @@ public class Screen extends Application {
                 0,
                 0,
                 playerColor,
-                client
+                client,
+                stage
         );
         otherPlayer.setPlayerLocationXInTiles(stage.widthProperty().get() / otherPlayer.getX());
         otherPlayer.setPlayerLocationYInTiles(stage.heightProperty().get() / otherPlayer.getY());
@@ -305,7 +307,7 @@ public class Screen extends Application {
     public void shootPlayerWithId(String id, double mouseX, double mouseY) {
         for (Player p : players) {
             if (p.getId().equals(id)) {
-                p.shoot(mouseX, mouseY, false);
+                p.shoot(mouseX * stage.widthProperty().get(), mouseY * stage.heightProperty().get(), false);
             }
         }
     }
@@ -394,7 +396,8 @@ public class Screen extends Application {
                 root,
                 base,
                 client,
-                isMaster()
+                isMaster(),
+                stage
         );
         ai.setId(id);
         root.getChildren().add(ai);
@@ -627,7 +630,11 @@ public class Screen extends Application {
             if (p.getId().equals(id)) {
                 p.setLives(lives);
                 if (lives <= 0) {
+                    p.reSpawn(mapLoad, players, deadPlayers);
+                    deadPlayers.add(p);
                     root.getChildren().remove(p);
+                    players.remove(p);
+                    p.dropPickedUpFlag();
                 }
             }
         }

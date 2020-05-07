@@ -14,6 +14,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
@@ -68,9 +69,10 @@ public abstract class Player extends ImageView {
     private double playerLocationYInTiles;
     Bullet bullet;
     Flag pickedUpFlag = null;
+    Stage stage;
 
 
-    public Player(int x, int y, int dx, int dy, GamePlayer.playerColor color) {
+    public Player(int x, int y, int dx, int dy, GamePlayer.playerColor color, Stage stage) {
         if (color.equals(GamePlayer.playerColor.GREEN)) {
             image = new Image(Player.class.getResourceAsStream(GREEN_PLAYER_MAIN_IMAGE));
             walkingRightImage = new Image(Player.class.getResourceAsStream("/player/green/walkingRight.png"));
@@ -86,6 +88,7 @@ public abstract class Player extends ImageView {
         } else {
             image = new Image(RED_PLAYER_MAIN_IMAGE);
         }
+        this.stage = stage;
         this.setImage(image);
         this.width = PLAYER_WIDTH;
         this.height = PLAYER_HEIGHT;
