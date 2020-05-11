@@ -180,44 +180,32 @@ public class AiPlayer extends Player {
         double baseMiddleX = base.getRightX() - base.getWidth() / 2;
 
         // If the flag is already picked up and the AI is in it's home base, it moves up and down in it's home base
-        final double baseMovementOffset = 80;
-        if (collisionBoundary.getBoundsInParent().intersects(base.getBoundsInParent())
-                && (x >= baseMiddleX - baseMovementOffset && x <= baseMiddleX + baseMovementOffset)
-                && flag.isPickedUp()) {
-            if (primaryMovementDirection.equals(PrimaryMovementDirection.UP) && y <= base.getTopY() + baseMovementOffset) {
-                down = true;
-                primaryY = 1;
-                up = false;
-                primaryMovementDirection = PrimaryMovementDirection.DOWN;
-            } else if (primaryMovementDirection.equals(PrimaryMovementDirection.DOWN)
-                    && y >= base.getBottomY() - baseMovementOffset) {
-                up = true;
-                down = false;
-                primaryY = -1;
-                primaryMovementDirection = PrimaryMovementDirection.UP;
-            } else {
-                if (primaryMovementDirection.equals(PrimaryMovementDirection.UP)) {
-                    primaryY = -1;
-                    up = true;
-                    down = false;
-                } else {
-                    primaryY = 1;
-                    primaryMovementDirection = PrimaryMovementDirection.DOWN;
-                    down = true;
-                    up = false;
-                }
-            }
-            return;
-        }
-
+        final double baseMovementOffset = 100;
+        int offset = 2;
         if (!flag.isPickedUp()) {
             destinationX = flag.getX();
             destinationY = flag.getY();
         } else {
+            offset = 0;
             destinationX = baseMiddleX;
-            destinationY = base.getTopY() + base.getHeight() / 2;
+            double upperDestinationY = base.getTopY() + baseMovementOffset;
+            double lowerDestinationY = base.getBottomY() - baseMovementOffset;
+            if (primaryMovementDirection.equals(PrimaryMovementDirection.UP)) {
+                if (!(y <= upperDestinationY)) {
+                    destinationY = upperDestinationY;
+                } else {
+                    destinationY = lowerDestinationY;
+                    primaryMovementDirection = PrimaryMovementDirection.DOWN;
+                }
+            } else {
+                if (!(y >= lowerDestinationY)) {
+                    destinationY = lowerDestinationY;
+                } else {
+                    destinationY = upperDestinationY;
+                    primaryMovementDirection = PrimaryMovementDirection.UP;
+                }
+            }
         }
-        final int offset = 2;
         if (destinationX < x - offset) {
             primaryX = -1;
             left = true;
