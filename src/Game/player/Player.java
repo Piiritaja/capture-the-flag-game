@@ -361,14 +361,17 @@ public abstract class Player extends ImageView {
      * @param deadPlayers dead players
      */
     public void reSpawn(MapLoad mapLoad, List<Player> players, List<Player> deadPlayers) {
+        this.setPlayerXStartingPosition(mapLoad.getBaseByColor(Base.baseColor.GREEN), mapLoad.getBaseByColor(Base.baseColor.RED));
+        this.setPlayerYStartingPosition(mapLoad.getBaseByColor(Base.baseColor.GREEN), mapLoad.getBaseByColor(Base.baseColor.RED));
         playerDead = new Timeline(
-                new KeyFrame(Duration.seconds(5), event -> this.setPlayerXStartingPosition(mapLoad.getBaseByColor(Base.baseColor.GREEN), mapLoad.getBaseByColor(Base.baseColor.RED))),
-                new KeyFrame(Duration.seconds(5), event -> this.setPlayerYStartingPosition(mapLoad.getBaseByColor(Base.baseColor.GREEN), mapLoad.getBaseByColor(Base.baseColor.RED))),
+                //new KeyFrame(Duration.seconds(5), event -> this.setPlayerXStartingPosition(mapLoad.getBaseByColor(Base.baseColor.GREEN), mapLoad.getBaseByColor(Base.baseColor.RED))),
+                //new KeyFrame(Duration.seconds(5), event -> this.setPlayerYStartingPosition(mapLoad.getBaseByColor(Base.baseColor.GREEN), mapLoad.getBaseByColor(Base.baseColor.RED))),
                 new KeyFrame(Duration.seconds(5), event -> this.setLives(10)),
                 new KeyFrame(Duration.seconds(5), event -> players.add(this)),
                 new KeyFrame(Duration.seconds(5), event -> root.getChildren().add(this)),
                 new KeyFrame(Duration.seconds(5), event -> deadPlayers.remove(this)),
-                new KeyFrame(Duration.seconds(5), event -> this.setDead(false))
+                new KeyFrame(Duration.seconds(5), event -> this.setDead(false)),
+                new KeyFrame(Duration.seconds(5), event -> this.dropPickedUpFlag())
         );
         playerDead.play();
     }
