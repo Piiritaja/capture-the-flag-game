@@ -1,13 +1,12 @@
 import Game.bots.Bot;
-import Game.maps.Base;
 import Game.player.Bullet;
 import Game.player.GamePlayer;
-import Game.player.Player;
 import com.esotericsoftware.kryonet.Client;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 
@@ -59,43 +58,46 @@ public class BotTest extends ApplicationTest {
         assertEquals(id, bot.getBotId());
     }
 
-    @Test
-    void testBotCollisionPlayer() {
-        final double x = 10;
-        bot.setX(x);
-        bot.setY(x);
+    @Nested
+    class collision {
+        @Test
+        void testBotCollisionPlayer() {
+            final double x = 10;
+            bot.setX(x);
+            bot.setY(x);
 
-        final int playerX = 900;
-        final int dx = 0;
-        Client client = null;
-        GamePlayer player = new GamePlayer(playerX, playerX, dx, dx, GamePlayer.playerColor.RED, client, testStage);
+            final int playerX = 900;
+            final int dx = 0;
+            Client client = null;
+            GamePlayer player = new GamePlayer(playerX, playerX, dx, dx, GamePlayer.playerColor.RED, client, testStage);
 
-        assertFalse(bot.collides(player));
+            assertFalse(bot.collides(player));
 
-        player.setX(x);
-        player.setY(x);
+            player.setX(x);
+            player.setY(x);
 
-        assertTrue(bot.collides(player));
-    }
+            assertTrue(bot.collides(player));
+        }
 
-    @Test
-    void testBotCollisionBullet() {
-        final double x = 10;
-        bot.setX(x);
-        bot.setY(x);
+        @Test
+        void testBotCollisionBullet() {
+            final double x = 10;
+            bot.setX(x);
+            bot.setY(x);
 
-        final int bulletX = 900;
-        final int radius = 10;
-        Bullet bullet = new Bullet(bulletX, bulletX, radius, Color.RED, true);
+            final int bulletX = 900;
+            final int radius = 10;
+            Bullet bullet = new Bullet(bulletX, bulletX, radius, Color.RED, true);
 
-        assertFalse(bot.collides(bullet));
+            assertFalse(bot.collides(bullet));
 
-        bullet.setLayoutX(x);
-        bullet.setLayoutY(x);
-        bullet.setCenterY(x);
-        bullet.setCenterX(x);
-        
-        assertTrue(bot.collides(bullet));
+            bullet.setLayoutX(x);
+            bullet.setLayoutY(x);
+            bullet.setCenterY(x);
+            bullet.setCenterX(x);
+
+            assertTrue(bot.collides(bullet));
+        }
     }
 
 }
