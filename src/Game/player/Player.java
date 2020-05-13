@@ -40,18 +40,18 @@ public abstract class Player extends ImageView {
     //Constants for player model graphics
     static final String RED_PLAYER_MAIN_IMAGE = "/player/red/still.png";
     static final String GREEN_PLAYER_MAIN_IMAGE = "/player/green/still.png";
-    Image image;
-    Image walkingRightImage;
-    Image walkingLeftImage;
-    Image walkingUpImage;
-    Image walkingDownImage;
+    public Image image;
+    public Image walkingRightImage;
+    public Image walkingLeftImage;
+    public Image walkingUpImage;
+    public Image walkingDownImage;
     AnchorPane root;
     public int lives;
     boolean dead = false;
     public Timeline playerDead = new Timeline();
 
     // shooting coordinates
-    double shootingRightX;
+    public double shootingRightX;
     double shootingRightY;
     double shootingUpX;
     double shootingUpY;
@@ -117,9 +117,9 @@ public abstract class Player extends ImageView {
      *
      * @return dead
      */
-    public boolean isDead() {
+    /*public boolean isDead() {
         return dead;
-    }
+    }*/
 
     /**
      * Sets boolean dead.
@@ -129,7 +129,6 @@ public abstract class Player extends ImageView {
     public void setDead(boolean dead) {
         this.dead = dead;
     }
-
 
     /**
      * Sets movement x change.
@@ -147,6 +146,18 @@ public abstract class Player extends ImageView {
      */
     public void setDy(int dy) {
         this.dy = dy;
+    }
+
+    public int getDx() {
+        return this.dx;
+    }
+
+    public int getDy() {
+        return this.dy;
+    }
+
+    public AnchorPane getRoot() {
+        return this.root;
     }
 
     /**
