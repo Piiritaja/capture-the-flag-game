@@ -60,6 +60,12 @@ sourceSets {
 
 mainClassName = 'Launcher'
 
+tasks.test {
+    beforeTest { descriptor ->
+        logger.lifecycle("Running test: ${descriptor}")
+    }
+}
+
 jar {
     manifest {
         attributes ("Implementation-Title": "Gradle",

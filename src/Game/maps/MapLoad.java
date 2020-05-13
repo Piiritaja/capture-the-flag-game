@@ -2,7 +2,6 @@ package Game.maps;
 
 import Game.Screen;
 import Game.player.Flag;
-import javafx.scene.Group;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
