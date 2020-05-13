@@ -116,6 +116,7 @@ public class ClientNetworkListener extends Listener {
                 sendPlayerPosition.id = serverClient.getMenu().getScreen().getPlayer().getId();
                 sendPlayerPosition.pColor = serverClient.getMenu().getScreen().getPlayer().getColor().equals(GamePlayer.playerColor.GREEN) ? 'G' : 'R';
                 sendPlayerPosition.lives = serverClient.getMenu().getScreen().getPlayer().getLives();
+                sendPlayerPosition.connectionId = ((Packet004RequestPlayers) object).connectionId;
 
                 connection.sendTCP(sendPlayerPosition);
             }
@@ -186,6 +187,7 @@ public class ClientNetworkListener extends Listener {
                     sendAiPlayer.xPosition = x;
                     sendAiPlayer.yPosition = y;
                     sendAiPlayer.id = id;
+                    sendAiPlayer.connectionId = ((Packet015RequestAI) object).connectionId;
                     connection.sendTCP(sendAiPlayer);
 
                 }

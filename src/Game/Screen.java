@@ -90,6 +90,7 @@ public class Screen extends Application {
     private ServerClient serverclient;
     private Client client;
     private boolean inGame;
+    private boolean isTicked;
 
     public Stage getStage() {
         return stage;
@@ -119,6 +120,7 @@ public class Screen extends Application {
         this.playerCount = 1;
         this.gameId = UUID.randomUUID().toString().substring(0, 4);
         this.idLabel = new Label();
+        this.isTicked = false;
 
     }
 
@@ -285,6 +287,9 @@ public class Screen extends Application {
         otherPlayer.setLives(lives);
         otherPlayer.setLives(lives);
         updateScale();
+        Packet018PlayerConnected playerConnected = new Packet018PlayerConnected();
+        playerConnected.gameId = getGameId();
+        client.sendTCP(playerConnected);
     }
 
     /**
@@ -459,6 +464,7 @@ public class Screen extends Application {
         positionPacket.yPosition = player.getY();
         positionPacket.gameId = this.getGameId();
         positionPacket.id = player.getId();
+        positionPacket.initial = true;
         char colorChar = color.equals(GamePlayer.playerColor.GREEN) ? 'G' : 'R';
         positionPacket.pColor = colorChar;
         positionPacket.lives = player.lives;
@@ -503,11 +509,11 @@ public class Screen extends Application {
             }
         });
 
-        if (!client.isConnected() && canTickPlayers()) {
+        if (playerCount == 1) {
             tickPlayers();
         }
         root.getChildren().add(idLabel);
-        if (!canTickPlayers()) {
+        if (!canTickPlayers() && playerCount > 1) {
             updateGameLabel();
         }
 
@@ -517,9 +523,6 @@ public class Screen extends Application {
         // save bot locations
         getBotLocationsOnMap();
         updateScale();
-        Packet018PlayerConnected playerConnected = new Packet018PlayerConnected();
-        playerConnected.gameId = getGameId();
-        client.sendTCP(playerConnected);
 
     }
 
@@ -545,11 +548,12 @@ public class Screen extends Application {
     }
 
     public boolean canTickPlayers() {
-        return getConnectedPlayerCount() == getPlayerCount();
+        return getConnectedPlayerCount() >= getPlayerCount() && !isTicked;
 
     }
 
     public void tickPlayers() {
+        this.isTicked = true;
         root.getChildren().remove(idLabel);
         Packet024RemoveGameWithId removeGameWithId = new Packet024RemoveGameWithId();
         removeGameWithId.gameId = gameId;
@@ -833,34 +837,41 @@ public class Screen extends Application {
             if (player.getBoundsInParent().intersects(redFlag.getBoundsInParent())) {
                 if (player.getPickedUpFlag() == null && !redFlag.isPickedUp()) {
                     player.pickupFlag(redFlag);
+
+                }
+                if (!player.getBoundsInParent().intersects(redBase.getBoundsInParent())) {
                     Packet026FlagCaptured flagCaptured = new Packet026FlagCaptured();
                     flagCaptured.PlayerId = player.getId();
                     flagCaptured.gameId = getGameId();
                     client.sendTCP(flagCaptured);
-                }
-                if (!player.getBoundsInParent().intersects(redBase.getBoundsInParent())) {
+
                     redFlag.relocate(player.getX() + 10, player.getY() + 10);
                 } else {
                     flagCaptured(player);
+
                 }
             }
         } else {
             if (player.getBoundsInParent().intersects(greenFlag.getBoundsInParent())) {
                 if (player.getPickedUpFlag() == null && !greenFlag.isPickedUp()) {
                     player.pickupFlag(greenFlag);
+
+                }
+                if (!player.getBoundsInParent().intersects(greenBase.getBoundsInParent())) {
                     Packet026FlagCaptured flagCaptured = new Packet026FlagCaptured();
                     flagCaptured.PlayerId = player.getId();
                     flagCaptured.gameId = getGameId();
                     client.sendTCP(flagCaptured);
-                }
-                if (!player.getBoundsInParent().intersects(greenBase.getBoundsInParent())) {
+
                     greenFlag.relocate(player.getX() + 10, player.getY() + 10);
                 } else {
                     flagCaptured(player);
+
                 }
             }
         }
     }
+
 
     public void flagCaptured(Player player) {
         if (player instanceof AiPlayer && !isMaster()) {
