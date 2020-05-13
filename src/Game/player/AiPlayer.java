@@ -372,17 +372,25 @@ public class AiPlayer extends Player {
         shootingBoundary.setCenterY(centerY);
         shootingBoundary.setRadius(radius * 4);
 
-        shootingBoundary.setFill(Color.BLUE);
+        //shootingBoundary.setFill(Color.BLUE);
+        shootingBoundary.setOpacity(0.0);
 
         collisionBoundary.setFill(Color.YELLOW);
 
-        if (shootingRateTimer == 0) {
-            collisionBoundary.setOpacity(0.3);
-            shootingBoundary.setOpacity(0.2);
-        }
+        final double collisionBoundaryOpacity = 0.1;
+        setCollisionBoundaryOpacity(collisionBoundaryOpacity);
 
     }
 
+
+    /**
+     * Set the opacity of the collison boundary circle (yellow circle around AI player).
+     *
+     * @param value opacity value
+     */
+    public void setCollisionBoundaryOpacity(double value) {
+        collisionBoundary.setOpacity(value);
+    }
 
     /**
      * Calculates which way to shoot(UP, DOWN, RIGHT or LEFT).

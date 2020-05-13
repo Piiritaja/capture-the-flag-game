@@ -361,6 +361,9 @@ public abstract class Player extends ImageView {
      * @param deadPlayers dead players
      */
     public void reSpawn(MapLoad mapLoad, List<Player> players, List<Player> deadPlayers) {
+        if (this.getClass().equals(AiPlayer.class)) {
+            ((AiPlayer) this).setCollisionBoundaryOpacity(0);
+        }
         this.setPlayerXStartingPosition(mapLoad.getBaseByColor(Base.baseColor.GREEN), mapLoad.getBaseByColor(Base.baseColor.RED));
         this.setPlayerYStartingPosition(mapLoad.getBaseByColor(Base.baseColor.GREEN), mapLoad.getBaseByColor(Base.baseColor.RED));
         playerDead = new Timeline(
