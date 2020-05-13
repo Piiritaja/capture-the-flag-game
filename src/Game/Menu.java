@@ -59,8 +59,8 @@ public class Menu extends Application {
     private static final String CHOSEN_OPACITY = "-fx-opacity: 100%";
 
     // Map images
-    private static final String MAP1_IMAGE_SRC = "src/assets/map/2teams/map1/testmap1.png";
-    private static final String MAP2_IMAGE_SRC = "src/assets/map/2teams/map2/map2.png";
+    private static final String MAP1_IMAGE_SRC = "/map/2teams/map1/testmap1.png";
+    private static final String MAP2_IMAGE_SRC = "/map/2teams/map2/map2.png";
 
     private Text usersOnlineText = new Text(10, 50, "Offline mode");
 
@@ -303,7 +303,7 @@ public class Menu extends Application {
     public ImageView getMapImage(int mapIndex) {
         String location = mapIndex == 0 ? MAP1_IMAGE_SRC : MAP2_IMAGE_SRC;
         try {
-            InputStream inputStream = new FileInputStream(location);
+            InputStream inputStream = Menu.class.getResourceAsStream(location);
             Image image = new Image(inputStream);
             ImageView imageView = new ImageView(image);
             return imageView;
@@ -476,20 +476,12 @@ public class Menu extends Application {
      */
     public List<ImageView> loadMapImages() {
 
-        try {
-            FileInputStream map1InputStream = new FileInputStream(MAP1_IMAGE_SRC);
-            Image map1Image = new Image(map1InputStream);
-            ImageView map1ImageView = new ImageView(map1Image);
+        Image map1Image = new Image(Menu.class.getResourceAsStream(MAP1_IMAGE_SRC));
+        ImageView map1ImageView = new ImageView(map1Image);
 
-            FileInputStream map2InputStream = new FileInputStream(MAP2_IMAGE_SRC);
-            Image map2Image = new Image(map2InputStream);
-            ImageView map2ImageView = new ImageView(map2Image);
-            return Arrays.asList(map1ImageView, map2ImageView);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
+        Image map2Image = new Image(Menu.class.getResourceAsStream(MAP2_IMAGE_SRC));
+        ImageView map2ImageView = new ImageView(map2Image);
+        return Arrays.asList(map1ImageView, map2ImageView);
 
 
     }

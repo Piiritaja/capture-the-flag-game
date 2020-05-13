@@ -1,6 +1,5 @@
 package networking;
 
-import Game.maps.Battlefield;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
@@ -28,6 +27,8 @@ import networking.packets.Packet021RequestGames;
 import networking.packets.Packet022JoinGame;
 import networking.packets.Packet023RequestGame;
 import networking.packets.Packet024RemoveGameWithId;
+import networking.packets.Packet025Score;
+import networking.packets.Packet026FlagCaptured;
 
 public class ServerListener extends Listener {
     private Server server;
@@ -73,7 +74,10 @@ public class ServerListener extends Listener {
         System.out.println("Someone has disconnected");
         this.gameServer.setNumberOfConnections(this.gameServer.getNumberOfConnections() - 1);
         Packet014PlayerDisconnected playerDisconnected = new Packet014PlayerDisconnected();
-        c.sendTCP(playerDisconnected);
+        server.sendToAllTCP(playerDisconnected);
+        if (this.gameServer.getNumberOfConnections() == 0) {
+            this.gameServer.clearData();
+        }
     }
 
 
@@ -167,8 +171,12 @@ public class ServerListener extends Listener {
                 ((Packet023RequestGame) object).playerCount = gameServer.getPlayerCounts().get(((Packet023RequestGame) object).gameId);
                 connection.sendTCP(object);
             }
-        } else if (object instanceof Packet024RemoveGameWithId){
+        } else if (object instanceof Packet024RemoveGameWithId) {
             this.gameServer.removeGameInstances(((Packet024RemoveGameWithId) object).gameId);
+        } else if (object instanceof Packet025Score) {
+            server.sendToAllTCP(object);
+        } else if (object instanceof Packet026FlagCaptured) {
+            server.sendToAllExceptTCP(connection.getID(), object);
         }
     }
 }

@@ -5,28 +5,17 @@ import Game.maps.Base;
 import Game.maps.Object;
 import com.esotericsoftware.kryonet.Client;
 import javafx.event.EventHandler;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.Group;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
-import javafx.scene.shape.Path;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 import networking.packets.Packet010PlayerMovement;
 import networking.packets.Packet011PlayerMovementStop;
 import networking.packets.Packet017GamePlayerShoot;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 
 import static java.lang.StrictMath.abs;
 
@@ -67,7 +56,7 @@ public class GamePlayer extends Player {
      * @param color Player color
      */
     public GamePlayer(int x, int y, int dx, int dy, playerColor color, Client client, Stage stage) {
-        super(x, y, dx, dy, color, stage);
+        super(x, y, dx, dy, color,stage);
         this.client = client;
 
     }
@@ -84,6 +73,9 @@ public class GamePlayer extends Player {
         double y = this.getY();
         this.setX(this.x += dx);
         this.setY(this.y += dy);
+        if (this.getPickedUpFlag() != null && lives <= 0) {
+            this.dropPickedUpFlag();
+        }
         for (Object object : objectsOnMap) {
             if (object.collides(this)) {
                 this.setX(x);
@@ -151,8 +143,8 @@ public class GamePlayer extends Player {
             double mouseX = mouseEvent.getX();
             if (Objects.equals(mouseEvent.getEventType(), MouseEvent.MOUSE_CLICKED)) {
                 Packet017GamePlayerShoot gamePlayerShoot = new Packet017GamePlayerShoot();
-                gamePlayerShoot.mouseX = mouseX;
-                gamePlayerShoot.mouseY = mouseY;
+                gamePlayerShoot.mouseX = mouseX /stage.widthProperty().get();
+                gamePlayerShoot.mouseY = mouseY / stage.heightProperty().get();
                 gamePlayerShoot.playerId = this.getId();
                 client.sendUDP(gamePlayerShoot);
                 shoot(mouseX, mouseY, true);

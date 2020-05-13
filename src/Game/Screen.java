@@ -20,8 +20,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
-import javafx.scene.Group;
-import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
@@ -48,6 +46,8 @@ import networking.packets.Packet012UpdatePlayerPosition;
 import networking.packets.Packet015RequestAI;
 import networking.packets.Packet018PlayerConnected;
 import networking.packets.Packet024RemoveGameWithId;
+import networking.packets.Packet025Score;
+import networking.packets.Packet026FlagCaptured;
 
 import java.util.List;
 import java.util.Map;
@@ -306,7 +306,7 @@ public class Screen extends Application {
     public void shootPlayerWithId(String id, double mouseX, double mouseY) {
         for (Player p : players) {
             if (p.getId().equals(id)) {
-                p.shoot(mouseX, mouseY, false);
+                p.shoot(mouseX * stage.widthProperty().get(), mouseY * stage.heightProperty().get(), false);
             }
         }
     }
@@ -629,7 +629,11 @@ public class Screen extends Application {
             if (p.getId().equals(id)) {
                 p.setLives(lives);
                 if (lives <= 0) {
+                    p.reSpawn(mapLoad, players, deadPlayers);
+                    deadPlayers.add(p);
                     root.getChildren().remove(p);
+                    players.remove(p);
+                    p.dropPickedUpFlag();
                 }
             }
         }
@@ -805,6 +809,21 @@ public class Screen extends Application {
         }
     }
 
+    public void captureFlag(String playerId) {
+        for (Player p : players) {
+            if (p.getId().equals(playerId)) {
+                if (p.getColor().equals(GamePlayer.playerColor.RED)) {
+                    p.pickupFlag(redFlag);
+                    redFlag.relocate(p.getX() + 10, p.getY() + 10);
+                } else {
+                    p.pickupFlag(greenFlag);
+                    greenFlag.relocate(p.getX() + 10, p.getY() + 10);
+
+                }
+            }
+        }
+    }
+
     /**
      * Player can catch the enemy team`s flag if intersects with it and bring to his base.
      * If enemy team`s flag is brought to own base then the next round starts.
@@ -814,32 +833,78 @@ public class Screen extends Application {
             if (player.getBoundsInParent().intersects(redFlag.getBoundsInParent())) {
                 if (player.getPickedUpFlag() == null && !redFlag.isPickedUp()) {
                     player.pickupFlag(redFlag);
+                    Packet026FlagCaptured flagCaptured = new Packet026FlagCaptured();
+                    flagCaptured.PlayerId = player.getId();
+                    flagCaptured.gameId = getGameId();
+                    client.sendTCP(flagCaptured);
                 }
                 if (!player.getBoundsInParent().intersects(redBase.getBoundsInParent())) {
                     redFlag.relocate(player.getX() + 10, player.getY() + 10);
                 } else {
-                    redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
-                    redTeamScore += 1;
-                    newRound();
-                    player.dropPickedUpFlag();
+                    flagCaptured(player);
                 }
             }
         } else {
             if (player.getBoundsInParent().intersects(greenFlag.getBoundsInParent())) {
                 if (player.getPickedUpFlag() == null && !greenFlag.isPickedUp()) {
                     player.pickupFlag(greenFlag);
+                    Packet026FlagCaptured flagCaptured = new Packet026FlagCaptured();
+                    flagCaptured.PlayerId = player.getId();
+                    flagCaptured.gameId = getGameId();
+                    client.sendTCP(flagCaptured);
                 }
                 if (!player.getBoundsInParent().intersects(greenBase.getBoundsInParent())) {
                     greenFlag.relocate(player.getX() + 10, player.getY() + 10);
                 } else {
-                    greenFlag.relocate(greenBase.getRightX() - 50,
-                            greenBase.getBottomY() / 2);
-                    greenTeamScore += 1;
-                    newRound();
-                    player.dropPickedUpFlag();
+                    flagCaptured(player);
                 }
             }
         }
+    }
+
+    public void flagCaptured(Player player) {
+        if (player instanceof AiPlayer && !isMaster()) {
+            return;
+        }
+        String team;
+        int score;
+        if (player.getColor() == GamePlayer.playerColor.RED) {
+            redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
+            redTeamScore += 1;
+            score = redTeamScore;
+            team = "R";
+        } else {
+            greenFlag.relocate(greenBase.getRightX() - 50,
+                    greenBase.getBottomY() / 2);
+            greenTeamScore += 1;
+            score = greenTeamScore;
+            team = "G";
+        }
+        if (client.isConnected()) {
+            Packet025Score packet025Score = new Packet025Score();
+            packet025Score.team = team;
+            packet025Score.gameId = gameId;
+            packet025Score.score = score;
+            client.sendTCP(packet025Score);
+        }
+        newRound();
+        player.dropPickedUpFlag();
+
+
+    }
+
+    public void score(String team, int score) {
+        if (team.equals("G")) {
+            greenTeamScore = score;
+        } else if (team.equals("R")) {
+            redTeamScore = score;
+        }
+
+        for (Player p : players) {
+            p.dropPickedUpFlag();
+        }
+        newRound();
+
     }
 
     /**
@@ -880,6 +945,7 @@ public class Screen extends Application {
         }
         updateScale();
     }
+
 
     /**
      * Makes scoreboard.
