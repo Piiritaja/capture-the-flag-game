@@ -14,6 +14,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
@@ -39,18 +40,18 @@ public abstract class Player extends ImageView {
     //Constants for player model graphics
     static final String RED_PLAYER_MAIN_IMAGE = "/player/red/still.png";
     static final String GREEN_PLAYER_MAIN_IMAGE = "/player/green/still.png";
-    Image image;
-    Image walkingRightImage;
-    Image walkingLeftImage;
-    Image walkingUpImage;
-    Image walkingDownImage;
+    public Image image;
+    public Image walkingRightImage;
+    public Image walkingLeftImage;
+    public Image walkingUpImage;
+    public Image walkingDownImage;
     AnchorPane root;
     public int lives;
     boolean dead = false;
     public Timeline playerDead = new Timeline();
 
     // shooting coordinates
-    double shootingRightX;
+    public double shootingRightX;
     double shootingRightY;
     double shootingUpX;
     double shootingUpY;
@@ -68,9 +69,10 @@ public abstract class Player extends ImageView {
     private double playerLocationYInTiles;
     Bullet bullet;
     Flag pickedUpFlag = null;
+    Stage stage;
 
 
-    public Player(int x, int y, int dx, int dy, GamePlayer.playerColor color) {
+    public Player(int x, int y, int dx, int dy, GamePlayer.playerColor color, Stage stage) {
         if (color.equals(GamePlayer.playerColor.GREEN)) {
             image = new Image(Player.class.getResourceAsStream(GREEN_PLAYER_MAIN_IMAGE));
             walkingRightImage = new Image(Player.class.getResourceAsStream("/player/green/walkingRight.png"));
@@ -86,6 +88,7 @@ public abstract class Player extends ImageView {
         } else {
             image = new Image(RED_PLAYER_MAIN_IMAGE);
         }
+        this.stage = stage;
         this.setImage(image);
         this.width = PLAYER_WIDTH;
         this.height = PLAYER_HEIGHT;
@@ -114,9 +117,9 @@ public abstract class Player extends ImageView {
      *
      * @return dead
      */
-    public boolean isDead() {
+    /*public boolean isDead() {
         return dead;
-    }
+    }*/
 
     /**
      * Sets boolean dead.
@@ -126,7 +129,6 @@ public abstract class Player extends ImageView {
     public void setDead(boolean dead) {
         this.dead = dead;
     }
-
 
     /**
      * Sets movement x change.
@@ -144,6 +146,18 @@ public abstract class Player extends ImageView {
      */
     public void setDy(int dy) {
         this.dy = dy;
+    }
+
+    public int getDx() {
+        return this.dx;
+    }
+
+    public int getDy() {
+        return this.dy;
+    }
+
+    public AnchorPane getRoot() {
+        return this.root;
     }
 
     /**
@@ -206,7 +220,9 @@ public abstract class Player extends ImageView {
     }
 
     public void dropPickedUpFlag() {
-        pickedUpFlag.drop();
+        if (pickedUpFlag != null) {
+            pickedUpFlag.drop();
+        }
         this.pickedUpFlag = null;
     }
 

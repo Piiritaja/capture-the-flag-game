@@ -11,7 +11,6 @@ version = '1.0.0'
 repositories {
     mavenCentral()
     maven { url "https://clojars.org/repo" }
-
 }
 
 
@@ -52,8 +51,12 @@ sourceSets {
             srcDir("src/assets")
         }
     }
+    test {
+        java {
+            srcDir("test")
+        }
+    }
 }
-
 
 mainClassName = 'Launcher'
 

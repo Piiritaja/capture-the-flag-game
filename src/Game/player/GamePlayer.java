@@ -17,6 +17,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 import networking.packets.Packet010PlayerMovement;
 import networking.packets.Packet011PlayerMovementStop;
@@ -65,8 +66,8 @@ public class GamePlayer extends Player {
      * @param dy    Movement y change
      * @param color Player color
      */
-    public GamePlayer(int x, int y, int dx, int dy, playerColor color, Client client) {
-        super(x, y, dx, dy, color);
+    public GamePlayer(int x, int y, int dx, int dy, playerColor color, Client client, Stage stage) {
+        super(x, y, dx, dy, color, stage);
         this.client = client;
 
     }

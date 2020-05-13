@@ -70,8 +70,8 @@ public class AiPlayer extends Player {
      * @param dy    Movement y change
      * @param color Player color
      */
-    public AiPlayer(int x, int y, int dx, int dy, GamePlayer.playerColor color, Flag flag, AnchorPane root, Base base, Client client, boolean master) {
-        super(x, y, dx, dy, color);
+    public AiPlayer(int x, int y, int dx, int dy, GamePlayer.playerColor color, Flag flag, AnchorPane root, Base base, Client client, boolean master, Stage stage) {
+        super(x, y, dx, dy, color, stage);
         this.base = base;
         this.flag = flag;
         //objectPlacement = Object.getObjectPlacements();
