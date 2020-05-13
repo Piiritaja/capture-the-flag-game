@@ -123,10 +123,6 @@ public class AiPlayer extends Player {
         double boundaryRadius = this.getHeight() / 2;
         double boundaryCenterY = y + this.getHeight() / 2;
         setBoundaries(boundaryCenterX, boundaryCenterY, boundaryRadius);
-        if (shootingRateTimer == 0.5) {
-            collisionBoundary.setOpacity(0);
-            shootingBoundary.setOpacity(0);
-        }
 
         if (shootingRateTimer >= 1) {
             for (Bot bot : botsOnMap) {
@@ -156,7 +152,7 @@ public class AiPlayer extends Player {
             animation.play();
         }
 
-        if (shootAndMoveTimer > 100) {
+        if (shootAndMoveTimer > 70) {
             move(objectsOnMap, x, y, boundaryCenterX, boundaryCenterY, primaryX, primaryY, leftFree, rightFree);
         }
 
