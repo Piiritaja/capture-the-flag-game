@@ -9,4 +9,7 @@ public class Packet005SendPlayerPosition extends Packet {
     public Battlefield battlefield;
     public String id;
     public int lives;
+    public int connectionId;
+    public boolean initial = false;
+
 }

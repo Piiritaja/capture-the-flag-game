@@ -9,4 +9,5 @@ public class Packet016SendAiPlayer extends Packet {
     public double yPosition;
     public Battlefield battlefield;
     public String id;
+    public int connectionId;
 }

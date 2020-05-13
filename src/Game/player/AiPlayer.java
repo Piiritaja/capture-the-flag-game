@@ -416,8 +416,8 @@ public class AiPlayer extends Player {
         double y = player.getY() + player.getHeight() / 2;
         double x = player.getX() + player.getWidth() / 2;
         gamePlayerShoot.playerId = this.getId();
-        gamePlayerShoot.mouseX = x;
-        gamePlayerShoot.mouseY = y;
+        gamePlayerShoot.mouseX = x / stage.widthProperty().get();
+        gamePlayerShoot.mouseY = y / stage.heightProperty().get();
         client.sendUDP(gamePlayerShoot);
         shoot(x, y, true);
     }
