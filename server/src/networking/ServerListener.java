@@ -175,8 +175,8 @@ public class ServerListener extends Listener {
             this.gameServer.removeGameInstances(((Packet024RemoveGameWithId) object).gameId);
         } else if (object instanceof Packet025Score) {
             server.sendToAllTCP(object);
-        } else if (object instanceof Packet026FlagCaptured){
-            server.sendToAllExceptTCP(connection.getID(),object);
+        } else if (object instanceof Packet026FlagCaptured) {
+            server.sendToAllExceptTCP(connection.getID(), object);
         }
     }
 }

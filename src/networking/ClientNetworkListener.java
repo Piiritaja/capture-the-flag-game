@@ -122,6 +122,7 @@ public class ClientNetworkListener extends Listener {
 
         } else if (object instanceof Packet005SendPlayerPosition) {
             if (this.serverClient.getMenu().getScreen().isInGame() && ((Packet005SendPlayerPosition) object).gameId.equals(this.serverClient.getMenu().getScreen().getGameId())) {
+                System.out.println("Received player positions");
                 double playerXPosition = ((Packet005SendPlayerPosition) object).xPosition;
                 double playerYPosition = ((Packet005SendPlayerPosition) object).yPosition;
                 String id = ((Packet005SendPlayerPosition) object).id;
@@ -156,6 +157,9 @@ public class ClientNetworkListener extends Listener {
         } else if (object instanceof Packet011PlayerMovementStop) {
             Platform.runLater(() -> serverClient.getMenu().getScreen().stopPlayerWithId(((Packet011PlayerMovementStop) object).playerID, ((Packet011PlayerMovementStop) object).direction));
         } else if (object instanceof Packet012UpdatePlayerPosition) {
+            if (serverClient.getMenu() == null || serverClient.getMenu().getScreen() == null) {
+                return;
+            }
             if (serverClient.getMenu().getScreen().isInGame()) {
                 Platform.runLater(() -> serverClient.getMenu().getScreen().updatePlayerPosition(
                         ((Packet012UpdatePlayerPosition) object).PlayerId,
