@@ -113,7 +113,6 @@ public class AiPlayer extends Player {
         boolean shot = false;
         shootAndMoveTimer += 5;
         animation.pause();
-        this.setImage(image);
         double x = this.getX();
         double y = this.getY();
 
