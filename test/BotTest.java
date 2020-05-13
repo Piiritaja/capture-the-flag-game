@@ -1,8 +1,6 @@
 import Game.bots.Bot;
-import Game.maps.Base;
 import Game.player.Bullet;
 import Game.player.GamePlayer;
-import Game.player.Player;
 import com.esotericsoftware.kryonet.Client;
 import javafx.scene.Group;
 import javafx.scene.Scene;
