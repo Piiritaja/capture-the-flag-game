@@ -4,6 +4,8 @@ import Game.maps.Battlefield;
 import Game.maps.MapLayer;
 import com.esotericsoftware.kryonet.Client;
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -20,7 +22,9 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import javafx.stage.WindowEvent;
 import networking.ServerClient;
+import networking.packets.Packet002RequestConnections;
 import networking.packets.Packet020CreateGame;
 import networking.packets.Packet022JoinGame;
 import networking.packets.Packet023RequestGame;
@@ -516,6 +520,7 @@ public class Menu extends Application {
      */
     public void exitScreen() {
         this.mainStage.close();
+        System.exit(0);
     }
 
 
@@ -535,6 +540,16 @@ public class Menu extends Application {
         configurePrimaryStage();
 
         mainStage.show();
+        Packet002RequestConnections requestConnections = new Packet002RequestConnections();
+        client.sendTCP(requestConnections);
+        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent t) {
+                Platform.exit();
+                System.exit(0);
+            }
+        });
+
 
     }
 
