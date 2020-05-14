@@ -81,6 +81,8 @@ public class Screen extends Application {
     private int playerCount;
     private String gameId;
     private Label idLabel;
+    private int oldRedScore = 0;
+    private int oldGreenScore = 0;
 
     // map size constants
     private static final int MAP_WIDTH_IN_TILES = 40;
@@ -431,8 +433,9 @@ public class Screen extends Application {
     @Override
     public void start(Stage stage) {
         inGame = true;
-        boolean fullScreen = stage.isFullScreen();
         this.stage = stage;
+        stage.setFullScreen(true);
+
 
         stage.getScene().setRoot(root);
 
@@ -517,7 +520,6 @@ public class Screen extends Application {
             updateGameLabel();
         }
 
-        stage.setFullScreen(fullScreen);
         stage.show();
 
         // save bot locations
@@ -591,7 +593,7 @@ public class Screen extends Application {
                     root.setOnMouseClicked(player.shooting);
                     player.setFocusTraversable(true);
                 }
-                if (redTeamScore == 3 || greenTeamScore == 3) {
+                if (redTeamScore >= 3 || greenTeamScore >= 3) {
                     theEnd();
                 }
                 if (deadPlayers.contains(player)) {
@@ -701,9 +703,12 @@ public class Screen extends Application {
      * Method to exit the screen.
      */
     private void exitScreen() {
-        Packet008SendPlayerID sendPlayerID = new Packet008SendPlayerID();
-        sendPlayerID.playerID = player.getId();
-        this.client.sendTCP(sendPlayerID);
+        if (player != null) {
+            Packet008SendPlayerID sendPlayerID = new Packet008SendPlayerID();
+            sendPlayerID.playerID = player.getId();
+            this.client.sendTCP(sendPlayerID);
+        }
+
         stage.close();
         player = null;
         Menu menu = new Menu(serverclient);
@@ -881,23 +886,34 @@ public class Screen extends Application {
         int score;
         if (player.getColor() == GamePlayer.playerColor.RED) {
             redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
-            redTeamScore += 1;
+            if (Math.abs(oldRedScore - redTeamScore) == 0) {
+                redTeamScore += 1;
+            }
             score = redTeamScore;
             team = "R";
+            if (client.isConnected()) {
+                Packet025Score packet025Score = new Packet025Score();
+                packet025Score.team = team;
+                packet025Score.gameId = gameId;
+                packet025Score.score = score;
+                client.sendTCP(packet025Score);
+            }
         } else {
             greenFlag.relocate(greenBase.getRightX() - 50,
                     greenBase.getBottomY() / 2);
-            greenTeamScore += 1;
+            if (Math.abs(oldGreenScore - greenTeamScore) == 0)
+                greenTeamScore += 1;
             score = greenTeamScore;
             team = "G";
+            if (client.isConnected()) {
+                Packet025Score packet025Score = new Packet025Score();
+                packet025Score.team = team;
+                packet025Score.gameId = gameId;
+                packet025Score.score = score;
+                client.sendTCP(packet025Score);
+            }
         }
-        if (client.isConnected()) {
-            Packet025Score packet025Score = new Packet025Score();
-            packet025Score.team = team;
-            packet025Score.gameId = gameId;
-            packet025Score.score = score;
-            client.sendTCP(packet025Score);
-        }
+
         newRound();
         player.dropPickedUpFlag();
 
@@ -955,6 +971,8 @@ public class Screen extends Application {
             updateScale();
         }
         updateScale();
+        oldGreenScore = greenTeamScore;
+        oldRedScore = redTeamScore;
     }
 
 
@@ -988,7 +1006,7 @@ public class Screen extends Application {
     public void theEnd() {
         timer.stop();
         Text winner;
-        if (redTeamScore == 3) {
+        if (redTeamScore >= 3) {
             winner = new Text("RED TEAM WINS");
             winner.setFill(Color.RED);
         } else {

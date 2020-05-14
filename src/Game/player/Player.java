@@ -401,19 +401,19 @@ public abstract class Player extends ImageView {
         animation.pause();
         if (getY() >= y && x >= getX() - allowedLengthY && x <= getX() + allowedLengthY) {
             this.setImage(walkingUpImage);
-            bullet = new Bullet((int) shootingUpX, (int) shootingUpY, 3, Color.YELLOW, lethal);
+            bullet = new Bullet((int) shootingUpX, (int) shootingUpY, 3, getColorTypeColor(), lethal);
             bullet.shoot(lineUp, root, Math.min(500, shootingUpY - y), bullets);
         } else if (getY() < y && x >= getX() - allowedLengthY && x <= getX() + allowedLengthY) {
             this.setImage(walkingDownImage);
-            bullet = new Bullet((int) shootingDownX, (int) shootingDownY, 3, Color.YELLOW, lethal);
+            bullet = new Bullet((int) shootingDownX, (int) shootingDownY, 3, getColorTypeColor(), lethal);
             bullet.shoot(lineDown, root, Math.min(500, y - shootingDownY), bullets);
         } else if (getX() < x && y >= getY() - allowedLengthX && y <= getY() + allowedLengthX) {
             this.setImage(walkingRightImage);
-            bullet = new Bullet((int) shootingRightX, (int) shootingRightY, 3, Color.YELLOW, lethal);
+            bullet = new Bullet((int) shootingRightX, (int) shootingRightY, 3, getColorTypeColor(), lethal);
             bullet.shoot(lineRight, root, Math.min(500, x - shootingRightX), bullets);
         } else if (getX() >= x && y >= getY() - allowedLengthX && y <= getY() + allowedLengthX) {
             this.setImage(walkingLeftImage);
-            bullet = new Bullet((int) shootingLeftX, (int) shootingLeftY, 3, Color.YELLOW, lethal);
+            bullet = new Bullet((int) shootingLeftX, (int) shootingLeftY, 3, getColorTypeColor(), lethal);
             bullet.shoot(lineLeft, root, Math.min(500, shootingLeftX - x), bullets);
         }
         animation.play();
