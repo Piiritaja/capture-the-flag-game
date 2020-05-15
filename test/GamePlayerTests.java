@@ -1,5 +1,4 @@
 import Game.maps.Base;
-import Game.maps.MapLoad;
 import Game.player.Bullet;
 import Game.player.Flag;
 import Game.player.GamePlayer;
@@ -9,48 +8,37 @@ import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import org.testfx.framework.junit5.ApplicationTest;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
+import org.testfx.framework.junit5.ApplicationTest;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class PlayerTest extends ApplicationTest {
+class GamePlayerTests extends ApplicationTest {
 
-    GamePlayer player;
-    GamePlayer player2;
-    Client client;
-    Flag flag;
-    MapLoad mapload;
-    Base greenBase;
-    Base redBase;
+    private GamePlayer player;
+    private GamePlayer player2;
+    private Flag flag;
+    private Base greenBase;
+    private Base redBase;
+    private AnchorPane root;
 
-    /*@BeforeEach
-    void setUp() {
-
-    }*/
-
-    @Override public void start(Stage stage) {
+    @Override
+    public void start(Stage stage) {
         Group sceneRoot = new Group();
         Scene scene = new Scene(sceneRoot, 100, 100);
         stage.setScene(scene);
         stage.show();
+        Client client = new Client();
         player = new GamePlayer(10, 10, 0, 0, GamePlayer.playerColor.GREEN, client, stage);
         player2 = new GamePlayer(10, 10, 0, 0, GamePlayer.playerColor.RED, client, stage);
         flag = new Flag(0, 0, 10, 10, Flag.flagColor.GREEN);
-        mapload = new MapLoad();
         greenBase = new Base(Base.baseColor.GREEN, 200, 200, 500, 0);
         redBase = new Base(Base.baseColor.RED, 200, 200, 0, 0);
-    }
-
-    @Test
-    void testTest() {
-        assertTrue(flag.getX() == 0);
+        root = new AnchorPane();
     }
 
     @Test
@@ -189,8 +177,8 @@ class PlayerTest extends ApplicationTest {
     class CollisionTest {
         @Test
         void collidesBullet() {
-            Bullet bullet = new Bullet(10, 10, 5, Color.YELLOW, true);
-            assertFalse(player.collides(bullet));
+            Bullet bullet = new Bullet(25, 25, 3, Color.YELLOW, true);
+            assertTrue(player.collides(bullet));
         }
 
         @Test
@@ -233,10 +221,35 @@ class PlayerTest extends ApplicationTest {
         }
     }
 
-    /*@Test
-    void shoot() {
-        List<Bullet> bullets = new ArrayList<>(player.bullets);
-        player.shoot(10, 10, true);
-        assertEquals(bullets.size() + 1, player.bullets.size());
-    }*/
+    @Nested
+    class Shoot {
+        @Test
+        void shootUp() {
+            List<Bullet> bullets = new ArrayList<>(player.bullets);
+            player.setRoot(root);
+            player.shoot(10, 10, true);
+            assertEquals(bullets.size() + 1, player.bullets.size());
+        }
+        @Test
+        void shootDown() {
+            List<Bullet> bullets = new ArrayList<>(player.bullets);
+            player.setRoot(root);
+            player.shoot(10, 20, true);
+            assertEquals(bullets.size() + 1, player.bullets.size());
+        }
+        @Test
+        void shootLeft() {
+            List<Bullet> bullets = new ArrayList<>(player.bullets);
+            player.setRoot(root);
+            player.shoot(5, 10, true);
+            assertEquals(bullets.size() + 1, player.bullets.size());
+        }
+        @Test
+        void shootRight() {
+            List<Bullet> bullets = new ArrayList<>(player.bullets);
+            player.setRoot(root);
+            player.shoot(20, 10, true);
+            assertEquals(bullets.size() + 1, player.bullets.size());
+        }
+    }
 }
