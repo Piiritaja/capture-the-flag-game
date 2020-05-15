@@ -30,8 +30,6 @@ class GamePlayerTests extends ApplicationTest {
     public void start(Stage stage) {
         Group sceneRoot = new Group();
         Scene scene = new Scene(sceneRoot, 100, 100);
-        stage.setScene(scene);
-        stage.show();
         Client client = new Client();
         player = new GamePlayer(10, 10, 0, 0, GamePlayer.playerColor.GREEN, client, stage);
         player2 = new GamePlayer(10, 10, 0, 0, GamePlayer.playerColor.RED, client, stage);
