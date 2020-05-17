@@ -14,18 +14,18 @@ class FlagTest {
     }
 
     @Test
-    void getColor() {
+    void getColorTest() {
         assertEquals(Flag.flagColor.RED, flag.getColor());
     }
 
     @Test
-    void pickUp() {
+    void pickUpTest() {
         flag.pickUp();
         assertTrue(flag.isPickedUp());
     }
 
     @Test
-    void drop() {
+    void dropTest() {
         flag.drop();
         assertFalse(flag.isPickedUp());
     }

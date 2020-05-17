@@ -40,133 +40,133 @@ class GamePlayerTests extends ApplicationTest {
     }
 
     @Test
-    void isDead() {
+    void isDeadTest() {
         assertFalse(player.isDead());
     }
 
     @Test
-    void setDead() {
+    void setDeadTest() {
         player.setDead(true);
         assertTrue(player.isDead());
     }
 
     @Test
-    void setDx() {
+    void setDxTest() {
         player.setDx(10);
         assertEquals(10, player.getDx());
     }
 
     @Test
-    void setDy() {
+    void setDyTest() {
         player.setDy(100);
         assertEquals(100, player.getDy());
     }
 
     @Test
-    void getDx() {
+    void getDxTest() {
         assertEquals(0, player.getDx());
     }
 
     @Test
-    void getDy() {
+    void getDyTest() {
         assertEquals(0, player.getDy());
     }
 
     @Test
-    void getWidth() {
+    void getWidthTest() {
         assertEquals(60, player.getWidth());
     }
 
     @Test
-    void getHeight() {
+    void getHeightTest() {
         assertEquals(60, player.getHeight());
     }
 
     @Test
-    void getColor() {
+    void getColorTest() {
         assertEquals(GamePlayer.playerColor.GREEN, player.getColor());
     }
 
     @Test
-    void setRoot() {
+    void setRootTest() {
         AnchorPane root = new AnchorPane();
         player.setRoot(root);
         assertEquals(root, player.getRoot());
     }
 
     @Test
-    void getLives() {
+    void getLivesTest() {
         assertEquals(10, player.getLives());
     }
 
     @Test
-    void setPlayerLocationXInTiles() {
+    void setPlayerLocationXInTilesTest() {
         player.setPlayerLocationXInTiles(10);
         assertEquals(10, player.getPlayerLocationXInTiles());
     }
 
     @Test
-    void setPlayerLocationYInTiles() {
+    void setPlayerLocationYInTilesTest() {
         player.setPlayerLocationYInTiles(10);
         assertEquals(10, player.getPlayerLocationYInTiles());
     }
 
     @Test
-    void setLives() {
+    void setLivesTest() {
         player.setLives(100);
         assertEquals(100, player.getLives());
     }
 
     @Test
-    void pickupFlag() {
+    void pickupFlagTest() {
         player.pickupFlag(flag);
         assertEquals(flag, player.getPickedUpFlag());
     }
 
     @Test
-    void dropPickedUpFlag() {
+    void dropPickedUpFlagTest() {
         player.dropPickedUpFlag();
         assertNull(player.getPickedUpFlag());
     }
 
     @Test
-    void getPickedUpFlag() {
+    void getPickedUpFlagTest() {
         player.pickupFlag(flag);
         assertEquals(flag, player.getPickedUpFlag());
     }
 
     @Test
-    void getColorTypeColor() {
+    void getColorTypeColorTest() {
         assertEquals(Color.GREEN, player.getColorTypeColor());
     }
 
     @Test
-    void getGunCoordinates() {
+    void getGunCoordinatesTest() {
         player.getGunCoordinates();
         player.setImage(player.walkingRightImage);
         assertEquals(player.getX() + player.getWidth(), player.shootingRightX);
     }
 
     @Test
-    void moveUp() {
+    void moveUpTest() {
         player.moveUp();
         assertEquals(player.walkingUpImage, player.getImage());
     }
 
     @Test
-    void moveDown() {
+    void moveDownTest() {
         player.moveDown();
         assertEquals(player.walkingDownImage, player.getImage());
     }
 
     @Test
-    void moveRight() {
+    void moveRightTest() {
         player.moveRight();
         assertEquals(player.walkingRightImage, player.getImage());
     }
 
     @Test
-    void moveLeft() {
+    void moveLeftTest() {
         player.moveLeft();
         assertEquals(player.walkingLeftImage, player.getImage());
     }
@@ -174,13 +174,13 @@ class GamePlayerTests extends ApplicationTest {
     @Nested
     class CollisionTest {
         @Test
-        void collidesBullet() {
+        void collidesBulletTest() {
             Bullet bullet = new Bullet(25, 25, 3, Color.YELLOW, true);
             assertTrue(player.collides(bullet));
         }
 
         @Test
-        void collidesAnotherPlayer() {
+        void collidesAnotherPlayerTest() {
             assertTrue(player.collides(player2));
         }
     }
@@ -188,7 +188,7 @@ class GamePlayerTests extends ApplicationTest {
     @Nested
     class setPlayerXStartingPositionTest {
         @Test
-        void setGreenPlayerXStartingPosition() {
+        void setGreenPlayerXStartingPositionTest() {
             System.out.println(greenBase.getLeftX());
             System.out.println(greenBase.getRightX());
             player.setPlayerXStartingPosition(greenBase, redBase);
@@ -198,7 +198,7 @@ class GamePlayerTests extends ApplicationTest {
         }
 
         @Test
-        void setRedPlayerXStartingPosition() {
+        void setRedPlayerXStartingPositionTest() {
             player2.setPlayerXStartingPosition(greenBase, redBase);
             assertTrue(redBase.getLeftX() <= player2.x && player2.x <= redBase.getRightX());
         }
@@ -207,43 +207,43 @@ class GamePlayerTests extends ApplicationTest {
     @Nested
     class setPlayerYStartingPositionTest {
         @Test
-        void setGreenPlayerYStartingPosition() {
+        void setGreenPlayerYStartingPositionTest() {
             player.setPlayerYStartingPosition(greenBase, redBase);
             assertTrue(greenBase.getBottomY() >= player.y && player.y >= greenBase.getTopY());
         }
 
         @Test
-        void setRedPlayerYStartingPosition() {
+        void setRedPlayerYStartingPositionTest() {
             player2.setPlayerYStartingPosition(greenBase, redBase);
             assertTrue(redBase.getBottomY() >= player2.y && player2.y >= redBase.getTopY());
         }
     }
 
     @Nested
-    class Shoot {
+    class ShootTests {
         @Test
-        void shootUp() {
+        void shootUpTest() {
             List<Bullet> bullets = new ArrayList<>(player.bullets);
             player.setRoot(root);
             player.shoot(10, 10, true);
             assertEquals(bullets.size() + 1, player.bullets.size());
         }
         @Test
-        void shootDown() {
+        void shootDownTest() {
             List<Bullet> bullets = new ArrayList<>(player.bullets);
             player.setRoot(root);
             player.shoot(10, 20, true);
             assertEquals(bullets.size() + 1, player.bullets.size());
         }
         @Test
-        void shootLeft() {
+        void shootLeftTest() {
             List<Bullet> bullets = new ArrayList<>(player.bullets);
             player.setRoot(root);
             player.shoot(5, 10, true);
             assertEquals(bullets.size() + 1, player.bullets.size());
         }
         @Test
-        void shootRight() {
+        void shootRightTest() {
             List<Bullet> bullets = new ArrayList<>(player.bullets);
             player.setRoot(root);
             player.shoot(20, 10, true);

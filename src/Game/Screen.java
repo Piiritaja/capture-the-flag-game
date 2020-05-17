@@ -83,6 +83,7 @@ public class Screen extends Application {
     private Label idLabel;
     private int oldRedScore = 0;
     private int oldGreenScore = 0;
+    private Text winner;
 
     // map size constants
     private static final int MAP_WIDTH_IN_TILES = 40;
@@ -98,6 +99,10 @@ public class Screen extends Application {
         return stage;
     }
 
+    public void setStage(Stage stage) {
+        this.stage = stage;
+    }
+
     public boolean isMaster() {
         return master;
     }
@@ -108,6 +113,30 @@ public class Screen extends Application {
 
     public void setPlayerCount(int playerCount) {
         this.playerCount = playerCount;
+    }
+
+    public void setGreenBase(Base base) {
+        this.greenBase = base;
+    }
+
+    public void setRedBase(Base base) {
+        this.redBase = base;
+    }
+
+    public List<Player> getPlayers() {
+        return players;
+    }
+
+    public StackPane getStack() {
+        return stack;
+    }
+
+    public Text getWinnerText() {
+        return winner;
+    }
+
+    public void setTimer() {
+
     }
 
     public Screen(ServerClient serverclient) {
@@ -676,7 +705,6 @@ public class Screen extends Application {
             botSpawner.spawnBotsWithIdAndLocation(id, 4, (int) (positions[0] * stage.widthProperty().get()), (int) (positions[1] * stage.heightProperty().get()), stage, root, false);
             botsOnMap = botSpawner.getBotsOnMap();
         }
-
     }
 
     /**
@@ -1005,7 +1033,6 @@ public class Screen extends Application {
      */
     public void theEnd() {
         timer.stop();
-        Text winner;
         if (redTeamScore >= 3) {
             winner = new Text("RED TEAM WINS");
             winner.setFill(Color.RED);
