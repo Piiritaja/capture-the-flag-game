@@ -52,9 +52,9 @@ class BulletTest extends ApplicationTest {
     }
 
     @Nested
-    class BulletCollision {
+    class BulletCollisionTests {
         @Test
-        void bulletCollisionWithBot() {
+        void bulletCollisionWithBotTest() {
             Bot bot = new Bot(10, 10, 0, stage, true);
             botSpawner.botsOnMap.add(bot);
             Bullet bullet = new Bullet(10, 10, 5, Color.ORANGE, true);
@@ -65,7 +65,7 @@ class BulletTest extends ApplicationTest {
             assertEquals(0, botSpawner.botsOnMap.size());
         }
         @Test
-        void bulletCollisionWithPlayer() {
+        void bulletCollisionWithPlayerTest() {
             Bullet bullet = new Bullet(25, 25, 5, Color.ORANGE, true);
             player.bullets.add(bullet);
             Line lineRight = new Line(0, 0, 500, 0);
