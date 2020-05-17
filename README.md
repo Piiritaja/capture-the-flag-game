@@ -3,7 +3,7 @@
 
 # Capture the Flag (Al Software Incorporated Enterprises)
 
-![screenshot](https://i.ibb.co/NV94Sb5/demoMap.png)
+![screenshot](src/assets/demoMap.png)
 
 * ### [Mängu demo video](https://www.youtube.com/watch?v=b5dnqqNkWeo)
 * ### [Projekti Wiki ja täpsem dokumentatsioon](https://gitlab.cs.ttu.ee/sesuur/iti0200-2020-project/-/wikis/home)
