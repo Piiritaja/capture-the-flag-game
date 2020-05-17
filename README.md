@@ -1,16 +1,18 @@
 ---
+---
 
 # Capture the Flag (Al Software Incorporated Enterprises)
 
 ![screenshot](https://i.ibb.co/NV94Sb5/demoMap.png)
 
-### [Mängu demo video](https://www.youtube.com/watch?v=b5dnqqNkWeo)
+* ### [Mängu demo video](https://www.youtube.com/watch?v=b5dnqqNkWeo)
+* ### [Projekti Wiki ja täpsem dokumentatsioon](https://gitlab.cs.ttu.ee/sesuur/iti0200-2020-project/-/wikis/home)
 
 ### Tehnoloogiad:
 * JavaFX
 * Kryonet
 
-### Mängu kirjeldus
+### Mängu lühikirjeldus
 * Mängu eesmärk on tuua vastaste baasist lipp enda baasi.
 * Mängida saab üksi ja ka kuni kolme teise inimesega (lisaks igas tiimis on 1 Ai mängija)
 * Mänguväljal paiknevad *botid*, kes on erapooletud ning tulistavad kõikide tiimide mängijaid.
@@ -43,4 +45,5 @@
 * Mäng läheb käima topeltklikiga mängu .jar failil, kui on olemas java 8 JRE
 * Muul juhul tuleb command line pealt käivitada: `java -jar [Mängu jari asukoht]`
 
+---
 ---
