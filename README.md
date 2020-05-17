@@ -41,7 +41,10 @@
 * Valida endale sobiv tiim
 * Valida join game
 
-### [Mängu allalaadimine](https://livettu-my.sharepoint.com/:f:/g/personal/kausta_ttu_ee/Er9203042phDr5Nd2-pW9LkBEpiDfgabl7aus4QFQWwIBA?e=Y7lZbJ) (vastavalt windows,linux või mac)
+### Allalaadimine (mängu .jar fail) ja käivitamine
+*valida windows, linux või mac*
+* [Gitlabist](gamejars)
+* [Alternatiivne allalaadimine](https://livettu-my.sharepoint.com/:f:/g/personal/kausta_ttu_ee/Er9203042phDr5Nd2-pW9LkBEpiDfgabl7aus4QFQWwIBA?e=Y7lZbJ)
 * Mäng läheb käima topeltklikiga mängu .jar failil, kui on olemas java 8 JRE
 * Muul juhul tuleb command line pealt käivitada: `java -jar [Mängu jari asukoht]`
 
