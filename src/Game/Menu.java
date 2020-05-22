@@ -31,9 +31,7 @@ import networking.packets.Packet023RequestGame;
 
 
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -79,6 +77,10 @@ public class Menu extends Application {
         this.screen = new Screen(this.serverClient);
         this.availableMaps = new HashMap<>();
 
+    }
+
+    public Text getUsersOnlineText() {
+        return usersOnlineText;
     }
 
 
@@ -146,6 +148,11 @@ public class Menu extends Application {
         } else if (this.currentConnections != 0) {
             this.usersOnlineText.setText("Users online: " + (this.currentConnections - 1));
         }
+    }
+
+
+    public int getNumberOfConnections() {
+        return this.currentConnections;
     }
 
     /**
@@ -244,9 +251,11 @@ public class Menu extends Application {
 
     public void prepGame(String id) {
         if (screen.color == null) {
+            System.out.println("nope");
             return;
         }
         this.screen.setGameId(id);
+        System.out.println("Just set id");
         Packet022JoinGame joinGame = new Packet022JoinGame();
         joinGame.gameId = this.screen.getGameId();
         client.sendTCP(joinGame);
@@ -315,6 +324,10 @@ public class Menu extends Application {
             e.printStackTrace();
             return new ImageView();
         }
+    }
+
+    public ServerClient getServerClient() {
+        return this.serverClient;
     }
 
     public Map<ImageView, String> loadMaps() {

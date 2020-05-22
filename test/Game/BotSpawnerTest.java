@@ -1,3 +1,4 @@
+package Game;
 
 import Game.bots.Bot;
 import Game.bots.BotSpawner;

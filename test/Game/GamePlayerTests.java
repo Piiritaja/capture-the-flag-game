@@ -1,3 +1,5 @@
+package Game;
+
 import Game.maps.Base;
 import Game.player.Bullet;
 import Game.player.Flag;

@@ -1,22 +1,16 @@
-import Game.Screen;
+package Game;
+
 import Game.bots.Bot;
 import Game.maps.Base;
-import Game.maps.Battlefield;
 import Game.maps.Object;
 import Game.player.AiPlayer;
-import Game.player.Bullet;
 import Game.player.Flag;
 import Game.player.GamePlayer;
 import Game.player.Player;
 import com.esotericsoftware.kryonet.Client;
-import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
@@ -27,8 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

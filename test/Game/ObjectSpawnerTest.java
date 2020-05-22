@@ -1,3 +1,5 @@
+package Game;
+
 import Game.bots.Bot;
 import Game.maps.Battlefield;
 import Game.maps.Object;
