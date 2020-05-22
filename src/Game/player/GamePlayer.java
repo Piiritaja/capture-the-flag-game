@@ -17,7 +17,6 @@ import networking.packets.Packet017GamePlayerShoot;
 import java.util.List;
 import java.util.Objects;
 
-import static java.lang.StrictMath.abs;
 
 /**
  * Player class.

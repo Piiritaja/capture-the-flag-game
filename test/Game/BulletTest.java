@@ -1,3 +1,5 @@
+package Game;
+
 import Game.bots.Bot;
 import Game.bots.BotSpawner;
 import Game.maps.MapLoad;

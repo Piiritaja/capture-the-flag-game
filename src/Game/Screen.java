@@ -51,6 +51,8 @@ import networking.packets.Packet026FlagCaptured;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 
@@ -455,7 +457,7 @@ public class Screen extends Application {
         double rangeY = ((base.getBottomY() - base.getTopY()) + 1);
         startX = (Math.random() * rangeX) + base.getLeftX();
         startY = (Math.random() * rangeY) + base.getTopY();
-        createAi(color, startX, startY, UUID.randomUUID().toString().substring(0, 4));
+        createAi(color, startX, startY, UUID.randomUUID().toString().substring(0, 5));
 
     }
 
@@ -929,8 +931,10 @@ public class Screen extends Application {
         } else {
             greenFlag.relocate(greenBase.getRightX() - 50,
                     greenBase.getBottomY() / 2);
-            if (Math.abs(oldGreenScore - greenTeamScore) == 0)
+            if (Math.abs(oldGreenScore - greenTeamScore) == 0) {
                 greenTeamScore += 1;
+
+            }
             score = greenTeamScore;
             team = "G";
             if (client.isConnected()) {
@@ -949,9 +953,9 @@ public class Screen extends Application {
     }
 
     public void score(String team, int score) {
-        if (team.equals("G")) {
+        if (team.equals("G") && oldGreenScore - greenTeamScore == 0) {
             greenTeamScore = score;
-        } else if (team.equals("R")) {
+        } else if (team.equals("R") && oldRedScore - redTeamScore == 0) {
             redTeamScore = score;
         }
 
@@ -999,8 +1003,23 @@ public class Screen extends Application {
             updateScale();
         }
         updateScale();
-        oldGreenScore = greenTeamScore;
-        oldRedScore = redTeamScore;
+        setTeamScores();
+    }
+
+    public void setTeamScores() {
+        new Timer().schedule(
+                new TimerTask() {
+                    @Override
+                    public void run() {
+                        // your code here
+                        oldGreenScore = greenTeamScore;
+                        oldRedScore = redTeamScore;
+                        greenFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2);
+                        redFlag.relocate(greenBase.getRightX() - 50, greenBase.getBottomY() / 2 - redFlag.getHeight());
+                    }
+                },
+                3000
+        );
     }
 
 

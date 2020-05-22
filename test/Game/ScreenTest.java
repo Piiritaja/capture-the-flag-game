@@ -1,3 +1,5 @@
+package Game;
+
 import Game.Menu;
 import Game.Screen;
 import Game.bots.Bot;

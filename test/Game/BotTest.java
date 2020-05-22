@@ -1,3 +1,5 @@
+package Game;
+
 import Game.bots.Bot;
 import Game.player.Bullet;
 import Game.player.GamePlayer;
