@@ -1,8 +1,11 @@
 package Game;
 
 import Game.maps.Battlefield;
+import Game.maps.MapLayer;
 import com.esotericsoftware.kryonet.Client;
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -19,16 +22,16 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import javafx.stage.WindowEvent;
 import networking.ServerClient;
+import networking.packets.Packet002RequestConnections;
 import networking.packets.Packet020CreateGame;
 import networking.packets.Packet022JoinGame;
 import networking.packets.Packet023RequestGame;
 
 
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -74,6 +77,10 @@ public class Menu extends Application {
         this.screen = new Screen(this.serverClient);
         this.availableMaps = new HashMap<>();
 
+    }
+
+    public Text getUsersOnlineText() {
+        return usersOnlineText;
     }
 
 
@@ -141,6 +148,11 @@ public class Menu extends Application {
         } else if (this.currentConnections != 0) {
             this.usersOnlineText.setText("Users online: " + (this.currentConnections - 1));
         }
+    }
+
+
+    public int getNumberOfConnections() {
+        return this.currentConnections;
     }
 
     /**
@@ -239,9 +251,11 @@ public class Menu extends Application {
 
     public void prepGame(String id) {
         if (screen.color == null) {
+            System.out.println("nope");
             return;
         }
         this.screen.setGameId(id);
+        System.out.println("Just set id");
         Packet022JoinGame joinGame = new Packet022JoinGame();
         joinGame.gameId = this.screen.getGameId();
         client.sendTCP(joinGame);
@@ -310,6 +324,10 @@ public class Menu extends Application {
             e.printStackTrace();
             return new ImageView();
         }
+    }
+
+    public ServerClient getServerClient() {
+        return this.serverClient;
     }
 
     public Map<ImageView, String> loadMaps() {
@@ -515,6 +533,7 @@ public class Menu extends Application {
      */
     public void exitScreen() {
         this.mainStage.close();
+        System.exit(0);
     }
 
 
@@ -534,6 +553,16 @@ public class Menu extends Application {
         configurePrimaryStage();
 
         mainStage.show();
+        Packet002RequestConnections requestConnections = new Packet002RequestConnections();
+        client.sendTCP(requestConnections);
+        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent t) {
+                Platform.exit();
+                System.exit(0);
+            }
+        });
+
 
     }
 

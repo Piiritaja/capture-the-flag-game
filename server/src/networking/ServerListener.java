@@ -101,9 +101,13 @@ public class ServerListener extends Listener {
             server.sendToAllTCP(sendConnections);
 
         } else if (object instanceof Packet004RequestPlayers) {
+            ((Packet004RequestPlayers) object).connectionId = connection.getID();
             server.sendToAllExceptTCP(connection.getID(), object);
         } else if (object instanceof Packet005SendPlayerPosition) {
-            server.sendToAllExceptTCP(connection.getID(), object);
+            if (((Packet005SendPlayerPosition) object).initial) {
+                server.sendToAllExceptTCP(connection.getID(), object);
+            }
+            server.sendToTCP(((Packet005SendPlayerPosition) object).connectionId, object);
         } else if (object instanceof Packet006RequestBotsLocation) {
             if (gameServer.getBotLocations().containsKey(((Packet006RequestBotsLocation) object).gameId)) {
                 Packet007SendBotsLocation sendBotsLocation = new Packet007SendBotsLocation();
@@ -127,9 +131,10 @@ public class ServerListener extends Listener {
         } else if (object instanceof Packet013PlayerHit) {
             server.sendToAllExceptUDP(connection.getID(), object);
         } else if (object instanceof Packet015RequestAI) {
+            ((Packet015RequestAI) object).connectionId = connection.getID();
             server.sendToAllExceptTCP(connection.getID(), object);
         } else if (object instanceof Packet016SendAiPlayer) {
-            server.sendToAllExceptTCP(connection.getID(), object);
+            server.sendToTCP(((Packet016SendAiPlayer) object).connectionId, object);
         } else if (object instanceof Packet017GamePlayerShoot) {
             server.sendToAllExceptUDP(connection.getID(), object);
         } else if (object instanceof Packet018PlayerConnected) {
@@ -155,7 +160,7 @@ public class ServerListener extends Listener {
                 } else {
                     ((Packet022JoinGame) object).mapIndex = 1;
                 }
-                connection.sendTCP(object);
+                server.sendToTCP(connection.getID(), object);
 
             }
         } else if (object instanceof Packet023RequestGame) {
@@ -175,8 +180,8 @@ public class ServerListener extends Listener {
             this.gameServer.removeGameInstances(((Packet024RemoveGameWithId) object).gameId);
         } else if (object instanceof Packet025Score) {
             server.sendToAllTCP(object);
-        } else if (object instanceof Packet026FlagCaptured){
-            server.sendToAllExceptTCP(connection.getID(),object);
+        } else if (object instanceof Packet026FlagCaptured) {
+            server.sendToAllExceptTCP(connection.getID(), object);
         }
     }
 }

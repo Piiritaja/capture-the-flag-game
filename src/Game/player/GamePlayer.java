@@ -17,7 +17,6 @@ import networking.packets.Packet017GamePlayerShoot;
 import java.util.List;
 import java.util.Objects;
 
-import static java.lang.StrictMath.abs;
 
 /**
  * Player class.
@@ -73,6 +72,9 @@ public class GamePlayer extends Player {
         double y = this.getY();
         this.setX(this.x += dx);
         this.setY(this.y += dy);
+        if (this.getPickedUpFlag() != null && lives <= 0) {
+            this.dropPickedUpFlag();
+        }
         for (Object object : objectsOnMap) {
             if (object.collides(this)) {
                 this.setX(x);

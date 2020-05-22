@@ -50,7 +50,7 @@ public class Object extends ImageView {
     public Object(String texture) {
         this.setFitWidth(width);
         this.setFitHeight(height);
-        this.setImage(new Image(texture));
+        this.setImage(new Image(Object.class.getResourceAsStream(texture)));
     }
 
     public Object() {
@@ -249,10 +249,12 @@ public class Object extends ImageView {
         return null;
     }
 
+
+    /*
     /**
      * Exports object placement sheet.
      * @return Placement of objects on map
-     */
+
     public static String[][] getObjectPlacements() {
         String csv = setCsv(mapType);
         String line;
@@ -271,4 +273,5 @@ public class Object extends ImageView {
         }
         return placement;
     }
+    */
 }

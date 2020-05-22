@@ -40,18 +40,18 @@ public abstract class Player extends ImageView {
     //Constants for player model graphics
     static final String RED_PLAYER_MAIN_IMAGE = "/player/red/still.png";
     static final String GREEN_PLAYER_MAIN_IMAGE = "/player/green/still.png";
-    Image image;
-    Image walkingRightImage;
-    Image walkingLeftImage;
-    Image walkingUpImage;
-    Image walkingDownImage;
+    public Image image;
+    public Image walkingRightImage;
+    public Image walkingLeftImage;
+    public Image walkingUpImage;
+    public Image walkingDownImage;
     AnchorPane root;
     public int lives;
     boolean dead = false;
     public Timeline playerDead = new Timeline();
 
     // shooting coordinates
-    double shootingRightX;
+    public double shootingRightX;
     double shootingRightY;
     double shootingUpX;
     double shootingUpY;
@@ -117,9 +117,9 @@ public abstract class Player extends ImageView {
      *
      * @return dead
      */
-    public boolean isDead() {
+    /*public boolean isDead() {
         return dead;
-    }
+    }*/
 
     /**
      * Sets boolean dead.
@@ -129,7 +129,6 @@ public abstract class Player extends ImageView {
     public void setDead(boolean dead) {
         this.dead = dead;
     }
-
 
     /**
      * Sets movement x change.
@@ -147,6 +146,18 @@ public abstract class Player extends ImageView {
      */
     public void setDy(int dy) {
         this.dy = dy;
+    }
+
+    public int getDx() {
+        return this.dx;
+    }
+
+    public int getDy() {
+        return this.dy;
+    }
+
+    public AnchorPane getRoot() {
+        return this.root;
     }
 
     /**
@@ -361,14 +372,20 @@ public abstract class Player extends ImageView {
      * @param deadPlayers dead players
      */
     public void reSpawn(MapLoad mapLoad, List<Player> players, List<Player> deadPlayers) {
+        if (this.getClass().equals(AiPlayer.class)) {
+            ((AiPlayer) this).setCollisionBoundaryOpacity(0);
+        }
+        this.setPlayerXStartingPosition(mapLoad.getBaseByColor(Base.baseColor.GREEN), mapLoad.getBaseByColor(Base.baseColor.RED));
+        this.setPlayerYStartingPosition(mapLoad.getBaseByColor(Base.baseColor.GREEN), mapLoad.getBaseByColor(Base.baseColor.RED));
         playerDead = new Timeline(
-                new KeyFrame(Duration.seconds(5), event -> this.setPlayerXStartingPosition(mapLoad.getBaseByColor(Base.baseColor.GREEN), mapLoad.getBaseByColor(Base.baseColor.RED))),
-                new KeyFrame(Duration.seconds(5), event -> this.setPlayerYStartingPosition(mapLoad.getBaseByColor(Base.baseColor.GREEN), mapLoad.getBaseByColor(Base.baseColor.RED))),
+                //new KeyFrame(Duration.seconds(5), event -> this.setPlayerXStartingPosition(mapLoad.getBaseByColor(Base.baseColor.GREEN), mapLoad.getBaseByColor(Base.baseColor.RED))),
+                //new KeyFrame(Duration.seconds(5), event -> this.setPlayerYStartingPosition(mapLoad.getBaseByColor(Base.baseColor.GREEN), mapLoad.getBaseByColor(Base.baseColor.RED))),
                 new KeyFrame(Duration.seconds(5), event -> this.setLives(10)),
                 new KeyFrame(Duration.seconds(5), event -> players.add(this)),
                 new KeyFrame(Duration.seconds(5), event -> root.getChildren().add(this)),
                 new KeyFrame(Duration.seconds(5), event -> deadPlayers.remove(this)),
-                new KeyFrame(Duration.seconds(5), event -> this.setDead(false))
+                new KeyFrame(Duration.seconds(5), event -> this.setDead(false)),
+                new KeyFrame(Duration.seconds(5), event -> this.dropPickedUpFlag())
         );
         playerDead.play();
     }
@@ -384,19 +401,19 @@ public abstract class Player extends ImageView {
         animation.pause();
         if (getY() >= y && x >= getX() - allowedLengthY && x <= getX() + allowedLengthY) {
             this.setImage(walkingUpImage);
-            bullet = new Bullet((int) shootingUpX, (int) shootingUpY, 3, Color.YELLOW, lethal);
+            bullet = new Bullet((int) shootingUpX, (int) shootingUpY, 3, getColorTypeColor(), lethal);
             bullet.shoot(lineUp, root, Math.min(500, shootingUpY - y), bullets);
         } else if (getY() < y && x >= getX() - allowedLengthY && x <= getX() + allowedLengthY) {
             this.setImage(walkingDownImage);
-            bullet = new Bullet((int) shootingDownX, (int) shootingDownY, 3, Color.YELLOW, lethal);
+            bullet = new Bullet((int) shootingDownX, (int) shootingDownY, 3, getColorTypeColor(), lethal);
             bullet.shoot(lineDown, root, Math.min(500, y - shootingDownY), bullets);
         } else if (getX() < x && y >= getY() - allowedLengthX && y <= getY() + allowedLengthX) {
             this.setImage(walkingRightImage);
-            bullet = new Bullet((int) shootingRightX, (int) shootingRightY, 3, Color.YELLOW, lethal);
+            bullet = new Bullet((int) shootingRightX, (int) shootingRightY, 3, getColorTypeColor(), lethal);
             bullet.shoot(lineRight, root, Math.min(500, x - shootingRightX), bullets);
         } else if (getX() >= x && y >= getY() - allowedLengthX && y <= getY() + allowedLengthX) {
             this.setImage(walkingLeftImage);
-            bullet = new Bullet((int) shootingLeftX, (int) shootingLeftY, 3, Color.YELLOW, lethal);
+            bullet = new Bullet((int) shootingLeftX, (int) shootingLeftY, 3, getColorTypeColor(), lethal);
             bullet.shoot(lineLeft, root, Math.min(500, shootingLeftX - x), bullets);
         }
         animation.play();

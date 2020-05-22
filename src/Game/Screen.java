@@ -20,8 +20,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
-import javafx.scene.Group;
-import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
@@ -53,6 +51,8 @@ import networking.packets.Packet026FlagCaptured;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 
@@ -83,6 +83,9 @@ public class Screen extends Application {
     private int playerCount;
     private String gameId;
     private Label idLabel;
+    private int oldRedScore = 0;
+    private int oldGreenScore = 0;
+    private Text winner;
 
     // map size constants
     private static final int MAP_WIDTH_IN_TILES = 40;
@@ -92,9 +95,14 @@ public class Screen extends Application {
     private ServerClient serverclient;
     private Client client;
     private boolean inGame;
+    private boolean isTicked;
 
     public Stage getStage() {
         return stage;
+    }
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
     }
 
     public boolean isMaster() {
@@ -109,6 +117,30 @@ public class Screen extends Application {
         this.playerCount = playerCount;
     }
 
+    public void setGreenBase(Base base) {
+        this.greenBase = base;
+    }
+
+    public void setRedBase(Base base) {
+        this.redBase = base;
+    }
+
+    public List<Player> getPlayers() {
+        return players;
+    }
+
+    public StackPane getStack() {
+        return stack;
+    }
+
+    public Text getWinnerText() {
+        return winner;
+    }
+
+    public void setTimer() {
+
+    }
+
     public Screen(ServerClient serverclient) {
         this.serverclient = serverclient;
         this.client = serverclient.getClient();
@@ -121,6 +153,7 @@ public class Screen extends Application {
         this.playerCount = 1;
         this.gameId = UUID.randomUUID().toString().substring(0, 4);
         this.idLabel = new Label();
+        this.isTicked = false;
 
     }
 
@@ -287,6 +320,9 @@ public class Screen extends Application {
         otherPlayer.setLives(lives);
         otherPlayer.setLives(lives);
         updateScale();
+        Packet018PlayerConnected playerConnected = new Packet018PlayerConnected();
+        playerConnected.gameId = getGameId();
+        client.sendTCP(playerConnected);
     }
 
     /**
@@ -421,15 +457,16 @@ public class Screen extends Application {
         double rangeY = ((base.getBottomY() - base.getTopY()) + 1);
         startX = (Math.random() * rangeX) + base.getLeftX();
         startY = (Math.random() * rangeY) + base.getTopY();
-        createAi(color, startX, startY, UUID.randomUUID().toString().substring(0, 4));
+        createAi(color, startX, startY, UUID.randomUUID().toString().substring(0, 5));
 
     }
 
     @Override
     public void start(Stage stage) {
         inGame = true;
-        boolean fullScreen = stage.isFullScreen();
         this.stage = stage;
+        stage.setFullScreen(true);
+
 
         stage.getScene().setRoot(root);
 
@@ -461,6 +498,7 @@ public class Screen extends Application {
         positionPacket.yPosition = player.getY();
         positionPacket.gameId = this.getGameId();
         positionPacket.id = player.getId();
+        positionPacket.initial = true;
         char colorChar = color.equals(GamePlayer.playerColor.GREEN) ? 'G' : 'R';
         positionPacket.pColor = colorChar;
         positionPacket.lives = player.lives;
@@ -505,23 +543,19 @@ public class Screen extends Application {
             }
         });
 
-        if (!client.isConnected() && canTickPlayers()) {
+        if (playerCount == 1) {
             tickPlayers();
         }
         root.getChildren().add(idLabel);
-        if (!canTickPlayers()) {
+        if (!canTickPlayers() && playerCount > 1) {
             updateGameLabel();
         }
 
-        stage.setFullScreen(fullScreen);
         stage.show();
 
         // save bot locations
         getBotLocationsOnMap();
         updateScale();
-        Packet018PlayerConnected playerConnected = new Packet018PlayerConnected();
-        playerConnected.gameId = getGameId();
-        client.sendTCP(playerConnected);
 
     }
 
@@ -547,11 +581,12 @@ public class Screen extends Application {
     }
 
     public boolean canTickPlayers() {
-        return getConnectedPlayerCount() == getPlayerCount();
+        return getConnectedPlayerCount() >= getPlayerCount() && !isTicked;
 
     }
 
     public void tickPlayers() {
+        this.isTicked = true;
         root.getChildren().remove(idLabel);
         Packet024RemoveGameWithId removeGameWithId = new Packet024RemoveGameWithId();
         removeGameWithId.gameId = gameId;
@@ -589,7 +624,7 @@ public class Screen extends Application {
                     root.setOnMouseClicked(player.shooting);
                     player.setFocusTraversable(true);
                 }
-                if (redTeamScore == 3 || greenTeamScore == 3) {
+                if (redTeamScore >= 3 || greenTeamScore >= 3) {
                     theEnd();
                 }
                 if (deadPlayers.contains(player)) {
@@ -672,7 +707,6 @@ public class Screen extends Application {
             botSpawner.spawnBotsWithIdAndLocation(id, 4, (int) (positions[0] * stage.widthProperty().get()), (int) (positions[1] * stage.heightProperty().get()), stage, root, false);
             botsOnMap = botSpawner.getBotsOnMap();
         }
-
     }
 
     /**
@@ -699,9 +733,12 @@ public class Screen extends Application {
      * Method to exit the screen.
      */
     private void exitScreen() {
-        Packet008SendPlayerID sendPlayerID = new Packet008SendPlayerID();
-        sendPlayerID.playerID = player.getId();
-        this.client.sendTCP(sendPlayerID);
+        if (player != null) {
+            Packet008SendPlayerID sendPlayerID = new Packet008SendPlayerID();
+            sendPlayerID.playerID = player.getId();
+            this.client.sendTCP(sendPlayerID);
+        }
+
         stage.close();
         player = null;
         Menu menu = new Menu(serverclient);
@@ -835,34 +872,41 @@ public class Screen extends Application {
             if (player.getBoundsInParent().intersects(redFlag.getBoundsInParent())) {
                 if (player.getPickedUpFlag() == null && !redFlag.isPickedUp()) {
                     player.pickupFlag(redFlag);
+
+                }
+                if (!player.getBoundsInParent().intersects(redBase.getBoundsInParent())) {
                     Packet026FlagCaptured flagCaptured = new Packet026FlagCaptured();
                     flagCaptured.PlayerId = player.getId();
                     flagCaptured.gameId = getGameId();
                     client.sendTCP(flagCaptured);
-                }
-                if (!player.getBoundsInParent().intersects(redBase.getBoundsInParent())) {
+
                     redFlag.relocate(player.getX() + 10, player.getY() + 10);
                 } else {
                     flagCaptured(player);
+
                 }
             }
         } else {
             if (player.getBoundsInParent().intersects(greenFlag.getBoundsInParent())) {
                 if (player.getPickedUpFlag() == null && !greenFlag.isPickedUp()) {
                     player.pickupFlag(greenFlag);
+
+                }
+                if (!player.getBoundsInParent().intersects(greenBase.getBoundsInParent())) {
                     Packet026FlagCaptured flagCaptured = new Packet026FlagCaptured();
                     flagCaptured.PlayerId = player.getId();
                     flagCaptured.gameId = getGameId();
                     client.sendTCP(flagCaptured);
-                }
-                if (!player.getBoundsInParent().intersects(greenBase.getBoundsInParent())) {
+
                     greenFlag.relocate(player.getX() + 10, player.getY() + 10);
                 } else {
                     flagCaptured(player);
+
                 }
             }
         }
     }
+
 
     public void flagCaptured(Player player) {
         if (player instanceof AiPlayer && !isMaster()) {
@@ -872,23 +916,36 @@ public class Screen extends Application {
         int score;
         if (player.getColor() == GamePlayer.playerColor.RED) {
             redFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2 - greenFlag.getHeight());
-            redTeamScore += 1;
+            if (Math.abs(oldRedScore - redTeamScore) == 0) {
+                redTeamScore += 1;
+            }
             score = redTeamScore;
             team = "R";
+            if (client.isConnected()) {
+                Packet025Score packet025Score = new Packet025Score();
+                packet025Score.team = team;
+                packet025Score.gameId = gameId;
+                packet025Score.score = score;
+                client.sendTCP(packet025Score);
+            }
         } else {
             greenFlag.relocate(greenBase.getRightX() - 50,
                     greenBase.getBottomY() / 2);
-            greenTeamScore += 1;
+            if (Math.abs(oldGreenScore - greenTeamScore) == 0) {
+                greenTeamScore += 1;
+
+            }
             score = greenTeamScore;
             team = "G";
+            if (client.isConnected()) {
+                Packet025Score packet025Score = new Packet025Score();
+                packet025Score.team = team;
+                packet025Score.gameId = gameId;
+                packet025Score.score = score;
+                client.sendTCP(packet025Score);
+            }
         }
-        if (client.isConnected()) {
-            Packet025Score packet025Score = new Packet025Score();
-            packet025Score.team = team;
-            packet025Score.gameId = gameId;
-            packet025Score.score = score;
-            client.sendTCP(packet025Score);
-        }
+
         newRound();
         player.dropPickedUpFlag();
 
@@ -896,9 +953,9 @@ public class Screen extends Application {
     }
 
     public void score(String team, int score) {
-        if (team.equals("G")) {
+        if (team.equals("G") && oldGreenScore - greenTeamScore == 0) {
             greenTeamScore = score;
-        } else if (team.equals("R")) {
+        } else if (team.equals("R") && oldRedScore - redTeamScore == 0) {
             redTeamScore = score;
         }
 
@@ -946,6 +1003,23 @@ public class Screen extends Application {
             updateScale();
         }
         updateScale();
+        setTeamScores();
+    }
+
+    public void setTeamScores() {
+        new Timer().schedule(
+                new TimerTask() {
+                    @Override
+                    public void run() {
+                        // your code here
+                        oldGreenScore = greenTeamScore;
+                        oldRedScore = redTeamScore;
+                        greenFlag.relocate(redBase.getLeftX() + 50, redBase.getBottomY() / 2);
+                        redFlag.relocate(greenBase.getRightX() - 50, greenBase.getBottomY() / 2 - redFlag.getHeight());
+                    }
+                },
+                3000
+        );
     }
 
 
@@ -978,8 +1052,7 @@ public class Screen extends Application {
      */
     public void theEnd() {
         timer.stop();
-        Text winner;
-        if (redTeamScore == 3) {
+        if (redTeamScore >= 3) {
             winner = new Text("RED TEAM WINS");
             winner.setFill(Color.RED);
         } else {

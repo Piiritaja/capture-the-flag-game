@@ -83,8 +83,9 @@ public class BotSpawner {
      * @return true if bot is inside a base, false if not
      */
     public boolean notInBase(int locationX, int locationY, List<Base> bases) {
+        final int offset = 15;
         for (Base base : bases) {
-            if (locationX < base.getRightX() && locationX > base.getLeftX()) {
+            if (locationX < base.getRightX() + offset && locationX > base.getLeftX() - offset) {
                 return !(locationY > base.getTopY() && locationY < base.getBottomY());
             }
         }

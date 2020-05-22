@@ -113,7 +113,6 @@ public class AiPlayer extends Player {
         boolean shot = false;
         shootAndMoveTimer += 5;
         animation.pause();
-        this.setImage(image);
         double x = this.getX();
         double y = this.getY();
 
@@ -124,10 +123,6 @@ public class AiPlayer extends Player {
         double boundaryRadius = this.getHeight() / 2;
         double boundaryCenterY = y + this.getHeight() / 2;
         setBoundaries(boundaryCenterX, boundaryCenterY, boundaryRadius);
-        if (shootingRateTimer == 0.5) {
-            collisionBoundary.setOpacity(0);
-            shootingBoundary.setOpacity(0);
-        }
 
         if (shootingRateTimer >= 1) {
             for (Bot bot : botsOnMap) {
@@ -157,7 +152,7 @@ public class AiPlayer extends Player {
             animation.play();
         }
 
-        if (shootAndMoveTimer > 100) {
+        if (shootAndMoveTimer > 70) {
             move(objectsOnMap, x, y, boundaryCenterX, boundaryCenterY, primaryX, primaryY, leftFree, rightFree);
         }
 
@@ -180,44 +175,32 @@ public class AiPlayer extends Player {
         double baseMiddleX = base.getRightX() - base.getWidth() / 2;
 
         // If the flag is already picked up and the AI is in it's home base, it moves up and down in it's home base
-        final double baseMovementOffset = 80;
-        if (collisionBoundary.getBoundsInParent().intersects(base.getBoundsInParent())
-                && (x >= baseMiddleX - baseMovementOffset && x <= baseMiddleX + baseMovementOffset)
-                && flag.isPickedUp()) {
-            if (primaryMovementDirection.equals(PrimaryMovementDirection.UP) && y <= base.getTopY() + baseMovementOffset) {
-                down = true;
-                primaryY = 1;
-                up = false;
-                primaryMovementDirection = PrimaryMovementDirection.DOWN;
-            } else if (primaryMovementDirection.equals(PrimaryMovementDirection.DOWN)
-                    && y >= base.getBottomY() - baseMovementOffset) {
-                up = true;
-                down = false;
-                primaryY = -1;
-                primaryMovementDirection = PrimaryMovementDirection.UP;
-            } else {
-                if (primaryMovementDirection.equals(PrimaryMovementDirection.UP)) {
-                    primaryY = -1;
-                    up = true;
-                    down = false;
-                } else {
-                    primaryY = 1;
-                    primaryMovementDirection = PrimaryMovementDirection.DOWN;
-                    down = true;
-                    up = false;
-                }
-            }
-            return;
-        }
-
+        final double baseMovementOffset = 100;
+        int offset = 2;
         if (!flag.isPickedUp()) {
             destinationX = flag.getX();
             destinationY = flag.getY();
         } else {
+            offset = 0;
             destinationX = baseMiddleX;
-            destinationY = base.getTopY() + base.getHeight() / 2;
+            double upperDestinationY = base.getTopY() + baseMovementOffset;
+            double lowerDestinationY = base.getBottomY() - baseMovementOffset;
+            if (primaryMovementDirection.equals(PrimaryMovementDirection.UP)) {
+                if (!(y <= upperDestinationY)) {
+                    destinationY = upperDestinationY;
+                } else {
+                    destinationY = lowerDestinationY;
+                    primaryMovementDirection = PrimaryMovementDirection.DOWN;
+                }
+            } else {
+                if (!(y >= lowerDestinationY)) {
+                    destinationY = lowerDestinationY;
+                } else {
+                    destinationY = upperDestinationY;
+                    primaryMovementDirection = PrimaryMovementDirection.UP;
+                }
+            }
         }
-        final int offset = 2;
         if (destinationX < x - offset) {
             primaryX = -1;
             left = true;
@@ -384,17 +367,25 @@ public class AiPlayer extends Player {
         shootingBoundary.setCenterY(centerY);
         shootingBoundary.setRadius(radius * 4);
 
-        shootingBoundary.setFill(Color.BLUE);
+        //shootingBoundary.setFill(Color.BLUE);
+        shootingBoundary.setOpacity(0.0);
 
         collisionBoundary.setFill(Color.YELLOW);
 
-        if (shootingRateTimer == 0) {
-            collisionBoundary.setOpacity(0.3);
-            shootingBoundary.setOpacity(0.2);
-        }
+        final double collisionBoundaryOpacity = 0.1;
+        setCollisionBoundaryOpacity(collisionBoundaryOpacity);
 
     }
 
+
+    /**
+     * Set the opacity of the collison boundary circle (yellow circle around AI player).
+     *
+     * @param value opacity value
+     */
+    public void setCollisionBoundaryOpacity(double value) {
+        collisionBoundary.setOpacity(value);
+    }
 
     /**
      * Calculates which way to shoot(UP, DOWN, RIGHT or LEFT).
@@ -421,8 +412,8 @@ public class AiPlayer extends Player {
         double y = player.getY() + player.getHeight() / 2;
         double x = player.getX() + player.getWidth() / 2;
         gamePlayerShoot.playerId = this.getId();
-        gamePlayerShoot.mouseX = x;
-        gamePlayerShoot.mouseY = y;
+        gamePlayerShoot.mouseX = x / stage.widthProperty().get();
+        gamePlayerShoot.mouseY = y / stage.heightProperty().get();
         client.sendUDP(gamePlayerShoot);
         shoot(x, y, true);
     }
